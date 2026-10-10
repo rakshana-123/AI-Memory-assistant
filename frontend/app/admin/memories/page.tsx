@@ -427,7 +427,7 @@ export default function MemoryManagementDashboard() {
                           <span className="font-bold text-slate-900">{item.name}</span>
                         </div>
                         <div className="flex items-center gap-1.5 pl-3.5">
-                           <span className="text-slate-500 font-medium">{item.value.toLocaleString()} ({item.percent})</span>
+                           <span className="text-slate-500 font-medium">{item.value.toLocaleString('en-US')} ({item.percent})</span>
                         </div>
                       </div>
                     ))}

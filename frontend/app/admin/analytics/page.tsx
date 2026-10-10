@@ -111,7 +111,7 @@ const ChartLegend = ({ data }: any) => (
           <span className="font-semibold text-slate-700 truncate">{item.name}</span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-           <span className="text-slate-500 font-medium">{item.value.toLocaleString()}</span>
+           <span className="text-slate-500 font-medium">{item.value.toLocaleString('en-US')}</span>
            <span className="text-slate-400 font-medium w-8 text-right">({item.percent})</span>
         </div>
       </div>

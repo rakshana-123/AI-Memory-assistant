@@ -289,7 +289,7 @@ export default function AdminDashboard() {
                           <span className="font-semibold text-slate-700">{item.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                           <span className="text-slate-500 font-medium">{item.value.toLocaleString()}</span>
+                           <span className="text-slate-500 font-medium">{item.value.toLocaleString('en-US')}</span>
                            <span className="text-slate-400 font-medium w-9 text-right">({item.percent})</span>
                         </div>
                       </div>

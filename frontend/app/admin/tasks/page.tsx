@@ -267,7 +267,7 @@ export default function AdminDashboard() {
                           <span className="text-[12px] font-semibold text-slate-700">{item.name}</span>
                         </div>
                         <div className="flex items-center justify-between pl-4 text-[12px]">
-                           <span className="text-slate-500 font-medium">{item.value.toLocaleString()}</span>
+                           <span className="text-slate-500 font-medium">{item.value.toLocaleString('en-US')}</span>
                            <span className="text-slate-400 font-medium">({item.name === 'Completed' ? '77%' : item.name === 'Pending' ? '22%' : '7%'})</span>
                         </div>
                       </div>
