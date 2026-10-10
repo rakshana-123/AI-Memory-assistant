@@ -72,7 +72,19 @@ const CaptureCard = ({ title, time, tag, tagColor }: any) => (
   </div>
 );
 
+const recentCaptures = [
+  { id: 1, title: "Project discussion", time: "Today, 10:42 AM • 02:14", tag: "Idea", tagColor: "bg-[#EBF3FF] text-[#2563EB]" },
+  { id: 2, title: "Meeting with Sarah", time: "Yesterday, 4:20 PM • 05:30", tag: "Meeting", tagColor: "bg-[#F3E8FF] text-[#8B5CF6]" },
+  { id: 3, title: "Research notes", time: "Oct 12, 2024 • 03:18", tag: "Document", tagColor: "bg-[#EBF3FF] text-[#2563EB]" },
+  { id: 4, title: "Client call", time: "Oct 10, 2024 • 08:45", tag: "Task", tagColor: "bg-[#E6F8F0] text-[#10B981]" },
+];
+
 export default function PathiiDashboard() {
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const filteredCaptures = recentCaptures.filter((capture) =>
+    capture.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
   // Hardcoded waveform heights for the visualizer
   const waveformHeights = [
     4, 6, 4, 8, 12, 8, 4, 16, 24, 16, 12, 8, 4, 8, 16, 32, 48, 64, 48, 32,
@@ -80,7 +92,7 @@ export default function PathiiDashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
       
       {}
       <aside className="w-[260px] bg-[#F4F7F9] flex flex-col z-10 flex-shrink-0 py-6 px-4">
@@ -127,11 +139,13 @@ export default function PathiiDashboard() {
         
         {/* Header Search & Notification */}
         <header className="h-[90px] px-8 flex items-center justify-between z-20">
-          <div className="relative w-[450px]">
+          <div className="relative w-full max-w-[450px] lg:w-[450px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search your memories, tasks, documents..." 
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search your memories, tasks, documents..."
               className="w-full pl-11 pr-14 py-3 bg-white rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 transition-shadow shadow-[0_2px_8px_rgba(0,0,0,0.04)] placeholder:text-slate-400 font-medium text-slate-700"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 px-2 py-1 rounded-md text-[11px] font-semibold text-slate-500">
@@ -139,7 +153,7 @@ export default function PathiiDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 max-lg:flex-shrink-0">
             <button className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">1</span>
@@ -152,7 +166,7 @@ export default function PathiiDashboard() {
         <div className="flex-1 overflow-y-auto p-8 pt-2 pb-12">
           
           {}
-          <div className="flex items-center justify-between mb-6 pl-2">
+          <div className="flex flex-col lg:flex-row items-center max-lg:items-start justify-between mb-6 pl-2 max-lg:gap-4">
             <div>
               <div className="flex items-center gap-2 text-slate-500 mb-2">
                 <ArrowLeft size={16} className="cursor-pointer hover:text-slate-800" />
@@ -180,7 +194,7 @@ export default function PathiiDashboard() {
             <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] flex flex-col items-center relative min-h-[500px]">
               
               {/* Top Controls */}
-              <div className="w-full flex items-center justify-between mb-8">
+              <div className="w-full flex items-center justify-between mb-8 max-lg:flex-wrap max-lg:gap-2">
                 <div className="bg-[#E6F8F0] text-[#10B981] px-3 py-1.5 rounded-full flex items-center gap-2 text-[13px] font-semibold">
                   <div className="w-2 h-2 rounded-full bg-[#10B981]"></div>
                   Ready to record
@@ -290,7 +304,7 @@ export default function PathiiDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <AnalysisCard 
                     icon={List} theme="blue"
                     title="Key Points" desc="Important information extracted from your speech"
@@ -325,23 +339,16 @@ export default function PathiiDashboard() {
               </button>
             </div>
             
-            <div className="grid grid-cols-4 gap-4">
-              <CaptureCard 
-                title="Project discussion" time="Today, 10:42 AM • 02:14"
-                tag="Idea" tagColor="bg-[#EBF3FF] text-[#2563EB]"
-              />
-              <CaptureCard 
-                title="Meeting with Sarah" time="Yesterday, 4:20 PM • 05:30"
-                tag="Meeting" tagColor="bg-[#F3E8FF] text-[#8B5CF6]"
-              />
-              <CaptureCard 
-                title="Research notes" time="Oct 12, 2024 • 03:18"
-                tag="Document" tagColor="bg-[#EBF3FF] text-[#2563EB]"
-              />
-              <CaptureCard 
-                title="Client call" time="Oct 10, 2024 • 08:45"
-                tag="Task" tagColor="bg-[#E6F8F0] text-[#10B981]"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {filteredCaptures.map((capture) => (
+                <CaptureCard
+                  key={capture.id}
+                  title={capture.title}
+                  time={capture.time}
+                  tag={capture.tag}
+                  tagColor={capture.tagColor}
+                />
+              ))}
             </div>
           </div>
 

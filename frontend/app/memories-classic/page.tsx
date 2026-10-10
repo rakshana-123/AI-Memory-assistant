@@ -204,9 +204,26 @@ const MemoryCard = ({ data, isActive }: any) => {
 
 export default function PathiiMemoriesDashboard() {
   const [activeTab, setActiveTab] = useState('Transcript');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
+  const filterTypes: Record<string, string[]> = {
+    Voice: ['voice', 'voice-simple'],
+    Notes: ['note'],
+    Documents: ['document'],
+    Images: ['image'],
+    Links: ['link'],
+    Locations: ['location'],
+    People: [],
+  };
+  const filteredMemories = memoriesData.filter((data) => {
+    const matchesFilter =
+      activeFilter === 'All' || (filterTypes[activeFilter] || []).includes(data.type);
+    const matchesSearch = data.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar - perfectly flush layout */}
       <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -256,11 +273,13 @@ export default function PathiiMemoriesDashboard() {
         
         {/* Top Header */}
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[480px]">
+          <div className="relative w-full max-w-[480px] lg:w-[480px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search memories, people, locations, or content..." 
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search memories, people, locations, or content..."
               className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-[11px] font-bold text-slate-500">
@@ -268,7 +287,7 @@ export default function PathiiMemoriesDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
@@ -278,13 +297,13 @@ export default function PathiiMemoriesDashboard() {
         </header>
 
         {}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6">
+        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
           
           {/* Left Column: Grid Section */}
           <div className="flex-1 flex flex-col min-w-0 h-full">
             
             {/* Title & Actions */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 max-lg:flex-col max-lg:items-start max-lg:gap-4">
               <div>
                 <h2 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight mb-1">Memories</h2>
                 <p className="text-[14.5px] text-slate-500 font-medium">All your thoughts, ideas, files, and conversations in one place.</p>
@@ -300,14 +319,15 @@ export default function PathiiMemoriesDashboard() {
             </div>
 
             {/* Filters Row */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 max-lg:flex-col max-lg:items-start max-lg:gap-4">
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                {['All', 'Notes', 'Voice', 'Images', 'Documents', 'Links', 'Locations', 'People'].map((filter, i) => (
-                  <button 
-                    key={filter} 
+                {['All', 'Notes', 'Voice', 'Images', 'Documents', 'Links', 'Locations', 'People'].map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setActiveFilter(filter)}
                     className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors whitespace-nowrap ${
-                      i === 0 
-                        ? 'bg-[#2563EB] text-white shadow-sm' 
+                      activeFilter === filter
+                        ? 'bg-[#2563EB] text-white shadow-sm'
                         : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 shadow-sm'
                     }`}
                   >
@@ -332,7 +352,7 @@ export default function PathiiMemoriesDashboard() {
             {/* Cards Grid */}
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-10">
-                {memoriesData.map((data, idx) => (
+                {filteredMemories.map((data, idx) => (
                   <MemoryCard key={data.id} data={data} isActive={idx === 0} />
                 ))}
               </div>
@@ -340,7 +360,7 @@ export default function PathiiMemoriesDashboard() {
           </div>
 
           {}
-          <div className="w-[400px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-full overflow-hidden">
+          <div className="w-[400px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-full overflow-hidden max-lg:w-full">
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
               
               {/* Header Info */}
