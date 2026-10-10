@@ -33,16 +33,33 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
+// Deterministic seeded PRNG (mulberry32). Replaces Math.random(): module-level
+// Math.random() produced different values on server prerender vs client
+// hydration, causing a React hydration mismatch on the heatmap grid divs
+// (Next.js dev overlay "1 Issue"). Seeded so both runs compute identical data.
+const seededRandom = (seed: number) => {
+  let s = seed;
+  return () => {
+    s |= 0;
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const rand = seededRandom(42);
+
 const trendsData = Array.from({ length: 31 }, (_, i) => {
   // Generate slightly randomized realistic data with a weekend dip pattern
   const isWeekend = (i % 7 === 5 || i % 7 === 6);
   const baseMulti = isWeekend ? 0.4 : 1;
   return {
     name: `Oct ${i + 1}`,
-    voice: Math.floor((Math.random() * 12 + 4) * baseMulti),
-    notes: Math.floor((Math.random() * 8 + 3) * baseMulti),
-    docs: Math.floor((Math.random() * 6 + 1) * baseMulti),
-    images: Math.floor((Math.random() * 4 + 1) * baseMulti),
+    voice: Math.floor((rand() * 12 + 4) * baseMulti),
+    notes: Math.floor((rand() * 8 + 3) * baseMulti),
+    docs: Math.floor((rand() * 6 + 1) * baseMulti),
+    images: Math.floor((rand() * 4 + 1) * baseMulti),
   };
 });
 
@@ -72,17 +89,18 @@ const topTopics = [
 
 // Heatmap Data generation (7 days x 24 hours)
 const generateHeatmap = () => {
+  const heatRand = seededRandom(7);
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   return days.map(day => {
     return Array.from({ length: 24 }, (_, hour) => {
       let intensity = 0;
       // Simulate higher activity during work hours (9-17) and lower on weekends
       if (day !== 'Sat' && day !== 'Sun') {
-        if (hour >= 9 && hour <= 11) intensity = Math.floor(Math.random() * 3) + 2; // High
-        else if (hour >= 13 && hour <= 17) intensity = Math.floor(Math.random() * 3) + 1; // Med-High
-        else if (hour > 17 && hour < 22) intensity = Math.floor(Math.random() * 2); // Low
+        if (hour >= 9 && hour <= 11) intensity = Math.floor(heatRand() * 3) + 2; // High
+        else if (hour >= 13 && hour <= 17) intensity = Math.floor(heatRand() * 3) + 1; // Med-High
+        else if (hour > 17 && hour < 22) intensity = Math.floor(heatRand() * 2); // Low
       } else {
-        if (hour >= 10 && hour <= 16) intensity = Math.floor(Math.random() * 2); // Low-Med on weekends
+        if (hour >= 10 && hour <= 16) intensity = Math.floor(heatRand() * 2); // Low-Med on weekends
       }
       return { hour, intensity };
     });
