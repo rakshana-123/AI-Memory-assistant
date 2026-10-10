@@ -99,9 +99,63 @@ const CalendarItem = ({ date, month, title, time, dotColor }: any) => (
   </div>
 );
 
+const recentMemories = [
+  {
+    icon: Mic,
+    iconBg: "bg-[#EBF3FF]",
+    iconColor: "text-[#2563EB]",
+    title: "Project idea for AI assistant",
+    subtitle: "Voice • 2 min",
+    time: "10:42 AM",
+    actionIcon: Play,
+    isPlay: true,
+  },
+  {
+    icon: FileText,
+    iconBg: "bg-[#F1F5F9]",
+    iconColor: "text-slate-500",
+    title: "Research notes on MCP",
+    subtitle: "Document • PDF",
+    time: "Yesterday",
+    actionIcon: MoreVertical,
+  },
+  {
+    icon: Calendar,
+    iconBg: "bg-[#F3E8FF]",
+    iconColor: "text-[#8B5CF6]",
+    title: "Team meeting with Sarah",
+    subtitle: "Meeting • Summary",
+    time: "Oct 12",
+    actionIcon: MoreVertical,
+  },
+  {
+    icon: MapPin,
+    iconBg: "bg-[#E6F8F0]",
+    iconColor: "text-[#10B981]",
+    title: "Visit to client office",
+    subtitle: "Location • New Delhi",
+    time: "Oct 11",
+    actionIcon: MoreVertical,
+  },
+  {
+    icon: FileText,
+    iconBg: "bg-[#FFF4DF]",
+    iconColor: "text-[#F59E0B]",
+    title: "Book recommendations",
+    subtitle: "Note",
+    time: "Oct 10",
+    actionIcon: MoreVertical,
+  },
+];
+
 export default function PathiiDashboard() {
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const filteredMemories = recentMemories.filter((memory) =>
+    memory.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
       <aside className="w-[260px] bg-[#F4F7F9] flex flex-col z-10 flex-shrink-0 py-6 px-4">
@@ -148,11 +202,13 @@ export default function PathiiDashboard() {
         
         {/* Header */}
         <header className="h-[90px] px-8 flex items-center justify-between z-20">
-          <div className="relative w-[400px]">
+          <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search memories, tasks, documents..." 
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search memories, tasks, documents..."
               className="w-full pl-11 pr-14 py-3 bg-white rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 transition-shadow shadow-[0_2px_8px_rgba(0,0,0,0.04)] placeholder:text-slate-400 font-medium text-slate-700"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 px-2 py-1 rounded-md text-[11px] font-semibold text-slate-500">
@@ -160,7 +216,7 @@ export default function PathiiDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-shrink-0">
             <button className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">1</span>
@@ -173,7 +229,7 @@ export default function PathiiDashboard() {
         <div className="flex-1 overflow-y-auto p-8 pt-2 pb-12">
           
           {/* Hero Banner */}
-          <div className="relative w-full rounded-[24px] bg-gradient-to-br from-[#FAFCFF] to-[#F1F6FF] mb-6 overflow-hidden flex items-center justify-between p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-white">
+          <div className="relative w-full rounded-[24px] bg-gradient-to-br from-[#FAFCFF] to-[#F1F6FF] mb-6 overflow-hidden flex flex-col lg:flex-row items-center justify-between p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-white">
             
             {/* Background Graphic SVG */}
             <div className="absolute inset-0 pointer-events-none z-0">
@@ -198,14 +254,14 @@ export default function PathiiDashboard() {
             </div>
             
             {/* Right Content */}
-            <div className="relative z-10 text-right self-start mt-2">
+            <div className="relative z-10 text-right self-end lg:self-start mt-2">
               <p className="text-slate-700 font-semibold text-[15px]">Mon, Oct 14, 2024</p>
               <p className="text-slate-500 italic mt-3 text-[14px]">"Capture today.<br/>Remember tomorrow."</p>
             </div>
           </div>
 
           {/* Stat Cards Grid */}
-          <div className="grid grid-cols-4 gap-5 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             <StatCard 
               icon={BrainLogo} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
               value="128" label="Total Memories" trend="↑ +12%" trendUp={true}
@@ -239,31 +295,19 @@ export default function PathiiDashboard() {
                   </button>
                 </div>
                 <div className="flex flex-col">
-                  <MemoryItem 
-                    icon={Mic} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
-                    title="Project idea for AI assistant" subtitle="Voice • 2 min"
-                    time="10:42 AM" actionIcon={Play} isPlay={true}
-                  />
-                  <MemoryItem 
-                    icon={FileText} iconBg="bg-[#F1F5F9]" iconColor="text-slate-500"
-                    title="Research notes on MCP" subtitle="Document • PDF"
-                    time="Yesterday" actionIcon={MoreVertical}
-                  />
-                  <MemoryItem 
-                    icon={Calendar} iconBg="bg-[#F3E8FF]" iconColor="text-[#8B5CF6]"
-                    title="Team meeting with Sarah" subtitle="Meeting • Summary"
-                    time="Oct 12" actionIcon={MoreVertical}
-                  />
-                  <MemoryItem 
-                    icon={MapPin} iconBg="bg-[#E6F8F0]" iconColor="text-[#10B981]"
-                    title="Visit to client office" subtitle="Location • New Delhi"
-                    time="Oct 11" actionIcon={MoreVertical}
-                  />
-                  <MemoryItem 
-                    icon={FileText} iconBg="bg-[#FFF4DF]" iconColor="text-[#F59E0B]"
-                    title="Book recommendations" subtitle="Note"
-                    time="Oct 10" actionIcon={MoreVertical}
-                  />
+                  {filteredMemories.map((memory) => (
+                    <MemoryItem
+                      key={memory.title}
+                      icon={memory.icon}
+                      iconBg={memory.iconBg}
+                      iconColor={memory.iconColor}
+                      title={memory.title}
+                      subtitle={memory.subtitle}
+                      time={memory.time}
+                      actionIcon={memory.actionIcon}
+                      isPlay={memory.isPlay}
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -297,7 +341,7 @@ export default function PathiiDashboard() {
             <div className="flex flex-col gap-6">
               
               {/* Voice Capture Box */}
-              <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] flex flex-col h-[420px]">
+              <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] flex flex-col min-h-[420px] lg:h-[420px]">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="text-[#2563EB] bg-[#EBF3FF] p-1.5 rounded-lg">
                     <BrainLogo className="w-4 h-4" />
