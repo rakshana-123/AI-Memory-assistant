@@ -1,6 +1,6 @@
 # Task 7 — Visual QA Report
 
-Date: 2026-10-11 (rewritten 2026-10-10 from re-verified evidence after review)
+Date: 2026-10-10 (rewritten from re-verified evidence after review)
 
 ## Method and evidence basis
 
