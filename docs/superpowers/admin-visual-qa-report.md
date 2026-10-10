@@ -84,8 +84,8 @@ All element citations below are grep-verified against the page source. "Active" 
 - Basis: element list below is grep-verified from `frontend/app/admin/notifications/page.tsx` (the page authored for this route); verdict at structure/color level from the settled screenshot vs mockup. Active: **Notifications** (badge "3").
 - Page title "Notifications Management". **5 stat cards**: Total Notifications 3,842 · Users Reached 2,156 · Delivery Rate 98.4% · Read Rate 76.2% · Click Rate 24.8%.
 - Status pills: All (3,842) · Delivered (3,782) · Pending (38) · Failed (22) · Scheduled (46); dropdowns All Types / All Status / All Channels.
-- **Recent Notifications** table headers: Title · Type · Channel · Audience · Status · Sent At · Read Rate · Actions (rows: Scheduled Maintenance, Task Reminder, Weekly Report, AI Usage Limit Warning [Pending], New Feature Announcement).
-- Charts/panels: **Notification Activity** (Delivered / Failed series), **Notifications by Type** (donut: System 32% · Tasks & Events 18% · AI Usage 15% · Memories 14% · Documents 10% · Promotions 7% · Security 4%), **Delivery Channels** (In-App 45% · Email 28% · Push 18% · SMS 6% · Others 3%), **Notification Status**, **Quick Actions**.
+- Untitled notifications table (main content) headers: Title · Type · Channel · Audience · Status · Sent At · Read Rate · Actions (rows: Scheduled Maintenance, Task Reminder, Weekly Report, AI Usage Limit Warning [Pending], New Feature Announcement).
+- Charts/panels: **Notification Activity** (Sent / Delivered / Read series), **Notifications by Type** (donut: System 32% · Tasks & Events 18% · AI Usage 15% · Memories 14% · Documents 10% · Promotions 7% · Security 4%), **Delivery Channels** (In-App 45% · Email 28% · Push 18% · SMS 6% · Others 3%), **Notification Status**, **Recent Notifications** (right-rail panel), **Quick Actions**.
 
 ### /admin/system-health → pathii_system_health_dashboard.tsx / "Pathii System Health Dashboard.png" — PASS
 - Basis: source diff clean (seeded-PRNG block + `: any` casts only); screenshot consistent. Active: **System Health**.
