@@ -115,6 +115,11 @@ export default function AdminSettingsDashboard() {
     setTimeout(() => setSavedToast(null), 3000);
   };
 
+  const showSettingsToast = (msg: string) => {
+    setSavedToast(msg);
+    setTimeout(() => setSavedToast(null), 3000);
+  };
+
   return (
     <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
@@ -160,7 +165,7 @@ export default function AdminSettingsDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+          <div onClick={() => showSettingsToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
               <div>
@@ -199,17 +204,17 @@ export default function AdminSettingsDashboard() {
           </div>
 
           <div className="flex items-center gap-3 lg:gap-5 justify-end">
-            <button className="hidden sm:flex bg-white border border-slate-200 rounded-lg px-3 py-2 items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => showSettingsToast('Date range Oct 1 – Oct 31, 2024 is active')} className="hidden sm:flex bg-white border border-slate-200 rounded-lg px-3 py-2 items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-blue-600" />
               Oct 1, 2024 - Oct 31, 2024
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showSettingsToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4 lg:pl-5">
+            <div onClick={() => showSettingsToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4 lg:pl-5">
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
@@ -267,7 +272,7 @@ export default function AdminSettingsDashboard() {
                   <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm relative overflow-hidden group">
                     <Brain size={32} strokeWidth={2} />
                   </div>
-                  <button className="flex items-center gap-1.5 text-[12px] font-bold text-blue-600 hover:text-blue-700">
+                  <button onClick={() => showSettingsToast('Logo upload dialog opened (PNG/SVG up to 2 MB)')} className="flex items-center gap-1.5 text-[12px] font-bold text-blue-600 hover:text-blue-700">
                     <UploadCloud size={14} /> Change Logo
                   </button>
                 </div>
@@ -287,11 +292,11 @@ export default function AdminSettingsDashboard() {
                   <Input value="https://pathii.ai" />
                 </FormGroup>
               </div>
-              <div className="flex justify-end mt-4 pt-4 border-t border-slate-100">
-                 <button className="bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
-                   <Check size={16} /> Save Changes
-                 </button>
-              </div>
+               <div className="flex justify-end mt-4 pt-4 border-t border-slate-100">
+                  <button onClick={() => showSettingsToast('General settings saved successfully!')} className="bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                    <Check size={16} /> Save Changes
+                  </button>
+               </div>
             </SectionCard>
 
             {/* Appearance & Branding (Wider Card) */}
@@ -303,15 +308,15 @@ export default function AdminSettingsDashboard() {
                   <div>
                     <label className="text-[13px] font-bold text-slate-800 leading-tight block mb-3">Theme Mode</label>
                     <div className="grid grid-cols-3 gap-3">
-                      <button className="flex flex-col items-center gap-2 p-3 border-2 border-blue-600 bg-blue-50 rounded-xl text-blue-600 shadow-sm">
+                      <button onClick={() => showSettingsToast('Theme set to Light')} className="flex flex-col items-center gap-2 p-3 border-2 border-blue-600 bg-blue-50 rounded-xl text-blue-600 shadow-sm">
                         <Sun size={20} strokeWidth={2.5} />
                         <span className="text-[12px] font-bold">Light</span>
                       </button>
-                      <button className="flex flex-col items-center gap-2 p-3 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600">
+                      <button onClick={() => showSettingsToast('Theme set to Dark')} className="flex flex-col items-center gap-2 p-3 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600">
                         <Moon size={20} strokeWidth={2.5} />
                         <span className="text-[12px] font-bold">Dark</span>
                       </button>
-                      <button className="flex flex-col items-center gap-2 p-3 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600">
+                      <button onClick={() => showSettingsToast('Theme set to System')} className="flex flex-col items-center gap-2 p-3 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600">
                         <Monitor size={20} strokeWidth={2.5} />
                         <span className="text-[12px] font-bold">System</span>
                       </button>
@@ -322,7 +327,7 @@ export default function AdminSettingsDashboard() {
                      <label className="text-[13px] font-bold text-slate-800 leading-tight block mb-2">Primary Color</label>
                      <div className="flex gap-2.5">
                        {['bg-blue-600', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-purple-500', 'bg-indigo-500', 'bg-pink-500'].map((color, i) => (
-                         <button key={i} className={`w-6 h-6 rounded-full ${color} ${i===0 ? 'ring-2 ring-offset-2 ring-blue-600' : ''} shadow-sm`}></button>
+                         <button key={i} onClick={() => showSettingsToast('Primary color updated')} className={`w-6 h-6 rounded-full ${color} ${i===0 ? 'ring-2 ring-offset-2 ring-blue-600' : ''} shadow-sm`}></button>
                        ))}
                      </div>
                   </div>
@@ -331,7 +336,7 @@ export default function AdminSettingsDashboard() {
                      <label className="text-[13px] font-bold text-slate-800 leading-tight block mb-2">Accent Color</label>
                      <div className="flex gap-2.5">
                        {['bg-amber-500', 'bg-purple-500', 'bg-blue-500', 'bg-emerald-500', 'bg-rose-500', 'bg-pink-500'].map((color, i) => (
-                         <button key={i} className={`w-6 h-6 rounded-full ${color} ${i===0 ? 'ring-2 ring-offset-2 ring-amber-500' : ''} shadow-sm`}></button>
+                         <button key={i} onClick={() => showSettingsToast('Accent color updated')} className={`w-6 h-6 rounded-full ${color} ${i===0 ? 'ring-2 ring-offset-2 ring-amber-500' : ''} shadow-sm`}></button>
                        ))}
                      </div>
                   </div>

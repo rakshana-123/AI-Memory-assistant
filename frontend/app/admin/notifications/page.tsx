@@ -1,12 +1,13 @@
 "use client";
 import NextLink from "next/link";
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import {
   LayoutDashboard, Users, Database, FileText, CalendarCheck,
   Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck,
   Settings, Search, ChevronDown, MoreVertical, Plus,
   Brain, ArrowUpRight, ArrowDownRight, Filter, Send, Eye,
-  MousePointerClick, Mail,
+  MousePointerClick, Mail, CheckCircle2,
   Smartphone, MessageSquare, Megaphone, LayoutTemplate, Download,
   CalendarDays, Zap
 } from 'lucide-react';
@@ -118,12 +119,58 @@ const StatusBadge = ({ status }: any) => {
   );
 };
 
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 export default function NotificationsManagementDashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [notifications, setNotifications] = useState(notificationsData);
+  const [dateRange, setDateRange] = useState(dateRangeOptions[0]);
+  const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const visibleNotifications = notificationsData.filter((notif) => {
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const addNotification = (title: string) => {
+    const nextId = notifications.reduce((max, n) => Math.max(max, n.id), 0) + 1;
+    setNotifications((prev) => [
+      { id: nextId, title, type: 'System', channel: 'In-App', channelIcon: Bell, audience: 'All Users', status: 'Pending', sentAt: 'Just now', readRate: null },
+      ...prev,
+    ]);
+    showToast(`Notification "${title}" sent to All Users`);
+  };
+
+  const exportNotifications = () => {
+    downloadCsv('pathii-notifications.csv', [
+      ['ID', 'Title', 'Type', 'Channel', 'Audience', 'Status', 'Sent At', 'Read Rate %'],
+      ...notifications.map((n) => [n.id, n.title, n.type, n.channel, n.audience, n.status, n.sentAt, n.readRate ?? '—']),
+    ]);
+    showToast(`Exported ${notifications.length} rows`);
+  };
+
+  const visibleNotifications = notifications.filter((notif) => {
     const matchesSearch =
       notif.title.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
       notif.type.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
@@ -214,15 +261,15 @@ export default function NotificationsManagementDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarDays size={15} className="text-slate-400" />
-              Oct 1, 2024 - Oct 31, 2024
+              {dateRange}
             </button>
-            <button className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 pl-2 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
+            <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 pl-2 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-8 h-8 rounded-full object-cover shadow-sm" />
               <span className="text-[13px] font-bold text-slate-700">Admin</span>
               <ChevronDown size={14} className="text-slate-400" />
@@ -245,7 +292,7 @@ export default function NotificationsManagementDashboard() {
                    <p className="text-[14px] text-slate-500 font-medium">Send, manage and monitor notifications across all Pathii users and modules.</p>
                  </div>
                </div>
-               <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-semibold transition-colors shadow-sm">
+               <button onClick={() => addNotification('Platform Announcement')} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-semibold transition-colors shadow-sm">
                  <Plus size={18} /> Send Notification
                </button>
             </div>
@@ -281,8 +328,8 @@ export default function NotificationsManagementDashboard() {
                     <h3 className="text-[16px] font-bold text-slate-900">Notification Activity</h3>
                     <p className="text-[13px] text-slate-500 font-medium">Notifications sent over the last 30 days.</p>
                   </div>
-                  <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                    This Month <ChevronDown size={14} />
+                  <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                    {chartPeriod} <ChevronDown size={14} />
                   </button>
                 </div>
                 <div className="flex items-center gap-4 mb-4 text-[12px] font-semibold text-slate-600">
@@ -326,8 +373,8 @@ export default function NotificationsManagementDashboard() {
                     <h3 className="text-[16px] font-bold text-slate-900">Notifications by Type</h3>
                     <p className="text-[13px] text-slate-500 font-medium">Distribution across all modules.</p>
                   </div>
-                  <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                    This Month <ChevronDown size={14} />
+                  <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                    {chartPeriod} <ChevronDown size={14} />
                   </button>
                 </div>
 
@@ -399,7 +446,7 @@ export default function NotificationsManagementDashboard() {
                   />
                 </div>
 
-                <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-600 rounded-xl text-[13px] font-semibold text-white transition-colors shadow-sm">
+                <button onClick={() => addNotification('Quick Update')} className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-600 rounded-xl text-[13px] font-semibold text-white transition-colors shadow-sm">
                   <Plus size={15} /> Add Notification
                 </button>
               </div>
@@ -470,7 +517,7 @@ export default function NotificationsManagementDashboard() {
                             )}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <button className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><MoreVertical size={16} /></button>
+                            <button onClick={() => showToast(`Opened actions for "${notif.title}"`)} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><MoreVertical size={16} /></button>
                           </td>
                         </tr>
                       ))
@@ -481,7 +528,7 @@ export default function NotificationsManagementDashboard() {
 
               {/* Pagination */}
               <div className="py-3 px-5 border-t border-slate-100 flex items-center justify-between text-[13px] bg-slate-50/30 flex-wrap gap-3">
-                <span className="text-slate-500 font-medium">Showing {visibleNotifications.length === 0 ? 0 : 1}–{visibleNotifications.length} of {notificationsData.length} notifications</span>
+                <span className="text-slate-500 font-medium">Showing {visibleNotifications.length === 0 ? 0 : 1}–{visibleNotifications.length} of {notifications.length} notifications</span>
                 <div className="flex items-center gap-2">
                   <button className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-400 hover:bg-slate-50">&lt;</button>
                   <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white font-bold">1</button>
@@ -573,7 +620,7 @@ export default function NotificationsManagementDashboard() {
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="text-[16px] font-bold text-slate-900">Recent Notifications</h3>
-                  <button className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                  <button onClick={() => showToast('All recent notifications are listed in the table')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                 </div>
                 <div className="space-y-4">
                   {recentNotifications.map((act, i) => (
@@ -605,7 +652,15 @@ export default function NotificationsManagementDashboard() {
                     { icon: Settings, label: 'Notification Settings', iconColor: 'text-emerald-600', iconBg: 'bg-emerald-100' },
                     { icon: Download, label: 'Export Logs', iconColor: 'text-amber-600', iconBg: 'bg-amber-100' },
                   ].map((action, i) => (
-                    <button key={i} className="flex flex-col items-start gap-2 p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition-colors text-left">
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (action.label === 'Send Notification') addNotification('Platform Announcement');
+                        else if (action.label === 'Manage Templates') showToast('12 notification templates available (welcome, reminder, maintenance)');
+                        else if (action.label === 'Notification Settings') router.push('/admin/settings');
+                        else exportNotifications();
+                      }}
+                      className="flex flex-col items-start gap-2 p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition-colors text-left">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${action.iconBg}`}>
                         <action.icon size={15} className={action.iconColor} />
                       </div>
@@ -619,6 +674,14 @@ export default function NotificationsManagementDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {

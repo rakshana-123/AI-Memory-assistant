@@ -48,10 +48,24 @@ const tableData = [
 
 const taskTypeOptions = ['All Types', 'Task', 'Event'];
 const taskStatusOptions = ['All Status', 'Pending', 'Upcoming', 'Completed', 'Overdue'];
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
+const userFilterOptions = ['All Users', 'Admins', 'Team Leads', 'Pro Users'];
 
 const cycleOption = (options: string[], current: string) => {
   const index = options.indexOf(current);
   return options[(index + 1) % options.length];
+};
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
@@ -92,8 +106,60 @@ export default function AdminDashboard() {
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [selectedTitles, setSelectedTitles] = useState<Set<string>>(new Set());
+  const [rows, setRows] = useState(tableData);
+  const [dateRange, setDateRange] = useState(dateRangeOptions[0]);
+  const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
+  const [userFilter, setUserFilter] = useState(userFilterOptions[0]);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const visibleRows = tableData.filter((row) => {
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleCreate = () => {
+    const suffix = rows.filter((r) => r.title.startsWith('Admin follow-up')).length + 1;
+    const title = suffix === 1 ? 'Admin follow-up' : `Admin follow-up (${suffix})`;
+    setRows((prev) => [
+      {
+        title,
+        icon: CheckSquare,
+        iconBg: 'bg-purple-100 text-purple-600',
+        type: 'Task',
+        typeColor: 'text-purple-700 bg-purple-100',
+        status: 'Pending',
+        statusColor: 'text-amber-700 bg-amber-100',
+        assignedAvatar: 'https://i.pravatar.cc/150?img=11',
+        assignedName: 'Admin',
+        date: 'Oct 31, 2024',
+        time: '05:00 PM',
+        createdAvatar: 'https://i.pravatar.cc/150?img=11',
+        createdName: 'Admin',
+      },
+      ...prev,
+    ]);
+    showToast(`Task "${title}" created and assigned to Admin`);
+  };
+
+  const exportRows = () => {
+    downloadCsv('pathii-tasks-events.csv', [
+      ['Title', 'Type', 'Status', 'Assigned To', 'Due Date', 'Created By'],
+      ...rows.map((r) => [r.title, r.type, r.status, r.assignedName, `${r.date} ${r.time}`, r.createdName]),
+    ]);
+    showToast(`Exported ${rows.length} rows`);
+  };
+
+  const handleCleanup = () => {
+    const completed = rows.filter((r) => r.status === 'Completed');
+    if (completed.length === 0) {
+      showToast('No completed items to clean up');
+      return;
+    }
+    setRows((prev) => prev.filter((r) => r.status !== 'Completed'));
+    showToast(`Cleaned up ${completed.length} completed item${completed.length > 1 ? 's' : ''}`);
+  };
+
+  const visibleRows = rows.filter((row) => {
     const matchesTab =
       activeTab === 'All (5,057)' ||
       (activeTab === 'Tasks (3,215)' && row.type === 'Task') ||
@@ -117,7 +183,7 @@ export default function AdminDashboard() {
     );
   });
 
-  const isFiltered = visibleRows.length !== tableData.length;
+  const isFiltered = visibleRows.length !== rows.length;
 
   const allVisibleSelected =
     visibleRows.length > 0 && visibleRows.every((row) => selectedTitles.has(row.title));
@@ -177,7 +243,7 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-100 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+          <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
               <div>
@@ -210,17 +276,17 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-wrap">
-            <button className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
-              Oct 1, 2024 - Oct 31, 2024
+              {dateRange}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
+            <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
@@ -244,7 +310,7 @@ export default function AdminDashboard() {
                    <p className="text-[14px] text-slate-500 font-medium">Monitor, organize and manage all user tasks and events across Pathii.</p>
                  </div>
                </div>
-               <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm shadow-blue-200 transition-colors flex items-center gap-2">
+               <button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm shadow-blue-200 transition-colors flex items-center gap-2">
                  <Plus size={18} /> Create Task / Event
                </button>
             </div>
@@ -267,8 +333,8 @@ export default function AdminDashboard() {
                     <p className="text-[13px] text-slate-500 font-medium">Tasks and events created over the last 30 days.</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                      This Month <ChevronDown size={14} />
+                    <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                      {chartPeriod} <ChevronDown size={14} />
                     </button>
                     <div className="flex items-center gap-3 text-[12px] font-semibold text-slate-600">
                       <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Tasks</div>
@@ -376,17 +442,18 @@ export default function AdminDashboard() {
                   {statusFilter} <ChevronDown size={14} className="text-slate-400" />
                 </button>
 
-                {['All Users'].map((filter) => (
-                  <button key={filter} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
-                    {filter} <ChevronDown size={14} className="text-slate-400" />
-                  </button>
-                ))}
-
-                <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors ml-auto">
-                  Oct 1, 2024 - Oct 31, 2024 <ChevronDown size={14} className="text-slate-400" />
+                <button
+                  onClick={() => setUserFilter(cycleOption(userFilterOptions, userFilter))}
+                  className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors"
+                >
+                  {userFilter} <ChevronDown size={14} className="text-slate-400" />
                 </button>
-                
-                <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
+
+                <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors ml-auto">
+                  {dateRange} <ChevronDown size={14} className="text-slate-400" />
+                </button>
+
+                <button onClick={() => showToast('Advanced filters: assignee, priority, due date')} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
                   <Filter size={14} className="text-slate-400" /> Filter
                 </button>
               </div>
@@ -475,7 +542,7 @@ export default function AdminDashboard() {
                           </div>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <button className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
+                          <button onClick={() => showToast(`Opened actions for "${row.title}"`)} className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
                         </td>
                       </tr>
                     ))}
@@ -517,7 +584,7 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center justify-between mb-4">
                  <h3 className="text-[16px] font-bold text-slate-900">Upcoming Events <span className="text-slate-400 font-medium text-[13px] font-normal">(Next 7 Days)</span></h3>
-                 <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                 <button onClick={() => showToast('Showing all upcoming events for the next 7 days')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
                
                <div className="space-y-4">
@@ -548,7 +615,7 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
               <div className="flex items-center justify-between mb-4">
                  <h3 className="text-[16px] font-bold text-slate-900">Event Types</h3>
-                 <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                 <button onClick={() => showToast('All event types are shown above')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
               
               <div className="flex items-center gap-4">
@@ -596,7 +663,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent Activity</h3>
-                <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => showToast('Showing all recent activity')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
 
               <div className="space-y-4">
@@ -632,7 +699,15 @@ export default function AdminDashboard() {
                    { icon: FolderKanban, label: 'Manage Categories' },
                    { icon: Trash2, label: 'Cleanup Old Items' },
                  ].map((action, i) => (
-                   <button key={i} className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 text-slate-600 rounded-xl transition-all group">
+                   <button
+                     key={i}
+                     onClick={() => {
+                       if (action.label === 'Export Tasks & Events') exportRows();
+                       else if (action.label === 'Bulk Actions') showToast(`Bulk actions: ${selectedTitles.size} item${selectedTitles.size === 1 ? '' : 's'} selected`);
+                       else if (action.label === 'Manage Categories') showToast('6 categories: Work, Personal, Academic, Projects, Research, Others');
+                       else handleCleanup();
+                     }}
+                     className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 text-slate-600 rounded-xl transition-all group">
                      <action.icon size={16} className="text-slate-400 group-hover:text-blue-500 flex-shrink-0" />
                      <span className="text-[12px] font-semibold leading-tight text-left">{action.label}</span>
                    </button>
@@ -644,6 +719,14 @@ export default function AdminDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       {/* Global Styles */}
       <style dangerouslySetInnerHTML={{__html: `

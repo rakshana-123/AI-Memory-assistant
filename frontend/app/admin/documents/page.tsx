@@ -45,10 +45,25 @@ const documentsList = [
 
 const docTypeOptions = ['All Types', 'pdf', 'word', 'spreadsheet', 'image', 'others'];
 const docCategoryOptions = ['All Categories', 'Projects', 'Work', 'Personal', 'Academic', 'Research', 'Others'];
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
+const userFilterOptions = ['All Users', 'Admins', 'Pro Users', 'Free Users'];
+const ageFilterOptions = ['Last 30 days', 'Last 7 days', 'All time'];
 
 const cycleOption = (options: string[], current: string) => {
   const index = options.indexOf(current);
   return options[(index + 1) % options.length];
+};
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
@@ -98,6 +113,10 @@ export default function AdminDashboard() {
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
+  const [dateRange, setDateRange] = useState(dateRangeOptions[0]);
+  const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
+  const [userFilter, setUserFilter] = useState(userFilterOptions[0]);
+  const [ageFilter, setAgeFilter] = useState(ageFilterOptions[0]);
 
   const visibleDocuments = documentsList.filter((doc) => {
     const header = headerQuery.trim().toLowerCase();
@@ -185,7 +204,7 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-100 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+          <div onClick={() => handleAction('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
               <div>
@@ -219,17 +238,17 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-5 max-lg:flex-wrap">
             {/* Header Date Picker */}
-            <button className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
-              Oct 1, 2024 - Oct 31, 2024
+              {dateRange}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => handleAction('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
+            <div onClick={() => handleAction('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
@@ -288,8 +307,8 @@ export default function AdminDashboard() {
                     <p className="text-[13px] text-slate-500 font-medium">Documents uploaded over the last 30 days.</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                      This Month <ChevronDown size={14} />
+                    <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                      {chartPeriod} <ChevronDown size={14} />
                     </button>
                     <div className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-600">
                       <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Documents Uploaded
@@ -391,13 +410,24 @@ export default function AdminDashboard() {
                   {categoryFilter} <ChevronDown size={14} className="text-slate-400" />
                 </button>
 
-                {['All Users', 'Last 30 days'].map((filter) => (
-                  <button key={filter} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
-                    {filter} <ChevronDown size={14} className="text-slate-400" />
+                {[
+                  { key: 'users', text: userFilter },
+                  { key: 'age', text: ageFilter },
+                ].map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() =>
+                      filter.key === 'users'
+                        ? setUserFilter(cycleOption(userFilterOptions, userFilter))
+                        : setAgeFilter(cycleOption(ageFilterOptions, ageFilter))
+                    }
+                    className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors"
+                  >
+                    {filter.text} <ChevronDown size={14} className="text-slate-400" />
                   </button>
                 ))}
-                
-                <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
+
+                <button onClick={() => handleAction('Advanced filters: category, type, size and date')} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
                   <Filter size={14} className="text-slate-400" /> Filter
                 </button>
               </div>
@@ -447,7 +477,7 @@ export default function AdminDashboard() {
                            </div>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <button className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
+                          <button onClick={() => handleAction(`Opened actions for "${doc.name}"`)} className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
                         </td>
                       </tr>
                     ))}
@@ -527,7 +557,7 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center justify-between mb-4">
                  <h3 className="text-[16px] font-bold text-slate-900">Top Document Categories</h3>
-                 <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                 <button onClick={() => handleAction('All document categories are shown above')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
                <div className="space-y-4">
                  {[
@@ -557,7 +587,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent Document Activity</h3>
-                <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => handleAction('Showing recent document activity')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
 
               <div className="space-y-4">
@@ -593,9 +623,19 @@ export default function AdminDashboard() {
                    { icon: FolderKanban, label: 'Manage Categories' },
                    { icon: Trash2, label: 'Cleanup Storage' },
                  ].map((action, i) => (
-                   <button 
-                     key={i} 
-                     onClick={() => handleAction(`${action.label} completed!`)}
+                   <button
+                     key={i}
+                     onClick={() => {
+                       if (action.label === 'Export Documents') {
+                         downloadCsv('pathii-documents.csv', [
+                           ['Name', 'Type', 'Uploaded By', 'Category', 'Size', 'Uploaded On'],
+                           ...documentsList.map((d) => [d.name, d.type.toUpperCase(), d.uploader, d.category, d.size, d.date]),
+                         ]);
+                         handleAction(`Exported ${documentsList.length} documents`);
+                       } else {
+                         handleAction(`${action.label} completed!`);
+                       }
+                     }}
                      className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 text-slate-600 rounded-xl transition-all group active:scale-95 shadow-sm"
                    >
                      <action.icon size={16} className="text-slate-400 group-hover:text-blue-500 flex-shrink-0" />

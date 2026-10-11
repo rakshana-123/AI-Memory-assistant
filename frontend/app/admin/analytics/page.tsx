@@ -1,5 +1,6 @@
 "use client";
 import NextLink from "next/link";
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, Users, Database, FileText, CalendarCheck, 
@@ -154,10 +155,39 @@ const generateHeatmap = () => {
 };
 const heatmapData = generateHeatmap();
 
+const timeRangeOptions = ['Today', '7 days', 'Last 30 days'];
+const chartGranularityOptions = ['Daily', 'Weekly', 'Monthly'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 export default function AdminDashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleFilter, setModuleFilter] = useState('All Modules');
   const [timeRange, setTimeRange] = useState('Last 30 days');
+  const [chartGranularity, setChartGranularity] = useState('Daily');
+  const [chartPeriod, setChartPeriod] = useState('This Month');
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const visibleActivities = recentActivityList.filter(item => {
     const matchesSearch = item.action.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
@@ -233,17 +263,17 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-5">
-            <button className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setTimeRange(cycleOption(timeRangeOptions, timeRange))} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
               {timeRange}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
+            <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
@@ -297,8 +327,8 @@ export default function AdminDashboard() {
                     <h3 className="text-[16px] font-bold text-slate-900">User Growth</h3>
                     <p className="text-[12px] text-slate-500 font-medium">New and active users over time.</p>
                   </div>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                    Daily <ChevronDown size={14} />
+                  <button onClick={() => setChartGranularity(cycleOption(chartGranularityOptions, chartGranularity))} className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                    {chartGranularity} <ChevronDown size={14} />
                   </button>
                 </div>
                 <div className="flex justify-end items-center gap-4 mb-2 text-[11px] font-semibold text-slate-600">
@@ -336,8 +366,8 @@ export default function AdminDashboard() {
                     <h3 className="text-[16px] font-bold text-slate-900">Content Creation Trend</h3>
                     <p className="text-[12px] text-slate-500 font-medium">Memories, documents, tasks and events.</p>
                   </div>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                    This Month <ChevronDown size={14} />
+                  <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                    {chartPeriod} <ChevronDown size={14} />
                   </button>
                 </div>
                 <div className="flex justify-end items-center gap-3 mb-2 text-[11px] font-semibold text-slate-600">
@@ -462,8 +492,8 @@ export default function AdminDashboard() {
                   <p className="text-[12px] text-slate-500 font-medium">Overall platform usage across all features.</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <button className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                    This Month <ChevronDown size={14} />
+                  <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                    {chartPeriod} <ChevronDown size={14} />
                   </button>
                 </div>
               </div>
@@ -582,7 +612,7 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center justify-between mb-4">
                  <h3 className="text-[16px] font-bold text-slate-900">Top Active Users</h3>
-                 <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                 <button onClick={() => router.push('/admin/users')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
                <div className="space-y-4">
                  {[
@@ -609,7 +639,7 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center justify-between mb-4">
                  <h3 className="text-[16px] font-bold text-slate-900">Top Memory Categories</h3>
-                 <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                 <button onClick={() => router.push('/admin/memories')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
                <div className="space-y-3.5">
                  {[
@@ -645,7 +675,7 @@ export default function AdminDashboard() {
                    <div className="text-blue-600"><Brain size={18} /></div>
                    <h3 className="text-[16px] font-bold text-slate-900">Key Insights</h3>
                 </div>
-                <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => showToast('All key insights for this period are shown')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
 
               <div className="space-y-4">
@@ -676,7 +706,28 @@ export default function AdminDashboard() {
                    { icon: BarChart2, label: 'View User Trends' },
                    { icon: Activity, label: 'Analyze AI Usage' },
                  ].map((action, i) => (
-                   <button key={i} className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 text-slate-600 rounded-xl transition-all group">
+                   <button
+                     key={i}
+                     onClick={() => {
+                       if (action.label === 'Export Analytics') {
+                         downloadCsv('pathii-analytics-summary.csv', [
+                           ['Metric', 'Value', 'Trend'],
+                           ['Active Users', '1,248', '+18%'],
+                           ['Memories Created', '3,198', '+24%'],
+                           ['Tasks & Events', '1,842', '+20%'],
+                           ['AI Requests', '12,845', '+28%'],
+                           ['API Calls', '8,426', '+32%'],
+                         ]);
+                         showToast('Exported 5 rows');
+                       } else if (action.label === 'Generate Report') {
+                         router.push('/admin/reports');
+                       } else if (action.label === 'View User Trends') {
+                         router.push('/admin/users');
+                       } else {
+                         router.push('/admin/ai-usage');
+                       }
+                     }}
+                     className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 text-slate-600 rounded-xl transition-all group">
                      <action.icon size={16} className="text-blue-500 flex-shrink-0" />
                      <span className="text-[12px] font-semibold leading-tight text-left">{action.label}</span>
                    </button>
@@ -688,6 +739,14 @@ export default function AdminDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       {}
       <style dangerouslySetInnerHTML={{__html: `

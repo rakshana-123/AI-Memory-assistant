@@ -1,5 +1,6 @@
 "use client";
 import NextLink from "next/link";
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { 
   LayoutDashboard, Users, Database, FileText, CalendarCheck, 
@@ -84,8 +85,26 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp 
   </div>
 );
 
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
 export default function AdminDashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [toast, setToast] = React.useState<string | null>(null);
+  const [dateRange, setDateRange] = React.useState(dateRangeOptions[0]);
+  const [chartPeriod, setChartPeriod] = React.useState(chartPeriodOptions[0]);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const visibleUsers = recentUsers.filter((user) => {
     const query = searchQuery.trim().toLowerCase();
     return user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query);
@@ -160,11 +179,11 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <img onClick={() => showToast('Signed in as Administrator')} src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
           </div>
         </header>
 
@@ -202,8 +221,8 @@ export default function AdminDashboard() {
                     <h3 className="text-[16px] font-bold text-slate-900">User Growth</h3>
                     <p className="text-[13px] text-slate-500 font-medium">New users and active users over time.</p>
                   </div>
-                  <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                    This Month <ChevronDown size={14} />
+                  <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                    {chartPeriod} <ChevronDown size={14} />
                   </button>
                 </div>
                 <div className="flex items-center gap-4 mb-4 text-[12px] font-semibold text-slate-600">
@@ -241,11 +260,11 @@ export default function AdminDashboard() {
                     <h3 className="text-[16px] font-bold text-slate-900">Memory Activity</h3>
                     <p className="text-[13px] text-slate-500 font-medium">Types of memories created.</p>
                   </div>
-                  <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
-                    This Month <ChevronDown size={14} />
+                  <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 transition-colors">
+                    {chartPeriod} <ChevronDown size={14} />
                   </button>
                 </div>
-                
+
                 <div className="flex-1 flex items-center justify-between px-2 max-lg:flex-col max-lg:gap-4">
                   <div className="relative w-[160px] h-[160px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -473,10 +492,10 @@ export default function AdminDashboard() {
           <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6">
             
             {/* Date Picker Button */}
-            <button className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-2">
                 <CalendarCheck size={16} className="text-slate-400" />
-                Oct 1, 2024 - Oct 31, 2024
+                {dateRange}
               </div>
               <ChevronDown size={14} className="text-slate-400" />
             </button>
@@ -562,21 +581,21 @@ export default function AdminDashboard() {
                </div>
                
                <div className="space-y-2">
-                 <button className="w-full flex items-center justify-between p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">
+                 <button onClick={() => router.push('/admin/users')} className="w-full flex items-center justify-between p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">
                    <div className="flex items-center gap-3">
                      <Users size={16} />
                      <span className="text-[13px] font-bold">Add User</span>
                    </div>
                    <ChevronRight size={16} className="opacity-70" />
                  </button>
-                 
+
                  {[
-                   { icon: Database, label: 'Manage Storage' },
-                   { icon: BarChart2, label: 'View Reports' },
-                   { icon: Bell, label: 'Send Announcement' },
-                   { icon: Link, label: 'Manage Integrations' },
+                   { icon: Database, label: 'Manage Storage', href: '/admin/settings' },
+                   { icon: BarChart2, label: 'View Reports', href: '/admin/reports' },
+                   { icon: Bell, label: 'Send Announcement', href: '/admin/notifications' },
+                   { icon: Link, label: 'Manage Integrations', href: '/admin/integrations' },
                  ].map((action, i) => (
-                   <button key={i} className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl transition-colors">
+                   <button key={i} onClick={() => router.push(action.href)} className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl transition-colors">
                      <div className="flex items-center gap-3">
                        <action.icon size={16} className="text-slate-500" />
                        <span className="text-[13px] font-semibold">{action.label}</span>
@@ -591,6 +610,14 @@ export default function AdminDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {

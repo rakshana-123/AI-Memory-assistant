@@ -111,6 +111,14 @@ const StatusPill = ({ status }: any) => {
   );
 };
 
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
 export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
@@ -118,6 +126,8 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState(dateRangeOptions[0]);
+  const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
 
   const handleAction = (msg: string) => {
     setActionFeedback(msg);
@@ -215,17 +225,17 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-5">
-            <button className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
-              Oct 1, 2024 - Oct 31, 2024
+              {dateRange}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => handleAction('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
+            <div onClick={() => handleAction('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
               <img src="https://i.pravatar.cc/150?img=68" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
@@ -285,8 +295,8 @@ export default function App() {
                     <h3 className="text-[16px] font-bold text-slate-900">Report Generation Trend</h3>
                     <p className="text-[13px] text-slate-500 font-medium">Reports generated over the last 30 days.</p>
                   </div>
-                  <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600">
-                    This Month <ChevronDown size={14} />
+                  <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600">
+                    {chartPeriod} <ChevronDown size={14} />
                   </button>
                 </div>
                 <div className="flex-1 -ml-4">
@@ -533,7 +543,7 @@ export default function App() {
                               className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" 
                             />
                           </td>
-                          <td className="py-3 px-4 flex items-center gap-2 font-bold text-blue-700 cursor-pointer hover:underline">
+                          <td onClick={() => handleAction(`Opened report "${row.name}"`)} className="py-3 px-4 flex items-center gap-2 font-bold text-blue-700 cursor-pointer hover:underline">
                             <div className="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                               <FileText size={14} />
                             </div>
@@ -557,7 +567,7 @@ export default function App() {
                              <StatusPill status={row.status} />
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <button className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
+                            <button onClick={() => handleAction(`Opened actions for "${row.name}"`)} className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
                           </td>
                         </tr>
                       ))
@@ -613,7 +623,7 @@ export default function App() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center justify-between mb-4">
                  <h3 className="text-[16px] font-bold text-slate-900">Popular Report Templates</h3>
-                 <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                 <button onClick={() => handleAction('All report templates are shown above')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
                <div className="space-y-4">
                  {[
@@ -649,7 +659,7 @@ export default function App() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent Reports</h3>
-                <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => handleAction('Showing recent reports')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
 
               <div className="space-y-4">

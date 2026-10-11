@@ -68,6 +68,7 @@ const userTabs = [
 const planOptions = ['All Plans', 'Free', 'Pro', 'Team'];
 const statusOptions = ['All Status', 'Active', 'Inactive'];
 const teamOptions = ['All Teams', 'Design', 'Development', 'Product', 'Marketing', 'Research'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 
 const cycleOption = (options: string[], current: string) => {
   const index = options.indexOf(current);
@@ -117,6 +118,13 @@ export default function UsersManagementDashboard() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [usersList, setUsersList] = useState(usersData);
   const [newUser, setNewUser] = useState({ name: '', email: '', plan: 'Pro', team: 'Development' });
+  const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const tabMatch = userTabs.find((tab) => tab.label === activeTab) ?? userTabs[0];
 
@@ -261,11 +269,11 @@ export default function UsersManagementDashboard() {
           </div>
 
           <div className="flex items-center gap-4 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 pl-2 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
+            <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 pl-2 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-8 h-8 rounded-full object-cover shadow-sm" />
               <span className="text-[13px] font-bold text-slate-700">Admin</span>
               <ChevronDown size={14} className="text-slate-400" />
@@ -359,7 +367,7 @@ export default function UsersManagementDashboard() {
                   </button>
                 ))}
                 
-                <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-600 hover:bg-slate-50">
+                <button onClick={() => showToast('Advanced filters: plan, status, team, joined date')} className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-600 hover:bg-slate-50">
                   <Filter size={14} className="text-slate-400" /> Filter
                 </button>
               </div>
@@ -408,7 +416,7 @@ export default function UsersManagementDashboard() {
                           <td className="py-3 px-2 text-slate-500 font-medium">{user.joined}</td>
                           <td className="py-3 px-2 text-slate-500 font-medium">{user.lastActive}</td>
                           <td className="py-3 px-4 text-right">
-                            <button className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><MoreVertical size={16} /></button>
+                            <button onClick={() => showToast(`Opened actions for "${user.name}"`)} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><MoreVertical size={16} /></button>
                           </td>
                         </tr>
                       ))
@@ -516,8 +524,8 @@ export default function UsersManagementDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-[16px] font-bold text-slate-900">User Growth</h3>
-                <button className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] font-semibold text-slate-600">
-                  This Month <ChevronDown size={12} />
+                <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] font-semibold text-slate-600">
+                  {chartPeriod} <ChevronDown size={12} />
                 </button>
               </div>
               <div className="flex items-center gap-4 mb-4 text-[11px] font-semibold text-slate-600">
@@ -552,7 +560,7 @@ export default function UsersManagementDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Top Teams</h3>
-                <button className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => showToast('All teams are shown above (12 total)')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
               <div className="space-y-4">
                 {topTeamsData.map((team, i) => (
@@ -581,7 +589,7 @@ export default function UsersManagementDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent User Activity</h3>
-                <button className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => showToast('Showing all recent user activity')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
               <div className="space-y-4">
                 {[
@@ -695,6 +703,14 @@ export default function UsersManagementDashboard() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
         </div>
       )}
 

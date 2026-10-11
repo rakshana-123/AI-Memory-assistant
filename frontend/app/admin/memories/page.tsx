@@ -5,8 +5,8 @@ import {
   LayoutDashboard, Users, Database, FileText, CalendarCheck, 
   Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
   Settings, Search, ChevronDown, ArrowUpRight, ArrowDownRight, 
-  MoreVertical, ChevronRight, Brain, Mic, Image as ImageIcon, 
-  Eye, Download, Trash2, Calendar, File, MoreHorizontal, Link2
+  MoreVertical, ChevronRight, Brain, Mic, Image as ImageIcon,
+  Eye, Download, Trash2, Calendar, File, MoreHorizontal, Link2, CheckCircle2
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
@@ -48,10 +48,24 @@ const recentActivity = [
 ];
 
 const memoryTypeOptions = ['All Types', 'Voice Note', 'Document', 'Image', 'Link'];
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const userFilterOptions = ['All Users', 'Admins', 'Pro Users', 'Free Users'];
+const ageFilterOptions = ['Last 7 days', 'Last 30 days', 'All time'];
 
 const cycleOption = (options: string[], current: string) => {
   const index = options.indexOf(current);
   return options[(index + 1) % options.length];
+};
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
@@ -71,8 +85,36 @@ export default function MemoryManagementDashboard() {
   const [tableQuery, setTableQuery] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState('All Types');
   const [selectedTitles, setSelectedTitles] = React.useState<Set<string>>(new Set());
+  const [memories, setMemories] = React.useState(recentMemories);
+  const [dateRange, setDateRange] = React.useState(dateRangeOptions[0]);
+  const [userFilter, setUserFilter] = React.useState(userFilterOptions[0]);
+  const [ageFilter, setAgeFilter] = React.useState(ageFilterOptions[0]);
+  const [toast, setToast] = React.useState<string | null>(null);
 
-  const visibleMemories = recentMemories.filter((memory) => {
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const exportMemories = () => {
+    downloadCsv('pathii-memories.csv', [
+      ['Type', 'Title / Content', 'User', 'Created At', 'Size'],
+      ...memories.map((m) => [m.type, m.title, m.user, `${m.date} ${m.time}`, m.size]),
+    ]);
+    showToast(`Exported ${memories.length} rows`);
+  };
+
+  const handleCleanup = () => {
+    if (memories.length === 0) {
+      showToast('No memories to clean up');
+      return;
+    }
+    const oldest = memories[memories.length - 1];
+    setMemories((prev) => prev.slice(0, -1));
+    showToast(`Cleaned up "${oldest.title}" (oldest memory)`);
+  };
+
+  const visibleMemories = memories.filter((memory) => {
     const header = headerQuery.trim().toLowerCase();
     const table = tableQuery.trim().toLowerCase();
     const matchesSearch =
@@ -87,7 +129,7 @@ export default function MemoryManagementDashboard() {
     return matchesSearch && (typeFilter === 'All Types' || memory.type === typeFilter);
   });
 
-  const isFiltered = visibleMemories.length !== recentMemories.length;
+  const isFiltered = visibleMemories.length !== memories.length;
 
   const allVisibleSelected =
     visibleMemories.length > 0 && visibleMemories.every((memory) => selectedTitles.has(memory.title));
@@ -147,7 +189,7 @@ export default function MemoryManagementDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-100 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+          <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
               <div>
@@ -180,11 +222,11 @@ export default function MemoryManagementDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer">
+            <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer">
                 <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
                 <span className="text-[13px] font-bold text-slate-700 flex items-center gap-1">Admin <ChevronDown size={14} className="text-slate-400"/></span>
             </div>
@@ -208,10 +250,10 @@ export default function MemoryManagementDashboard() {
                    </div>
                 </div>
 
-                <button className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors w-full max-w-[260px] lg:w-[260px] h-[64px] max-lg:max-w-full">
+                <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors w-full max-w-[260px] lg:w-[260px] h-[64px] max-lg:max-w-full">
                   <div className="flex items-center gap-2">
                     <Calendar size={16} className="text-slate-400" />
-                    Oct 1, 2024 - Oct 31, 2024
+                    {dateRange}
                   </div>
                   <ChevronDown size={14} className="text-slate-400" />
                 </button>
@@ -321,7 +363,15 @@ export default function MemoryManagementDashboard() {
                     { icon: Database, label: 'Manage Storage' },
                     { icon: Trash2, label: 'Cleanup Old Memories' },
                   ].map((action, i) => (
-                    <button key={i} className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 rounded-xl transition-colors group">
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (action.label === 'Export Memories') exportMemories();
+                        else if (action.label === 'Cleanup Old Memories') handleCleanup();
+                        else if (action.label === 'Manage Storage') showToast('Storage: 24.8 GB of 100 GB used (25%)');
+                        else showToast('Showing recent memories — use search and filters to narrow down');
+                      }}
+                      className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 rounded-xl transition-colors group">
                       <div className="flex items-center gap-3">
                         <action.icon size={16} className="text-slate-500 group-hover:text-blue-600 transition-colors" />
                         <span className="text-[13px] font-bold">{action.label}</span>
@@ -358,9 +408,20 @@ export default function MemoryManagementDashboard() {
                        {typeFilter} <ChevronDown size={14} className="text-slate-400" />
                      </button>
 
-                     {['All Users', 'Last 7 days'].map((filter) => (
-                       <button key={filter} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-                         {filter} <ChevronDown size={14} className="text-slate-400" />
+                     {[
+                       { key: 'users', text: userFilter },
+                       { key: 'age', text: ageFilter },
+                     ].map((filter) => (
+                       <button
+                         key={filter.key}
+                         onClick={() =>
+                           filter.key === 'users'
+                             ? setUserFilter(cycleOption(userFilterOptions, userFilter))
+                             : setAgeFilter(cycleOption(ageFilterOptions, ageFilter))
+                         }
+                         className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                       >
+                         {filter.text} <ChevronDown size={14} className="text-slate-400" />
                        </button>
                      ))}
                    </div>
@@ -398,7 +459,7 @@ export default function MemoryManagementDashboard() {
                            </td>
                            <td className="py-3 text-slate-500 font-medium">{mem.size}</td>
                            <td className="py-3 text-center">
-                             <button className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
+                             <button onClick={() => showToast(`Opened actions for "${mem.title}"`)} className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
                            </td>
                          </tr>
                        ))}
@@ -510,7 +571,7 @@ export default function MemoryManagementDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent Memory Activity</h3>
-                <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => showToast('Showing all recent memory activity')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
 
               <div className="space-y-5">
@@ -533,6 +594,14 @@ export default function MemoryManagementDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {

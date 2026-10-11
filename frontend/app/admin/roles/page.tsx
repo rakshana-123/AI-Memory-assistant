@@ -1,13 +1,14 @@
 "use client";
 import NextLink from "next/link";
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, Users, Database, FileText, CalendarCheck, 
-  Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
+import {
+  LayoutDashboard, Users, Database, FileText, CalendarCheck,
+  Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck,
   Settings, Search, ChevronDown, ChevronRight, Brain, Lock,
   Plus, MoreVertical, Edit2, Shield, Key, Eye, File, Settings as GearIcon,
   Headset, ChevronLeft, UserPlus, UserMinus, UserCheck, Activity,
-  Save, X
+  Save, X, CheckCircle2
 } from 'lucide-react';
 
 // --- MOCK DATA ---
@@ -123,7 +124,26 @@ const ChangeIcon = ({ type }: any) => {
   }
 };
 
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 export default function RolesDashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [matrixSearch, setMatrixSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -134,6 +154,32 @@ export default function RolesDashboard() {
     desc: 'Can manage memories, documents, tasks and events.',
   });
   const [savedToast, setSavedToast] = useState(false);
+  const [roles, setRoles] = useState(userRoles);
+  const [dateRange, setDateRange] = useState(dateRangeOptions[0]);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleCreateRole = () => {
+    const suffix = roles.filter((r) => r.name.startsWith('Custom Role')).length + 1;
+    const name = suffix === 1 ? 'Custom Role' : `Custom Role ${suffix}`;
+    setRoles((prev) => [
+      ...prev,
+      { name, desc: 'Custom role with configurable permissions', users: 0, icon: Plus, color: 'bg-blue-100 text-blue-600' },
+    ]);
+    showToast(`Role "${name}" created — configure it in the editor`);
+  };
+
+  const handleExportPermissions = () => {
+    downloadCsv('pathii-permissions.csv', [
+      ['Permission', 'Category', ...userRoles.map((r) => r.name)],
+      ...matrix.map((row) => [row.perm, row.cat, ...row.states.map((s) => (s === 2 ? 'ON' : s === 1 ? 'OFF' : 'N/A'))]),
+    ]);
+    showToast(`Exported ${matrix.length} permissions`);
+  };
 
   const handleToggle = (rowIndex: number, roleIndex: number) => {
     setMatrix(prev => {
@@ -152,7 +198,7 @@ export default function RolesDashboard() {
     setTimeout(() => setSavedToast(false), 2500);
   };
 
-  const filteredRoles = userRoles.filter(r => 
+  const filteredRoles = roles.filter(r =>
     r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.desc.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -236,16 +282,16 @@ export default function RolesDashboard() {
           </div>
 
           <div className="flex items-center gap-3 lg:gap-5 justify-end">
-            <button className="hidden sm:flex bg-white border border-slate-200 rounded-lg px-3 py-2 items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="hidden sm:flex bg-white border border-slate-200 rounded-lg px-3 py-2 items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-blue-600" />
-              Oct 1, 2024 - Oct 31, 2024
+              {dateRange}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4 lg:pl-5">
+            <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4 lg:pl-5">
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
@@ -353,7 +399,7 @@ export default function RolesDashboard() {
                               </div>
                             </td>
                             <td className="py-3 px-5 text-right">
-                              <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                              <button onClick={() => showToast(`Opened actions for "${role.name}"`)} className="text-slate-400 hover:text-slate-600 transition-colors">
                                 <MoreVertical size={16} />
                               </button>
                             </td>
@@ -392,12 +438,12 @@ export default function RolesDashboard() {
                   <div>
                     <label className="block text-[12px] font-bold text-slate-700 mb-2">Role Color</label>
                     <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-500 ring-2 ring-offset-2 ring-blue-500 cursor-pointer"></div>
-                      <div className="w-6 h-6 rounded-full bg-purple-500 cursor-pointer hover:scale-110 transition-transform"></div>
-                      <div className="w-6 h-6 rounded-full bg-emerald-500 cursor-pointer hover:scale-110 transition-transform"></div>
-                      <div className="w-6 h-6 rounded-full bg-amber-500 cursor-pointer hover:scale-110 transition-transform"></div>
-                      <div className="w-6 h-6 rounded-full bg-rose-500 cursor-pointer hover:scale-110 transition-transform"></div>
-                      <div className="w-6 h-6 rounded-full bg-pink-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                      <div onClick={() => showToast('Role color set to Blue')} className="w-6 h-6 rounded-full bg-blue-500 ring-2 ring-offset-2 ring-blue-500 cursor-pointer"></div>
+                      <div onClick={() => showToast('Role color set to Purple')} className="w-6 h-6 rounded-full bg-purple-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                      <div onClick={() => showToast('Role color set to Emerald')} className="w-6 h-6 rounded-full bg-emerald-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                      <div onClick={() => showToast('Role color set to Amber')} className="w-6 h-6 rounded-full bg-amber-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                      <div onClick={() => showToast('Role color set to Rose')} className="w-6 h-6 rounded-full bg-rose-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                      <div onClick={() => showToast('Role color set to Pink')} className="w-6 h-6 rounded-full bg-pink-500 cursor-pointer hover:scale-110 transition-transform"></div>
                     </div>
                   </div>
 
@@ -405,13 +451,13 @@ export default function RolesDashboard() {
                     <label className="block text-[12px] font-bold text-slate-700 mb-2">Role Icon</label>
                     <div className="flex flex-wrap gap-2">
                       <div className="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center shadow-sm cursor-pointer"><FileText size={16} /></div>
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Users size={16} /></div>
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><GearIcon size={16} /></div>
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Brain size={16} /></div>
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Headset size={16} /></div>
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Eye size={16} /></div>
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Link size={16} /></div>
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Shield size={16} /></div>
+                      <div onClick={() => showToast('Role icon set to Users')} className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Users size={16} /></div>
+                      <div onClick={() => showToast('Role icon set to Settings')} className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><GearIcon size={16} /></div>
+                      <div onClick={() => showToast('Role icon set to Brain')} className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Brain size={16} /></div>
+                      <div onClick={() => showToast('Role icon set to Headset')} className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Headset size={16} /></div>
+                      <div onClick={() => showToast('Role icon set to Eye')} className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Eye size={16} /></div>
+                      <div onClick={() => showToast('Role icon set to Link')} className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Link size={16} /></div>
+                      <div onClick={() => showToast('Role icon set to Shield')} className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors"><Shield size={16} /></div>
                     </div>
                   </div>
                 </div>
@@ -549,12 +595,12 @@ export default function RolesDashboard() {
                   <h3 className="text-[15px] font-bold text-slate-900">Permission Categories</h3>
                   <p className="text-[11px] text-slate-500 font-medium">Manage permission modules.</p>
                 </div>
-                <button className="text-slate-400 hover:text-blue-600 transition-colors"><Edit2 size={14} /></button>
+                <button onClick={() => showToast('Permission categories are managed via the matrix')} className="text-slate-400 hover:text-blue-600 transition-colors"><Edit2 size={14} /></button>
               </div>
               
               <div className="flex flex-col space-y-2">
                 {permissionCategories.map((cat, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
+                  <div key={i} onClick={() => showToast(`${cat.name}: ${cat.count} permissions`)} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-50 transition-colors">
                         <cat.icon size={16} />
@@ -573,8 +619,8 @@ export default function RolesDashboard() {
             {/* Recent Permission Changes */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center justify-between mb-5">
-                 <h3 className="text-[15px] font-bold text-slate-900">Recent Permission Changes</h3>
-                 <button className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ChevronRight size={14} /></button>
+                  <h3 className="text-[15px] font-bold text-slate-900">Recent Permission Changes</h3>
+                  <button onClick={() => showToast('Showing recent permission changes')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ChevronRight size={14} /></button>
                </div>
                
                <div className="space-y-4 relative">
@@ -601,30 +647,38 @@ export default function RolesDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                <h3 className="text-[15px] font-bold text-slate-900 mb-4">Quick Actions</h3>
                
-               <div className="grid grid-cols-2 gap-3">
-                 <button className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 rounded-xl transition-all group shadow-sm">
-                   <Plus size={16} className="text-blue-600 flex-shrink-0" />
-                   <span className="text-[11px] font-bold leading-tight text-left">Create New Role</span>
-                 </button>
-                 <button className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 rounded-xl transition-all group shadow-sm">
-                   <Users size={16} className="text-blue-600 flex-shrink-0" />
-                   <span className="text-[11px] font-bold leading-tight text-left">Manage Users</span>
-                 </button>
-                 <button className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 rounded-xl transition-all group shadow-sm">
-                   <Save size={16} className="text-blue-600 flex-shrink-0" />
-                   <span className="text-[11px] font-bold leading-tight text-left">Export Permissions</span>
-                 </button>
-                 <button className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 rounded-xl transition-all group shadow-sm">
-                   <FileText size={16} className="text-blue-600 flex-shrink-0" />
-                   <span className="text-[11px] font-bold leading-tight text-left">View Access Logs</span>
-                 </button>
-               </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={handleCreateRole} className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-600 rounded-xl transition-colors">
+                    <Plus size={16} className="text-blue-600 flex-shrink-0" />
+                    <span className="text-[11px] font-bold leading-tight text-left">Create New Role</span>
+                  </button>
+                  <button onClick={() => router.push('/admin/users')} className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-600 rounded-xl transition-colors">
+                    <Users size={16} className="text-blue-600 flex-shrink-0" />
+                    <span className="text-[11px] font-bold leading-tight text-left">Manage Users</span>
+                  </button>
+                  <button onClick={handleExportPermissions} className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-600 rounded-xl transition-colors">
+                    <Save size={16} className="text-blue-600 flex-shrink-0" />
+                    <span className="text-[11px] font-bold leading-tight text-left">Export Permissions</span>
+                  </button>
+                  <button onClick={() => showToast('342 access log entries recorded this month')} className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-600 rounded-xl transition-colors">
+                    <FileText size={16} className="text-blue-600 flex-shrink-0" />
+                    <span className="text-[11px] font-bold leading-tight text-left">View Access Logs</span>
+                  </button>
+                </div>
             </div>
 
           </div>
 
         </div>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {

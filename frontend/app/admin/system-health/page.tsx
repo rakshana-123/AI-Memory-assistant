@@ -157,12 +157,29 @@ const getStatusBadge = (status: any) => {
   );
 };
 
+const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
 export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState('All');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState(dateRangeOptions[0]);
+  const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
+
+  const showFeedback = (msg: string) => {
+    setActionFeedback(msg);
+    setTimeout(() => {
+      setActionFeedback(null);
+    }, 3500);
+  };
 
   const handleQuickAction = (actionName: string) => {
     setActionFeedback(`Executing ${actionName}... Success!`);
@@ -260,17 +277,17 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-5">
             {/* Header Date Picker */}
-            <button className="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-blue-600" />
-              Oct 1, 2024 - Oct 31, 2024
+              {dateRange}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showFeedback('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
+            <div onClick={() => showFeedback('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
@@ -330,8 +347,8 @@ export default function AdminDashboard() {
                     <h3 className="text-[15px] font-bold text-slate-900">System Performance</h3>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded text-[12px] font-semibold text-slate-600 transition-colors">
-                      This Month <ChevronDown size={14} />
+                    <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded text-[12px] font-semibold text-slate-600 transition-colors">
+                      {chartPeriod} <ChevronDown size={14} />
                     </button>
                   </div>
                 </div>
@@ -370,8 +387,8 @@ export default function AdminDashboard() {
                     <h3 className="text-[15px] font-bold text-slate-900">Server Resource Usage</h3>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded text-[12px] font-semibold text-slate-600 transition-colors">
-                      This Month <ChevronDown size={14} />
+                    <button onClick={() => setChartPeriod(cycleOption(chartPeriodOptions, chartPeriod))} className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded text-[12px] font-semibold text-slate-600 transition-colors">
+                      {chartPeriod} <ChevronDown size={14} />
                     </button>
                   </div>
                 </div>
@@ -526,7 +543,7 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                   
-                  <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
+                  <button onClick={() => showFeedback('Advanced filters: level, service, time range')} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
                     <Filter size={14} className="text-slate-400" /> Filter
                   </button>
                 </div>
@@ -637,7 +654,7 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-[15px] font-bold text-slate-900">Service Status</h3>
-                <button className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ChevronRight size={14} /></button>
+                <button onClick={() => showFeedback('All monitored services are shown above')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ChevronRight size={14} /></button>
               </div>
               
               <div className="flex flex-col space-y-3.5">
@@ -669,8 +686,8 @@ export default function AdminDashboard() {
             {/* Recent Alerts */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center justify-between mb-4">
-                 <h3 className="text-[15px] font-bold text-slate-900">Recent Alerts</h3>
-                 <button className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ChevronRight size={14} /></button>
+               <h3 className="text-[15px] font-bold text-slate-900">Recent Alerts</h3>
+               <button onClick={() => showFeedback('Showing alerts from the last 24 hours')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ChevronRight size={14} /></button>
                </div>
                <div className="space-y-4">
                  {[
