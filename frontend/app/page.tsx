@@ -5,22 +5,36 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar,
   FileText, Users, Link, BarChart2, Settings, ChevronRight,
   MoreVertical, TrendingUp, TrendingDown,
-  ArrowRight, Circle, CheckCircle2, Play
+  ArrowRight, Circle, CheckCircle2, Play, Brain
 } from 'lucide-react';
 
-const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
-    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
-    <path d="M12 4.5V19.5" />
-    <path d="M9.5 12H12" />
-    <path d="M14.5 12H12" />
-    <path d="M10.5 8H12" />
-    <path d="M13.5 8H12" />
-    <path d="M10.5 16H12" />
-    <path d="M13.5 16H12" />
-  </svg>
-);
+const BrainLogo = ({ className = "w-6 h-6", size = 24, color = "currentColor" }: any) => {
+  const pixelSize = typeof className === 'string' && className.includes('w-8') ? 32 : typeof className === 'string' && className.includes('w-4') ? 16 : size;
+  return (
+    <svg 
+      width={pixelSize} 
+      height={pixelSize} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ width: pixelSize, height: pixelSize, maxWidth: '100%', flexShrink: 0 }}
+    >
+      <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
+      <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+      <path d="M12 4.5V19.5" />
+      <path d="M9.5 12H12" />
+      <path d="M14.5 12H12" />
+      <path d="M10.5 8H12" />
+      <path d="M13.5 8H12" />
+      <path d="M10.5 16H12" />
+      <path d="M13.5 16H12" />
+    </svg>
+  );
+};
 
 const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   <NextLink href={href} className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#E5EFFF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -328,7 +342,7 @@ export default function PathiiDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             <NextLink href="/memories" className="transition-transform hover:-translate-y-0.5">
               <StatCard
-                icon={BrainLogo} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
+                icon={Brain} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
                 value={3} label="Total Memories" trend="+1 this week" trendUp
               />
             </NextLink>

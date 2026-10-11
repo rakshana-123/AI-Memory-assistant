@@ -9,19 +9,33 @@ import {
   Edit2, ArrowDownUp, Image as ImageIcon
 } from 'lucide-react';
 
-const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
-    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
-    <path d="M12 4.5V19.5" />
-    <path d="M9.5 12H12" />
-    <path d="M14.5 12H12" />
-    <path d="M10.5 8H12" />
-    <path d="M13.5 8H12" />
-    <path d="M10.5 16H12" />
-    <path d="M13.5 16H12" />
-  </svg>
-);
+const BrainLogo = ({ className = "w-6 h-6", size = 24, color = "currentColor" }: any) => {
+  const pixelSize = typeof className === 'string' && className.includes('w-8') ? 32 : typeof className === 'string' && className.includes('w-4') ? 16 : size;
+  return (
+    <svg 
+      width={pixelSize} 
+      height={pixelSize} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ width: pixelSize, height: pixelSize, maxWidth: '100%', flexShrink: 0 }}
+    >
+      <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
+      <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+      <path d="M12 4.5V19.5" />
+      <path d="M9.5 12H12" />
+      <path d="M14.5 12H12" />
+      <path d="M10.5 8H12" />
+      <path d="M13.5 8H12" />
+      <path d="M10.5 16H12" />
+      <path d="M13.5 16H12" />
+    </svg>
+  );
+};
 
 const PdfIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -280,10 +294,10 @@ export default function PathiiMemoriesDashboard() {
   const selectedIsVoice = selectedMemory?.type === 'voice' || selectedMemory?.type === 'voice-simple';
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar - perfectly flush layout */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 sticky top-0 h-screen z-20">
         
         {/* Logo Area */}
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
@@ -326,10 +340,10 @@ export default function PathiiMemoriesDashboard() {
       </aside>
 
       {}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9] pb-20">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[480px] lg:w-[480px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -353,10 +367,10 @@ export default function PathiiMemoriesDashboard() {
         </header>
 
         {}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        <div className="flex-1 px-8 pb-8 flex gap-6 flex-col xl:flex-row">
           
           {/* Left Column: Grid Section */}
-          <div className="flex-1 flex flex-col min-w-0 h-full">
+          <div className="flex-1 flex flex-col min-w-0">
             
             {/* Title & Actions */}
             <div className="flex items-center justify-between mb-6 max-lg:flex-col max-lg:items-start max-lg:gap-4">
@@ -419,8 +433,8 @@ export default function PathiiMemoriesDashboard() {
             </div>
 
             {/* Cards Grid */}
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-10">
+            <div className="flex-1 pr-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pb-10">
                 {filteredMemories.length > 0 ? filteredMemories.map((data) => (
                   <MemoryCard
                     key={data.id}
@@ -434,7 +448,7 @@ export default function PathiiMemoriesDashboard() {
                     onMoreClick={() => showToast(`More options for '${data.title}'`)}
                   />
                 )) : (
-                  <div className="md:col-span-2 lg:col-span-3">
+                  <div className="md:col-span-2 xl:col-span-3">
                     <EmptyState icon={Database} title="No memories yet" subtitle="Memories you create will appear here." />
                   </div>
                 )}
@@ -443,8 +457,8 @@ export default function PathiiMemoriesDashboard() {
           </div>
 
           {}
-          <div className="w-[400px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-full overflow-hidden max-lg:w-full">
-            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="w-full xl:w-[400px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-fit sticky top-24">
+            <div className="p-6">
               {selectedMemory ? (
               <>
               {/* Header Info */}
