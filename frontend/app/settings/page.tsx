@@ -66,6 +66,17 @@ const themeOptions = [
   { label: 'System', icon: Monitor },
 ];
 
+type StorageCategory = { label: string; color: string; gb: number };
+
+const storageBreakdown: StorageCategory[] = [
+  { label: 'Voice Notes', color: 'bg-blue-500', gb: 0 },
+  { label: 'Documents', color: 'bg-purple-500', gb: 0 },
+  { label: 'Images', color: 'bg-emerald-500', gb: 0 },
+  { label: 'Others', color: 'bg-amber-500', gb: 0 },
+];
+
+const storageQuotaGb = 10;
+
 export default function PathiiSettingsDashboard() {
   const [activeTab, setActiveTab] = useState('General');
   const [activeTheme, setActiveTheme] = useState('Light');
@@ -89,6 +100,8 @@ export default function PathiiSettingsDashboard() {
   const timezoneOptions = ['(GMT+05:30) India Standard Time', '(GMT+00:00) UTC', '(GMT-05:00) Eastern Time'];
   const dateFormatOptions = ['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD'];
   const startWeekOptions = ['Monday', 'Sunday'];
+
+  const storageUsedGb = storageBreakdown.reduce((sum, category) => sum + category.gb, 0);
 
   const cycleDropdown = (key: keyof typeof dropdownIndexes, options: string[], label: string) => {
     setDropdownIndexes((prev) => {
@@ -124,7 +137,7 @@ export default function PathiiSettingsDashboard() {
       ['End-to-end encryption', toggleStates.e2eEncryption ? 'On' : 'Off'],
       ['Local data processing', toggleStates.localProcessing ? 'On' : 'Off'],
       ['Two-factor authentication', toggleStates.twoFactor ? 'On' : 'Off'],
-      ['Storage Used', '2.4 GB of 10 GB'],
+      ['Storage Used', `0 GB of ${storageQuotaGb} GB`],
       ['Plan', 'Free Plan'],
     ]);
     showToast('Exported your data');
@@ -171,7 +184,7 @@ export default function PathiiSettingsDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto">
           <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -199,11 +212,10 @@ export default function PathiiSettingsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 2 new alerts')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
             </button>
-            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -352,7 +364,7 @@ export default function PathiiSettingsDashboard() {
               
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-16 h-16 rounded-full object-cover shadow-sm" />
+                  <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[20px] shadow-sm">A</div>
                   <div>
                     <h4 className="text-[16px] font-bold text-slate-900 leading-tight mb-1">Alex</h4>
                     <p className="text-[13px] text-slate-500 font-medium">alex@example.com</p>
@@ -385,54 +397,27 @@ export default function PathiiSettingsDashboard() {
                   <Database size={18} className="text-blue-600" />
                   <h3 className="text-[16px] font-extrabold text-slate-900">Storage Usage</h3>
                 </div>
-                <span className="text-[13px] font-medium text-slate-500">2.4 GB of 10 GB used</span>
+                <span className="text-[13px] font-medium text-slate-500">{storageUsedGb} GB of {storageQuotaGb} GB used</span>
               </div>
 
-              <div className="w-full h-3 rounded-full overflow-hidden flex mb-5 shadow-inner">
-                <div className="bg-blue-500 w-[50%]"></div>
-                <div className="bg-purple-500 w-[25%]"></div>
-                <div className="bg-emerald-500 w-[17%]"></div>
-                <div className="bg-amber-500 w-[8%]"></div>
-                <div className="bg-slate-100 flex-1"></div>
+              <div className="w-full h-3 rounded-full overflow-hidden flex mb-5 shadow-inner bg-slate-100">
+                {storageBreakdown.map((category) => (
+                  <div key={category.label} className={category.color} style={{ width: `${(category.gb / storageQuotaGb) * 100}%` }}></div>
+                ))}
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-[13px]">
-                  <div className="flex items-center gap-2 font-medium text-slate-700">
-                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Voice Notes
+                {storageBreakdown.map((category) => (
+                  <div key={category.label} className="flex items-center justify-between text-[13px]">
+                    <div className="flex items-center gap-2 font-medium text-slate-700">
+                      <div className={`w-2.5 h-2.5 rounded-full ${category.color}`}></div> {category.label}
+                    </div>
+                    <div className="flex items-center gap-4 text-slate-500 font-medium">
+                      <span className="w-12 text-right">{category.gb > 0 ? `${category.gb} GB` : '0 MB'}</span>
+                      <span className="w-8 text-right text-slate-400">{Math.round((category.gb / storageQuotaGb) * 100)}%</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 text-slate-500 font-medium">
-                    <span className="w-12 text-right">1.2 GB</span>
-                    <span className="w-8 text-right text-slate-400">50%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-[13px]">
-                  <div className="flex items-center gap-2 font-medium text-slate-700">
-                    <div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div> Documents
-                  </div>
-                  <div className="flex items-center gap-4 text-slate-500 font-medium">
-                    <span className="w-12 text-right">600 MB</span>
-                    <span className="w-8 text-right text-slate-400">25%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-[13px]">
-                  <div className="flex items-center gap-2 font-medium text-slate-700">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Images
-                  </div>
-                  <div className="flex items-center gap-4 text-slate-500 font-medium">
-                    <span className="w-12 text-right">400 MB</span>
-                    <span className="w-8 text-right text-slate-400">17%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-[13px]">
-                  <div className="flex items-center gap-2 font-medium text-slate-700">
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div> Others
-                  </div>
-                  <div className="flex items-center gap-4 text-slate-500 font-medium">
-                    <span className="w-12 text-right">200 MB</span>
-                    <span className="w-8 text-right text-slate-400">8%</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 

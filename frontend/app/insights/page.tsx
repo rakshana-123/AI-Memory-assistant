@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
-  ChevronDown, ArrowRight, X, Sparkles, Image as ImageIcon, CheckCircle2,
+  ChevronDown, ArrowRight, X, Sparkles, CheckCircle2,
   Clock, Link2, MapPin, ChevronLeft, MoreHorizontal, Lightbulb
 } from 'lucide-react';
 import { 
@@ -33,80 +33,33 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
-// Deterministic seeded PRNG (mulberry32). Replaces Math.random(): module-level
-// Math.random() produced different values on server prerender vs client
-// hydration, causing a React hydration mismatch on the heatmap grid divs
-// (Next.js dev overlay "1 Issue"). Seeded so both runs compute identical data.
-const seededRandom = (seed: number) => {
-  let s = seed;
-  return () => {
-    s |= 0;
-    s = (s + 0x6D2B79F5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-};
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
 
-const rand = seededRandom(42);
+type TrendPoint = { name: string; voice: number; notes: number; docs: number; images: number };
 
-const trendsData = Array.from({ length: 31 }, (_, i) => {
-  // Generate slightly randomized realistic data with a weekend dip pattern
-  const isWeekend = (i % 7 === 5 || i % 7 === 6);
-  const baseMulti = isWeekend ? 0.4 : 1;
-  return {
-    name: `Oct ${i + 1}`,
-    voice: Math.floor((rand() * 12 + 4) * baseMulti),
-    notes: Math.floor((rand() * 8 + 3) * baseMulti),
-    docs: Math.floor((rand() * 6 + 1) * baseMulti),
-    images: Math.floor((rand() * 4 + 1) * baseMulti),
-  };
-});
+const trendsData: TrendPoint[] = [];
 
-const memoryTypesData = [
-  { name: 'Voice', value: 42, fill: '#3B82F6' },
-  { name: 'Notes', value: 38, fill: '#A855F7' },
-  { name: 'Documents', value: 24, fill: '#10B981' },
-  { name: 'Images', value: 16, fill: '#F59E0B' },
-  { name: 'Links', value: 8, fill: '#64748B' },
-];
+type TypeSlice = { name: string; value: number; fill: string };
 
-const focusTimeData = [
-  { name: 'Deep Work', value: 20, fill: '#3B82F6' },
-  { name: 'Meetings', value: 8, fill: '#A855F7' },
-  { name: 'Planning', value: 6, fill: '#10B981' },
-  { name: 'Reading', value: 5, fill: '#F59E0B' },
-  { name: 'Others', value: 3, fill: '#64748B' },
-];
+const memoryTypesData: TypeSlice[] = [];
 
-const topTopics = [
-  { name: 'AI / Tech', count: 28, max: 30, color: 'bg-blue-500' },
-  { name: 'Projects', count: 18, max: 30, color: 'bg-purple-500' },
-  { name: 'Learning', count: 14, max: 30, color: 'bg-emerald-500' },
-  { name: 'Personal', count: 12, max: 30, color: 'bg-amber-500' },
-  { name: 'Travel', count: 10, max: 30, color: 'bg-rose-400' },
-];
+const focusTimeData: TypeSlice[] = [];
 
-// Heatmap Data generation (7 days x 24 hours)
-const generateHeatmap = () => {
-  const heatRand = seededRandom(7);
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days.map(day => {
-    return Array.from({ length: 24 }, (_, hour) => {
-      let intensity = 0;
-      // Simulate higher activity during work hours (9-17) and lower on weekends
-      if (day !== 'Sat' && day !== 'Sun') {
-        if (hour >= 9 && hour <= 11) intensity = Math.floor(heatRand() * 3) + 2; // High
-        else if (hour >= 13 && hour <= 17) intensity = Math.floor(heatRand() * 3) + 1; // Med-High
-        else if (hour > 17 && hour < 22) intensity = Math.floor(heatRand() * 2); // Low
-      } else {
-        if (hour >= 10 && hour <= 16) intensity = Math.floor(heatRand() * 2); // Low-Med on weekends
-      }
-      return { hour, intensity };
-    });
-  });
-};
-const heatmapData = generateHeatmap();
+type Topic = { name: string; count: number; max: number; color: string };
+
+const topTopics: Topic[] = [];
+
+type HeatCell = { hour: number; intensity: number };
+
+const heatmapData: HeatCell[][] = [];
 
 const getIntensityColor = (intensity: any) => {
   switch(intensity) {
@@ -124,8 +77,14 @@ export default function PathiiInsightsDashboard() {
   const [aiInsightsRangeIndex, setAiInsightsRangeIndex] = useState(1);
   const [focusRangeIndex, setFocusRangeIndex] = useState(1);
 
-  const dateRanges = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Aug 1, 2024 - Aug 31, 2024'];
+  const dateRanges = ['Last 7 days', 'Last 30 days', 'All time'];
   const rangeOptions = ['This Week', 'This Month', 'This Year'];
+
+  const totalMemories = memoryTypesData.reduce((sum, type) => sum + type.value, 0);
+  const tasksCreated = 0;
+  const peopleInteracted = 0;
+  const eventsScheduled = 0;
+  const totalFocusHours = focusTimeData.reduce((sum, type) => sum + type.value, 0);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -169,7 +128,7 @@ export default function PathiiInsightsDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto">
           <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -198,11 +157,10 @@ export default function PathiiInsightsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 2 new alerts')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
             </button>
-            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -242,9 +200,9 @@ export default function PathiiInsightsDashboard() {
                    <FileText size={20} />
                  </div>
                  <div>
-                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">128</h3>
+                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">{totalMemories}</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">Total Memories</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 24% <span className="font-medium text-slate-400">vs last month</span></p>
+                   {totalMemories > 0 && <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ <span className="font-medium text-slate-400">vs last month</span></p>}
                  </div>
               </div>
 
@@ -254,9 +212,9 @@ export default function PathiiInsightsDashboard() {
                    <CheckSquare size={20} />
                  </div>
                  <div>
-                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">32</h3>
+                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">{tasksCreated}</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">Tasks Created</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 18% <span className="font-medium text-slate-400">vs last month</span></p>
+                   {tasksCreated > 0 && <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ <span className="font-medium text-slate-400">vs last month</span></p>}
                  </div>
               </div>
 
@@ -266,9 +224,9 @@ export default function PathiiInsightsDashboard() {
                    <Users size={20} />
                  </div>
                  <div>
-                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">18</h3>
+                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">{peopleInteracted}</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">People Interacted</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 40% <span className="font-medium text-slate-400">vs last month</span></p>
+                   {peopleInteracted > 0 && <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ <span className="font-medium text-slate-400">vs last month</span></p>}
                  </div>
               </div>
 
@@ -278,9 +236,9 @@ export default function PathiiInsightsDashboard() {
                    <CalendarIcon size={20} />
                  </div>
                  <div>
-                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">12</h3>
+                   <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">{eventsScheduled}</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">Events Scheduled</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 33% <span className="font-medium text-slate-400">vs last month</span></p>
+                   {eventsScheduled > 0 && <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ <span className="font-medium text-slate-400">vs last month</span></p>}
                  </div>
               </div>
             </div>
@@ -293,12 +251,13 @@ export default function PathiiInsightsDashboard() {
                   <p className="text-[13px] text-slate-500 font-medium">Your activity over the last 30 days.</p>
                 </div>
                 <div className="flex items-center gap-4 text-[12px] font-semibold text-slate-600 max-lg:flex-wrap">
-                  <span onClick={() => showToast('Voice: 42 captures this month')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]"></div>Voice</span>
-                  <span onClick={() => showToast('Notes: 38 captures this month')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#A855F7]"></div>Notes</span>
-                  <span onClick={() => showToast('Documents: 24 captures this month')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></div>Documents</span>
-                  <span onClick={() => showToast('Images: 16 captures this month')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></div>Images</span>
+                  <span onClick={() => showToast('Filtering trends to Voice captures')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]"></div>Voice</span>
+                  <span onClick={() => showToast('Filtering trends to Notes')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#A855F7]"></div>Notes</span>
+                  <span onClick={() => showToast('Filtering trends to Documents')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></div>Documents</span>
+                  <span onClick={() => showToast('Filtering trends to Images')} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></div>Images</span>
                 </div>
               </div>
+              {trendsData.length > 0 ? (
               <div className="h-[220px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={trendsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
@@ -313,6 +272,9 @@ export default function PathiiInsightsDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              ) : (
+                <EmptyState icon={BarChart2} title="No trends yet" subtitle="Your capture activity will appear here." />
+              )}
             </div>
 
             {}
@@ -321,6 +283,7 @@ export default function PathiiInsightsDashboard() {
               {/* Memory Types */}
               <div className="flex-1 bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
                 <h3 className="text-[16px] font-extrabold text-slate-900 leading-tight mb-4">Memory Types</h3>
+                {memoryTypesData.length > 0 ? (
                 <div className="flex items-center gap-6 max-lg:flex-col">
                   {/* Donut Chart */}
                   <div className="w-[140px] h-[140px] relative">
@@ -343,7 +306,7 @@ export default function PathiiInsightsDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[22px] font-extrabold text-slate-900 leading-none">128</span>
+                      <span className="text-[22px] font-extrabold text-slate-900 leading-none">{totalMemories}</span>
                       <span className="text-[11px] text-slate-500 font-medium">Memories</span>
                     </div>
                   </div>
@@ -358,17 +321,21 @@ export default function PathiiInsightsDashboard() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-slate-900">{type.value}</span>
-                          <span className="text-slate-400 w-9 text-right">({Math.round((type.value / 128) * 100)}%)</span>
+                          <span className="text-slate-400 w-9 text-right">({totalMemories > 0 ? Math.round((type.value / totalMemories) * 100) : 0}%)</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={Database} title="No data yet" subtitle="Your memory type breakdown will appear here." />
+                )}
               </div>
 
               {/* Top Topics */}
               <div className="flex-1 bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
                 <h3 className="text-[16px] font-extrabold text-slate-900 leading-tight mb-4">Top Topics</h3>
+                {topTopics.length > 0 ? (
                 <div className="space-y-4 pt-1">
                   {topTopics.map((topic) => (
                     <div key={topic.name} onClick={() => showToast(`Topic '${topic.name}': ${topic.count} memories this month`)} className="flex items-center text-[13px]">
@@ -383,6 +350,9 @@ export default function PathiiInsightsDashboard() {
                     </div>
                   ))}
                 </div>
+                ) : (
+                  <EmptyState icon={Lightbulb} title="No topics yet" subtitle="Topics from your memories will appear here." />
+                )}
               </div>
             </div>
 
@@ -406,6 +376,7 @@ export default function PathiiInsightsDashboard() {
                 </div>
               </div>
 
+              {heatmapData.length > 0 ? (
               <div className="flex">
                 {/* Y-axis labels (Days) */}
                 <div className="flex flex-col gap-1.5 pr-3 pt-1 text-[11px] font-medium text-slate-400 justify-between h-[126px]">
@@ -440,6 +411,9 @@ export default function PathiiInsightsDashboard() {
                   </div>
                 </div>
               </div>
+              ) : (
+                <EmptyState icon={Clock} title="No activity yet" subtitle="Your most active days and times will appear here." />
+              )}
             </div>
 
           </div>
@@ -463,49 +437,7 @@ export default function PathiiInsightsDashboard() {
               </div>
 
               <div className="space-y-4 relative z-10">
-                {/* Insight 1 */}
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <FileText size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[14px] font-bold text-slate-900 leading-tight mb-1">You captured more voice notes this month</h4>
-                    <p className="text-[12px] text-slate-500 font-medium leading-relaxed">Your voice notes increased by <strong className="text-slate-700">40%</strong> compared to last month. Keep going!</p>
-                  </div>
-                </div>
-
-                {/* Insight 2 */}
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <CheckSquare size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[14px] font-bold text-slate-900 leading-tight mb-1">You're more productive in the morning</h4>
-                    <p className="text-[12px] text-slate-500 font-medium leading-relaxed">You complete <strong className="text-slate-700">65%</strong> of your tasks before 12 PM.</p>
-                  </div>
-                </div>
-
-                {/* Insight 3 */}
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Users size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[14px] font-bold text-slate-900 leading-tight mb-1">You interacted with 18 people</h4>
-                    <p className="text-[12px] text-slate-500 font-medium leading-relaxed">You had meaningful conversations with 18 people this month.</p>
-                  </div>
-                </div>
-
-                {/* Insight 4 */}
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <CalendarIcon size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[14px] font-bold text-slate-900 leading-tight mb-1">You have 5 upcoming events</h4>
-                    <p className="text-[12px] text-slate-500 font-medium leading-relaxed">You have 5 events scheduled in the next 7 days.</p>
-                  </div>
-                </div>
+                <EmptyState icon={Sparkles} title="No insights yet" subtitle="Insights will appear as you capture memories." />
               </div>
               
               {/* Decorative background element */}
@@ -527,6 +459,7 @@ export default function PathiiInsightsDashboard() {
                 </button>
               </div>
 
+              {focusTimeData.length > 0 ? (
               <div className="flex items-center gap-6 max-lg:flex-col">
                 {/* Donut Chart */}
                 <div className="w-[120px] h-[120px] relative">
@@ -549,7 +482,7 @@ export default function PathiiInsightsDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1">
-                    <span className="text-[20px] font-extrabold text-slate-900 leading-none">42h</span>
+                    <span className="text-[20px] font-extrabold text-slate-900 leading-none">{totalFocusHours}h</span>
                     <span className="text-[10px] text-slate-500 font-medium mt-0.5">Focus Time</span>
                   </div>
                 </div>
@@ -563,12 +496,15 @@ export default function PathiiInsightsDashboard() {
                         {item.name}
                       </div>
                       <div className="text-slate-500 font-medium">
-                        {item.value}h <span className="text-slate-400">({Math.round((item.value / 42) * 100)}%)</span>
+                        {item.value}h <span className="text-slate-400">({totalFocusHours > 0 ? Math.round((item.value / totalFocusHours) * 100) : 0}%)</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
+              ) : (
+                <EmptyState icon={Clock} title="No focus data yet" subtitle="Your focus time breakdown will appear here." />
+              )}
             </div>
 
             {}
@@ -584,57 +520,7 @@ export default function PathiiInsightsDashboard() {
               </div>
 
               <div className="space-y-4">
-                 <div className="flex items-start gap-3">
-                   <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                     <FileText size={16} />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-start mb-0.5">
-                        <h4 className="text-[14px] font-bold text-slate-900 leading-tight truncate">Meeting summary with Sarah</h4>
-                        <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 ml-2">Oct 10</span>
-                     </div>
-                     <p className="text-[12px] text-slate-500 font-medium truncate">Key points and action items</p>
-                   </div>
-                 </div>
-
-                 <div className="flex items-start gap-3">
-                   <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                     <FileText size={16} />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-start mb-0.5">
-                        <h4 className="text-[14px] font-bold text-slate-900 leading-tight truncate">Research paper key insights</h4>
-                        <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 ml-2">Oct 8</span>
-                     </div>
-                     <p className="text-[12px] text-slate-500 font-medium truncate">Main findings and takeaways</p>
-                   </div>
-                 </div>
-
-                 <div className="flex items-start gap-3">
-                   <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                     <ImageIcon size={16} />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-start mb-0.5">
-                        <h4 className="text-[14px] font-bold text-slate-900 leading-tight truncate">Trip to Kyoto</h4>
-                        <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 ml-2">Oct 6</span>
-                     </div>
-                     <p className="text-[12px] text-slate-500 font-medium truncate">Places, ideas and recommendations</p>
-                   </div>
-                 </div>
-
-                 <div className="flex items-start gap-3">
-                   <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                     <Mic size={16} />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-start mb-0.5">
-                        <h4 className="text-[14px] font-bold text-slate-900 leading-tight truncate">Project discussion highlights</h4>
-                        <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 ml-2">Oct 4</span>
-                     </div>
-                     <p className="text-[12px] text-slate-500 font-medium truncate">Tasks and next steps</p>
-                   </div>
-                 </div>
+                <EmptyState icon={Lightbulb} title="No recent insights" subtitle="Generated insights will appear here." />
               </div>
             </div>
 

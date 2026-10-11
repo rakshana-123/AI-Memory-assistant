@@ -29,24 +29,47 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
-const peopleData = [
-  { id: 1, name: 'Sarah', role: 'College Friend', type: 'image', img: 'https://i.pravatar.cc/150?img=47', tags: [{label: 'Friend', color: 'blue'}, {label: 'College', color: 'purple'}] },
-  { id: 2, name: 'Arun', role: 'Project Partner', type: 'image', img: 'https://i.pravatar.cc/150?img=11', tags: [{label: 'Team', color: 'emerald'}, {label: 'Work', color: 'blue'}] },
-  { id: 3, name: 'Rakshana', role: 'Co-founder', type: 'initials', initials: 'RK', bg: 'bg-purple-100 text-purple-600', tags: [{label: 'Partner', color: 'rose'}, {label: 'Work', color: 'blue'}] },
-  { id: 4, name: 'Vikram', role: 'Mentor', type: 'image', img: 'https://i.pravatar.cc/150?img=12', tags: [{label: 'Mentor', color: 'amber'}, {label: 'Work', color: 'blue'}] },
-  { id: 5, name: 'John Doe', role: 'Client', type: 'initials', initials: 'JD', bg: 'bg-rose-100 text-rose-600', tags: [{label: 'Client', color: 'emerald'}, {label: 'Work', color: 'blue'}] },
-  { id: 6, name: 'Priya', role: 'Classmate', type: 'image', img: 'https://i.pravatar.cc/150?img=42', tags: [{label: 'Classmate', color: 'purple'}, {label: 'College', color: 'purple'}] },
-  { id: 7, name: 'Karthik', role: 'Teammate', type: 'initials', initials: 'KS', bg: 'bg-emerald-100 text-emerald-600', tags: [{label: 'Team', color: 'emerald'}, {label: 'Project', color: 'blue'}] },
-  { id: 8, name: 'Meena', role: 'Internship Guide', type: 'image', img: 'https://i.pravatar.cc/150?img=45', tags: [{label: 'Guide', color: 'amber'}, {label: 'Internship', color: 'rose'}] },
-  { id: 9, name: 'Ananya', role: 'Friend', type: 'initials', initials: 'AS', bg: 'bg-purple-100 text-purple-600', tags: [{label: 'Friend', color: 'blue'}, {label: 'Personal', color: 'rose'}] },
-];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
 
-const upcomingEvents = [
-  { id: 1, name: 'Project Review with Arun', time: 'Today, 2:00 PM', img: 'https://i.pravatar.cc/150?img=11', type: 'Meeting', badgeColor: 'bg-blue-50 text-blue-600' },
-  { id: 2, name: 'Product Discussion with Rakshana', time: 'Tomorrow, 10:00 AM', initials: 'RK', bg: 'bg-purple-100 text-purple-600', type: 'Meeting', badgeColor: 'bg-blue-50 text-blue-600' },
-  { id: 3, name: 'Team Sync with Priya', time: 'Oct 16, 2024, 4:00 PM', img: 'https://i.pravatar.cc/150?img=42', type: 'Meeting', badgeColor: 'bg-blue-50 text-blue-600' },
-  { id: 4, name: 'Mentor Call with Vikram', time: 'Oct 18, 2024, 11:00 AM', img: 'https://i.pravatar.cc/150?img=12', type: 'Call', badgeColor: 'bg-emerald-50 text-emerald-600' },
-];
+type PersonTag = { label: string; color: string };
+
+type Interaction = { title: string; detail: string; date: string; icon: any; iconBg: string; iconColor: string };
+
+type Person = {
+  id: number;
+  name: string;
+  role: string;
+  initials: string;
+  bg: string;
+  tags: PersonTag[];
+  email?: string;
+  phone?: string;
+  location?: string;
+  summary?: string;
+  interactions?: Interaction[];
+};
+
+const peopleData: Person[] = [];
+
+type UpcomingEvent = {
+  id: number;
+  name: string;
+  time: string;
+  initials: string;
+  bg: string;
+  type: string;
+  badgeColor: string;
+};
+
+const upcomingEvents: UpcomingEvent[] = [];
 
 const filterTabs = ['All', 'Friends', 'Family', 'Team', 'Work', 'Clients', 'Classmates', 'Others'];
 
@@ -81,10 +104,7 @@ const Avatar = ({ person, size = 'md' }: any) => {
     md: 'w-12 h-12 text-[16px]',
     lg: 'w-20 h-20 text-[24px]',
   };
-  
-  if (person.img) {
-    return <img src={person.img} alt={person.name || 'Avatar'} className={`${(sizeClasses as any)[size]} rounded-full object-cover shadow-sm`} />;
-  }
+
   return (
     <div className={`${(sizeClasses as any)[size]} rounded-full flex items-center justify-center font-bold shadow-sm ${person.bg}`}>
       {person.initials}
@@ -106,11 +126,10 @@ export default function PathiiPeopleDashboard() {
 
   const handleAddPerson = () => {
     const nextId = people.reduce((max, p) => Math.max(max, p.id), 0) + 1;
-    const newPerson = {
+    const newPerson: Person = {
       id: nextId,
       name: 'New Contact',
       role: 'Recently added',
-      type: 'initials',
       initials: 'NC',
       bg: 'bg-blue-100 text-blue-600',
       tags: [{ label: 'Friend', color: 'blue' }],
@@ -118,6 +137,9 @@ export default function PathiiPeopleDashboard() {
     setPeople(prev => [newPerson, ...prev]);
     showToast('Person added');
   };
+
+  const selectedPerson = people[0] || null;
+  const selectedInteractions = selectedPerson?.interactions || [];
 
   const visiblePeople = people.filter((person) => {
     const matchesFilter =
@@ -158,7 +180,7 @@ export default function PathiiPeopleDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto">
           <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -189,11 +211,10 @@ export default function PathiiPeopleDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
             </button>
-            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -252,7 +273,7 @@ export default function PathiiPeopleDashboard() {
 
             {/* Grid of People */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-               {visiblePeople.map((person) => (
+               {visiblePeople.length > 0 ? visiblePeople.map((person) => (
                  <div key={person.id} onClick={() => showToast(`Opening ${person.name}'s profile`)} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative group">
                     <button onClick={(e) => { e.stopPropagation(); showToast(`More options for ${person.name}`); }} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
                       <MoreHorizontal size={18} />
@@ -270,7 +291,11 @@ export default function PathiiPeopleDashboard() {
                        ))}
                     </div>
                  </div>
-               ))}
+               )) : (
+                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm sm:col-span-2 lg:col-span-3">
+                    <EmptyState icon={Users} title="No people yet" subtitle="People you add will appear here." />
+                 </div>
+               )}
             </div>
 
             {/* Bottom Row */}
@@ -289,7 +314,7 @@ export default function PathiiPeopleDashboard() {
                   </div>
 
                   <div className="flex flex-col gap-4">
-                    {upcomingEvents.map((ev, idx) => (
+                    {upcomingEvents.length > 0 ? upcomingEvents.map((ev, idx) => (
                       <div key={idx} className="flex items-center justify-between group">
                          <div className="flex items-center gap-3">
                            <Avatar person={ev} size="sm" />
@@ -310,7 +335,9 @@ export default function PathiiPeopleDashboard() {
                            </button>
                          </div>
                       </div>
-                    ))}
+                    )) : (
+                      <EmptyState icon={CalendarIcon} title="No upcoming events" subtitle="Meetings with your people will appear here." />
+                    )}
                   </div>
                </div>
 
@@ -336,7 +363,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div onClick={() => showToast('New meeting scheduled with Sarah')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('New meeting scheduled')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center flex-shrink-0">
                            <Calendar size={18} />
@@ -349,7 +376,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div onClick={() => showToast('New note about Sarah created')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('New note created')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
                            <FileText size={18} />
@@ -362,7 +389,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div onClick={() => showToast('Attach a file to Sarah\'s profile')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('Attach a file to this profile')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
                            <File size={18} />
@@ -383,58 +410,72 @@ export default function PathiiPeopleDashboard() {
 
           {/* Right Inspector Panel */}
           <div className="w-[340px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
-            
+
+            {selectedPerson ? (
+            <>
             {/* Profile Detail Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative">
-              <button onClick={() => showToast("Editing Sarah's profile")} className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 transition-colors border border-slate-100">
+              <button onClick={() => showToast(`Editing ${selectedPerson.name}'s profile`)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 transition-colors border border-slate-100">
                 <Edit2 size={12} /> Edit
               </button>
-              
+
               <div className="flex items-start gap-4 mb-5">
-                <Avatar person={peopleData[0]} size="lg" />
+                <Avatar person={selectedPerson} size="lg" />
                 <div className="pt-2">
-                  <h3 className="text-[20px] font-extrabold text-slate-900 leading-tight mb-1">Sarah</h3>
-                  <p className="text-[13px] text-slate-500 font-medium">College Friend</p>
+                  <h3 className="text-[20px] font-extrabold text-slate-900 leading-tight mb-1">{selectedPerson.name}</h3>
+                  <p className="text-[13px] text-slate-500 font-medium">{selectedPerson.role}</p>
                 </div>
               </div>
 
+              {(selectedPerson.email || selectedPerson.phone || selectedPerson.location) && (
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
-                  <Mail size={16} className="text-slate-400" />
-                  <span>sarah@example.com</span>
-                </div>
-                <div className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
-                  <Phone size={16} className="text-slate-400" />
-                  <span>+91 98765 43210</span>
-                </div>
-                <div className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
-                  <MapPin size={16} className="text-slate-400" />
-                  <span>Chennai, India</span>
-                </div>
+                {selectedPerson.email && (
+                  <div className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
+                    <Mail size={16} className="text-slate-400" />
+                    <span>{selectedPerson.email}</span>
+                  </div>
+                )}
+                {selectedPerson.phone && (
+                  <div className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
+                    <Phone size={16} className="text-slate-400" />
+                    <span>{selectedPerson.phone}</span>
+                  </div>
+                )}
+                {selectedPerson.location && (
+                  <div className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
+                    <MapPin size={16} className="text-slate-400" />
+                    <span>{selectedPerson.location}</span>
+                  </div>
+                )}
               </div>
+              )}
 
+              {selectedPerson.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-5 border-t border-slate-100">
-                 <Tag label="Friend" color="blue" />
-                 <Tag label="College" color="purple" />
-                 <Tag label="Project" color="blue" />
+                 {selectedPerson.tags.map((tag, idx) => (
+                   <Tag key={idx} label={tag.label} color={tag.color} />
+                 ))}
               </div>
+              )}
             </div>
 
             {/* AI Summary Card */}
+            {selectedPerson.summary && (
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 text-[#6366F1]">
                   <Sparkles size={18} />
                   <h3 className="text-[15px] font-bold text-slate-900">AI Summary</h3>
                 </div>
-                <button onClick={() => showToast('Editing AI summary for Sarah')} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-colors border border-slate-100">
+                <button onClick={() => showToast(`Editing AI summary for ${selectedPerson.name}`)} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-colors border border-slate-100">
                   <Edit2 size={10} /> Edit
                 </button>
               </div>
               <div className="bg-[#F8FAFC] rounded-xl p-4 border border-slate-100 text-[13px] text-slate-600 leading-relaxed">
-                Sarah is a close friend from college. We often discuss project ideas, share study notes and plan events together. She is also interested in AI and design.
+                {selectedPerson.summary}
               </div>
             </div>
+            )}
 
             {/* Recent Interactions Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
@@ -443,64 +484,31 @@ export default function PathiiPeopleDashboard() {
                   <Clock size={16} className="text-[#2563EB]" />
                   <h3 className="text-[15px] font-bold text-slate-900">Recent Interactions</h3>
                 </div>
-                <button onClick={() => showToast('Showing all interactions with Sarah')} className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
+                <button onClick={() => showToast(`Showing all interactions with ${selectedPerson.name}`)} className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
                   View all <ChevronRight size={14} />
                 </button>
               </div>
 
+              {selectedInteractions.length > 0 ? (
               <div className="space-y-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Mic size={16} />
+                {selectedInteractions.map((item, idx) => (
+                  <div key={idx} className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-8 h-8 rounded-lg ${item.iconBg} ${item.iconColor} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                        <item.icon size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-[13px] font-bold text-slate-900">{item.title}</h4>
+                        <p className="text-[12px] text-slate-500 font-medium">{item.detail}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-[13px] font-bold text-slate-900">Voice Note</h4>
-                      <p className="text-[12px] text-slate-500 font-medium">Project idea discussion</p>
-                    </div>
+                    <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">{item.date}</span>
                   </div>
-                  <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">Oct 10, 2024</span>
-                </div>
-
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <FileText size={16} />
-                    </div>
-                    <div>
-                      <h4 className="text-[13px] font-bold text-slate-900">Document</h4>
-                      <p className="text-[12px] text-slate-500 font-medium">Shared design reference</p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">Oct 8, 2024</span>
-                </div>
-
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Calendar size={16} />
-                    </div>
-                    <div>
-                      <h4 className="text-[13px] font-bold text-slate-900">Meeting</h4>
-                      <p className="text-[12px] text-slate-500 font-medium">College event planning</p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">Oct 5, 2024</span>
-                </div>
-
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <MessageSquare size={16} />
-                    </div>
-                    <div>
-                      <h4 className="text-[13px] font-bold text-slate-900">Chat Note</h4>
-                      <p className="text-[12px] text-slate-500 font-medium">Discussed internship opportunities</p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">Oct 1, 2024</span>
-                </div>
+                ))}
               </div>
+              ) : (
+                <EmptyState icon={MessageSquare} title="No interactions yet" subtitle="Your interactions will appear here." />
+              )}
             </div>
 
             {/* Related Items Card */}
@@ -518,10 +526,7 @@ export default function PathiiPeopleDashboard() {
                     </div>
                     <span className="text-[13px] font-bold text-slate-700">Memories</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-slate-900">12</span>
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
-                  </div>
+                  <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                 </NextLink>
 
                 <NextLink href="/documents" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
@@ -531,10 +536,7 @@ export default function PathiiPeopleDashboard() {
                     </div>
                     <span className="text-[13px] font-bold text-slate-700">Documents</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-slate-900">5</span>
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
-                  </div>
+                  <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                 </NextLink>
 
                 <NextLink href="/tasks" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
@@ -544,10 +546,7 @@ export default function PathiiPeopleDashboard() {
                     </div>
                     <span className="text-[13px] font-bold text-slate-700">Tasks</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-slate-900">3</span>
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
-                  </div>
+                  <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                 </NextLink>
 
                 <NextLink href="/calendar" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
@@ -557,13 +556,16 @@ export default function PathiiPeopleDashboard() {
                     </div>
                     <span className="text-[13px] font-bold text-slate-700">Calendar Events</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-slate-900">4</span>
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
-                  </div>
+                  <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                 </NextLink>
               </div>
             </div>
+            </>
+            ) : (
+              <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
+                <EmptyState icon={Users} title="No person selected" subtitle="Add or select a person to see their profile here." />
+              </div>
+            )}
 
           </div>
 

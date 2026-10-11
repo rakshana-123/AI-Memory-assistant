@@ -93,20 +93,25 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
 const Toggle = ({ isOn, onClick }: any) => (
   <div onClick={onClick} className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors ${isOn ? 'bg-[#2563EB]' : 'bg-slate-200'}`}>
     <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${isOn ? 'left-[18px]' : 'left-0.5'}`} />
   </div>
 );
 
-const connectedAppsData = [
-  { id: 1, name: 'Google Calendar', desc: 'Sync your events and schedule', account: 'alex@gmail.com', icon: 'GoogleCalendar' },
-  { id: 2, name: 'Gmail', desc: 'Save important emails', account: 'alex@gmail.com', icon: 'Gmail' },
-  { id: 3, name: 'Google Drive', desc: 'Access and save files', account: 'alex@gmail.com', icon: 'GoogleDrive' },
-  { id: 4, name: 'Notion', desc: 'Sync your notes and pages', account: 'alex@gmail.com', icon: 'Notion' },
-  { id: 5, name: 'Slack', desc: 'Save important conversations', account: 'alex-workspace', icon: 'Slack' },
-  { id: 6, name: 'GitHub', desc: 'Link your repositories', account: 'alexdev', icon: 'GitHub' },
-];
+type ConnectedApp = { id: number; name: string; desc: string; account: string; icon: string };
+
+const connectedAppsData: ConnectedApp[] = [];
 
 const availableAppsData = [
   { id: 7, name: 'Microsoft OneDrive', desc: 'Sync your files', iconProps: { icon: Cloud, bg: 'bg-blue-50', color: 'text-blue-500' } },
@@ -119,16 +124,14 @@ const availableAppsData = [
   { id: 14, name: 'Spotify', desc: 'Save what you listen to', iconProps: { icon: Music, bg: 'bg-green-500', color: 'text-white' } },
 ];
 
-const recentlySynced = [
-  { id: 1, name: 'Team Meeting', time: 'Oct 10, 2024 • 10:00 AM', icon: CalendarIcon, color: 'text-rose-500', bg: 'bg-rose-50' },
-  { id: 2, name: 'Client Call', time: 'Oct 9, 2024 • 2:00 PM', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50' },
-  { id: 3, name: 'Project Review', time: 'Oct 8, 2024 • 4:00 PM', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-];
+type SyncedItem = { id: number; name: string; time: string; icon: any; color: string; bg: string };
+
+const recentlySynced: SyncedItem[] = [];
 
 export default function PathiiIntegrationsDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [availableSearch, setAvailableSearch] = useState('');
-  const [connectedToggles, setConnectedToggles] = useState<{ [key: number]: boolean }>({ 1: true, 2: true, 3: true, 4: true, 5: true, 6: true });
+  const [connectedToggles, setConnectedToggles] = useState<{ [key: number]: boolean }>({});
   const [calendarSettings, setCalendarSettings] = useState({ syncEvents: true, createTasks: true, reminders: true, eventDetails: true });
   const [toast, setToast] = useState<string | null>(null);
 
@@ -152,6 +155,9 @@ export default function PathiiIntegrationsDashboard() {
   const visibleAvailableApps = availableAppsData.filter((app) =>
     app.name.toLowerCase().includes(availableSearch.trim().toLowerCase())
   );
+
+  const selectedApp = visibleConnectedApps[0] || null;
+  const SelectedAppLogo = selectedApp ? ((AppLogos as any)[selectedApp.icon] || AppLogos.GoogleCalendar) : null;
 
   return (
     <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
@@ -184,7 +190,7 @@ export default function PathiiIntegrationsDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto">
           <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -215,11 +221,10 @@ export default function PathiiIntegrationsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
             </button>
-            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -253,7 +258,7 @@ export default function PathiiIntegrationsDashboard() {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                 {visibleConnectedApps.map((app) => {
+                 {visibleConnectedApps.length > 0 ? visibleConnectedApps.map((app) => {
                    const AppIconComponent = (AppLogos as any)[app.icon];
                    return (
                      <div key={app.id} className="bg-white rounded-[20px] p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative">
@@ -278,7 +283,11 @@ export default function PathiiIntegrationsDashboard() {
                         </div>
                      </div>
                    );
-                 })}
+                 }) : (
+                   <div className="bg-white rounded-[20px] p-5 border border-slate-200 shadow-sm sm:col-span-2 lg:col-span-3">
+                     <EmptyState icon={LinkIcon} title="No connected apps yet" subtitle="Apps you connect will appear here." />
+                   </div>
+                 )}
               </div>
             </div>
 
@@ -321,22 +330,24 @@ export default function PathiiIntegrationsDashboard() {
 
           {/* Right Inspector Panel */}
           <div className="w-[340px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
-            
-            {/* Google Calendar Detail Card */}
+
+            {selectedApp ? (
+            <>
+            {/* Selected Integration Detail Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
               <div className="flex justify-between items-start mb-4">
-                <AppLogos.GoogleCalendar />
+                <SelectedAppLogo />
                 <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[12px] font-bold border border-emerald-100">Connected</span>
               </div>
-              <h3 className="text-[20px] font-extrabold text-slate-900 leading-tight mb-1">Google Calendar</h3>
-              <p className="text-[13px] text-slate-500 font-medium mb-6">Stay on top of your schedule with AI.</p>
-              
+              <h3 className="text-[20px] font-extrabold text-slate-900 leading-tight mb-1">{selectedApp.name}</h3>
+              <p className="text-[13px] text-slate-500 font-medium mb-6">{selectedApp.desc}</p>
+
               <div className="flex items-center justify-between mb-6">
                  <div className="flex items-center gap-2 text-[13px] text-slate-700 font-medium">
                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                   alex@gmail.com
+                   {selectedApp.account}
                  </div>
-                 <button onClick={() => showToast('Managing alex@gmail.com Google account')} className="px-3 py-1.5 border border-[#2563EB] text-[#2563EB] hover:bg-blue-50 rounded-lg text-[12px] font-bold transition-colors">
+                 <button onClick={() => showToast(`Managing ${selectedApp.account} account`)} className="px-3 py-1.5 border border-[#2563EB] text-[#2563EB] hover:bg-blue-50 rounded-lg text-[12px] font-bold transition-colors">
                    Manage Account
                  </button>
               </div>
@@ -376,6 +387,12 @@ export default function PathiiIntegrationsDashboard() {
                  </div>
               </div>
             </div>
+            </>
+            ) : (
+              <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
+                <EmptyState icon={LinkIcon} title="No integration selected" subtitle="Connect an app to manage its settings here." />
+              </div>
+            )}
 
             {/* Recently Synced Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
@@ -386,6 +403,7 @@ export default function PathiiIntegrationsDashboard() {
                 </button>
               </div>
 
+              {recentlySynced.length > 0 ? (
               <div className="space-y-4">
                  {recentlySynced.map((item) => (
                    <div key={item.id} className="flex items-start gap-3">
@@ -399,6 +417,9 @@ export default function PathiiIntegrationsDashboard() {
                    </div>
                  ))}
               </div>
+              ) : (
+                <EmptyState icon={Clock} title="No sync history yet" subtitle="Items synced from your apps will appear here." />
+              )}
             </div>
 
             {/* AI Suggestion Card */}
@@ -406,17 +427,17 @@ export default function PathiiIntegrationsDashboard() {
               <button onClick={() => showToast('Suggestion dismissed')} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
                 <X size={16} />
               </button>
-              
+
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={18} className="text-[#6366F1]" />
                 <h3 className="text-[15px] font-bold text-slate-900">AI Suggestion</h3>
               </div>
-              
+
               <p className="text-[13px] text-slate-600 font-medium leading-relaxed mb-4">
-                I found 5 upcoming events in your calendar. Would you like me to create tasks for them?
+                Connect your calendar and Pathii can turn upcoming events into tasks automatically.
               </p>
-              
-              <button onClick={() => showToast('Creating 5 tasks from upcoming events…')} className="px-4 py-2 border border-[#2563EB] text-[#2563EB] bg-white hover:bg-blue-50 rounded-xl text-[13px] font-bold transition-colors shadow-sm">
+
+              <button onClick={() => showToast('Creating tasks from upcoming events…')} className="px-4 py-2 border border-[#2563EB] text-[#2563EB] bg-white hover:bg-blue-50 rounded-xl text-[13px] font-bold transition-colors shadow-sm">
                 Create Tasks
               </button>
             </div>

@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreVertical, Plus, ChevronDown, ChevronLeft, MapPin, CheckCircle2,
-  Video, Clock, RefreshCw, Sparkles, X, Check
+  Clock, RefreshCw, Sparkles, X, Check
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -29,22 +29,19 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
-const calendarEvents = {
-  1: [{ type: 'dot', color: 'blue', title: 'Team Standup', time: '9:00 AM' }],
-  2: [{ type: 'border-pill', color: 'purple', title: 'Client Call', time: '2:00 PM' }],
-  7: [{ type: 'solid-pill', color: 'rose', title: 'Research', time: '11:00 AM' }],
-  9: [{ type: 'solid-pill', color: 'amber', title: 'Design Review', time: '3:00 PM' }],
-  10: [{ type: 'dot', color: 'emerald', title: 'Project Review', time: '10:00 AM' }],
-  11: [{ type: 'border-pill', color: 'blue', title: 'Client Call', time: '2:00 PM' }],
-  14: [{ type: 'dot', color: 'emerald', title: 'Team Sync', time: '4:00 PM' }],
-  16: [{ type: 'dot', color: 'purple', title: 'Workshop', time: '10:00 AM' }],
-  18: [{ type: 'dot', color: 'blue', title: 'Presentation', time: '1:00 PM' }],
-  21: [{ type: 'solid-pill', color: 'rose', title: 'Plan Sprint', time: '11:00 AM' }],
-  23: [{ type: 'dot', color: 'emerald', title: 'Research', time: '3:00 PM' }],
-  25: [{ type: 'solid-pill', color: 'amber', title: 'Doctor Appointment', time: '10:00 AM' }],
-  29: [{ type: 'dot', color: 'blue', title: 'Review Notes', time: '2:00 PM' }],
-  31: [{ type: 'solid-pill', color: 'purple', title: 'Team Meeting', time: '4:00 PM' }],
-};
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
+type CalendarEvent = { type: string; color: string; title: string; time: string };
+
+const calendarEvents: Record<number, CalendarEvent[]> = {};
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -153,6 +150,19 @@ const TimelineItem = ({ time, title, subtitle, Icon, dotColor, action, actionCli
   </div>
 );
 
+type ScheduleItem = {
+  time: string;
+  title: string;
+  subtitle: string;
+  Icon: any;
+  dotColor: string;
+  action?: string;
+  onOpen?: () => void;
+  actionClick?: () => void;
+};
+
+const scheduleData: ScheduleItem[] = [];
+
 
 export default function PathiiCalendarDashboard() {
   const [viewMode, setViewMode] = useState<'Month' | 'Week' | 'Day'>('Month');
@@ -164,6 +174,11 @@ export default function PathiiCalendarDashboard() {
 
   const months = ['October 2024', 'November 2024', 'December 2024'];
   const days = generateDays();
+
+  const totalEvents = Object.values(events).reduce((sum: number, dayEvents: any) => sum + dayEvents.length, 0);
+  const upcomingCount = scheduleData.length;
+  const completedCount = 0;
+  const nextEvent = scheduleData[0] || null;
 
   const showToast = (msg: string) => {
     setFeedback(msg);
@@ -223,7 +238,7 @@ export default function PathiiCalendarDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto">
           <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -252,11 +267,10 @@ export default function PathiiCalendarDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 2 new alerts')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
             </button>
-            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -422,8 +436,8 @@ export default function PathiiCalendarDashboard() {
                 <div>
                   <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Total Events</p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[24px] font-extrabold text-slate-900 leading-none">12</span>
-                    <span className="text-[12px] font-bold text-emerald-500 flex items-center gap-0.5"><ArrowUpIcon size={12} /> 20%</span>
+                    <span className="text-[24px] font-extrabold text-slate-900 leading-none">{totalEvents}</span>
+                    {totalEvents > 0 && <span className="text-[12px] font-bold text-emerald-500 flex items-center gap-0.5"><ArrowUpIcon size={12} /> this month</span>}
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1 font-medium">vs last month</p>
                 </div>
@@ -436,7 +450,7 @@ export default function PathiiCalendarDashboard() {
                 </div>
                 <div>
                   <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Upcoming</p>
-                  <span className="text-[24px] font-extrabold text-slate-900 leading-none block">4</span>
+                  <span className="text-[24px] font-extrabold text-slate-900 leading-none block">{upcomingCount}</span>
                   <p className="text-[11px] text-slate-400 mt-1 font-medium">in next 7 days</p>
                 </div>
               </div>
@@ -448,7 +462,7 @@ export default function PathiiCalendarDashboard() {
                 </div>
                 <div>
                   <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Completed</p>
-                  <span className="text-[24px] font-extrabold text-slate-900 leading-none block">8</span>
+                  <span className="text-[24px] font-extrabold text-slate-900 leading-none block">{completedCount}</span>
                   <p className="text-[11px] text-slate-400 mt-1 font-medium">this month</p>
                 </div>
               </div>
@@ -466,32 +480,30 @@ export default function PathiiCalendarDashboard() {
                 <span className="text-[13px] font-semibold text-slate-500">Oct 10, 2024</span>
               </div>
 
-              {/* Timeline Container */}
+              {scheduleData.length > 0 ? (
               <div className="relative pl-1">
                 {/* Vertical Line */}
                 <div className="absolute left-[70px] top-2 bottom-6 w-px bg-slate-200 z-0"></div>
                 
                 <div className="flex flex-col z-10 relative">
-                  <div onClick={() => showToast('Opening Google Meet: Team Standup...')}>
-                    <TimelineItem
-                      time="09:00 AM" title="Team Standup" subtitle="Google Meet" Icon={Video} dotColor="bg-blue-500" action="Join"
-                      actionClick={() => showToast('Joining Team Standup on Google Meet...')}
-                    />
-                  </div>
-                  <div onClick={() => showToast('Opening Zoom Meeting: Client Call...')}>
-                    <TimelineItem
-                      time="11:00 AM" title="Client Call" subtitle="Zoom Meeting" Icon={Video} dotColor="bg-purple-500" action="Join"
-                      actionClick={() => showToast('Joining Client Call on Zoom...')}
-                    />
-                  </div>
-                  <TimelineItem 
-                    time="02:00 PM" title="Project Review" subtitle="Meeting Room A" Icon={MapPin} dotColor="bg-emerald-500" action="In 1h" 
-                  />
-                  <TimelineItem 
-                    time="04:00 PM" title="Research Discussion" subtitle="Google Meet" Icon={Video} dotColor="bg-amber-500" action="In 3h" 
-                  />
+                  {scheduleData.map((item, index) => (
+                    <div key={index} onClick={item.onOpen}>
+                      <TimelineItem
+                        time={item.time}
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        Icon={item.Icon}
+                        dotColor={item.dotColor}
+                        action={item.action}
+                        actionClick={item.actionClick}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
+              ) : (
+                <EmptyState icon={CalendarIcon} title="No events today" subtitle="Events you add will appear here." />
+              )}
             </div>
 
             {/* Next Event Card */}
@@ -509,6 +521,7 @@ export default function PathiiCalendarDashboard() {
                 </button>
               </div>
 
+              {nextEvent ? (
               <div className="bg-[#F8FAFC] rounded-xl p-4 border border-slate-100 relative overflow-hidden">
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex gap-3">
@@ -516,25 +529,30 @@ export default function PathiiCalendarDashboard() {
                       <CalendarIcon size={16} />
                     </div>
                     <div>
-                      <h4 className="text-[15px] font-bold text-slate-900 leading-snug">Project Review</h4>
-                      <p className="text-[12px] text-slate-500 font-medium">10:00 AM – 11:00 AM</p>
+                      <h4 className="text-[15px] font-bold text-slate-900 leading-snug">{nextEvent.title}</h4>
+                      <p className="text-[12px] text-slate-500 font-medium">{nextEvent.time}</p>
                     </div>
                   </div>
-                  <button onClick={() => showToast("More options for 'Project Review'")} className="text-slate-400 hover:text-slate-600"><MoreVertical size={16}/></button>
+                  <button onClick={() => showToast(`More options for '${nextEvent.title}'`)} className="text-slate-400 hover:text-slate-600"><MoreVertical size={16}/></button>
                 </div>
                 
                 <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium mt-3 ml-11">
                   <MapPin size={14} className="text-slate-400" />
-                  <span>Meeting Room A</span>
+                  <span>{nextEvent.subtitle}</span>
                 </div>
 
                 <button 
-                  onClick={() => showToast('Event opened: Project Review')}
+                  onClick={() => showToast(`Event opened: ${nextEvent.title}`)}
                   className="mt-4 w-full bg-white border border-blue-200 text-[#2563EB] hover:bg-blue-50 font-bold text-[13px] py-2 rounded-lg transition-colors shadow-sm"
                 >
                   Open in Calendar
                 </button>
               </div>
+              ) : (
+                <div className="bg-[#F8FAFC] rounded-xl border border-slate-100">
+                  <EmptyState icon={Clock} title="No upcoming event" subtitle="Your next scheduled event will appear here." />
+                </div>
+              )}
             </div>
 
             {/* Quick Actions Card */}

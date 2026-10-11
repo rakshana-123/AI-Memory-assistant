@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { 
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
-  MoreVertical, Plus, ChevronDown, Download, Maximize2, Minus, RotateCcw, 
-  Sparkles, Folder, File, Image as ImageIcon, FileSpreadsheet, Tag, Clock,
-  CheckCircle2, FileType2, Maximize, PlaySquare, CloudUpload
+  MoreVertical, Plus, ChevronDown, Download, Maximize2, Minus, RotateCcw,
+  Sparkles, Folder, File, Image as ImageIcon, Clock,
+  FileType2, Maximize, PlaySquare, CloudUpload
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -28,6 +28,16 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
     <Icon size={18} className={active ? 'text-[#2563EB]' : 'text-slate-500'} />
     <span className="text-[14px]">{label}</span>
   </NextLink>
+);
+
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
 );
 
 const FilterPill = ({ label, active, onClick }: any) => (
@@ -163,26 +173,31 @@ const filterBadgeMap: Record<string, string> = {
   Other: 'OTHER',
 };
 
-const documentsData = [
-  { id: 1, type: 'folder', title: 'Project Reports', meta: '12 files' },
-  { id: 2, type: 'folder', title: 'Research Papers', meta: '8 files' },
-  { id: 3, type: 'folder', title: 'Meeting Notes', meta: '15 files' },
-  { id: 4, type: 'file', title: 'AI Research Paper.pdf', meta: 'Oct 10, 2024', badge: 'PDF', badgeColor: 'bg-red-500', preview: 'pdf' },
-  { id: 5, type: 'file', title: 'Project Plan.docx', meta: 'Oct 8, 2024', badge: 'DOC', badgeColor: 'bg-blue-500', preview: 'doc' },
-  { id: 6, type: 'file', title: 'Budget Sheet.xlsx', meta: 'Oct 7, 2024', badge: 'XLS', badgeColor: 'bg-emerald-500', preview: 'xls' },
-  { id: 7, type: 'file', title: 'Whiteboard Notes.png', meta: 'Oct 6, 2024', badge: 'IMG', badgeColor: 'bg-purple-500', preview: 'img' },
-  { id: 8, type: 'file', title: 'Client Proposal.pdf', meta: 'Oct 5, 2024', badge: 'PDF', badgeColor: 'bg-red-500', preview: 'pdf' },
-  { id: 9, type: 'file', title: 'Pitch Deck.pptx', meta: 'Oct 1, 2024', badge: 'PPT', badgeColor: 'bg-orange-500', preview: 'ppt' },
-  { id: 10, type: 'file', title: 'Ideas.txt', meta: 'Sep 28, 2024', badge: 'TXT', badgeColor: 'bg-slate-500', preview: 'txt' },
-];
+type DocumentItem = {
+  id: number;
+  type: string;
+  title: string;
+  meta: string;
+  badge?: string;
+  badgeColor?: string;
+  preview?: string;
+};
 
-const recentDocuments = [
-  { id: 1, name: 'AI Research Paper.pdf', icon: FileText, iconBgClass: 'bg-red-100', iconColorClass: 'text-red-500', type: 'PDF', badge: 'PDF', size: '2.4 MB', modified: 'Today, 10:42 AM' },
-  { id: 2, name: 'Project Plan.docx', icon: File, iconBgClass: 'bg-blue-100', iconColorClass: 'text-blue-500', type: 'Document', badge: 'DOC', size: '1.1 MB', modified: 'Oct 8, 2024' },
-  { id: 3, name: 'Budget Sheet.xlsx', icon: FileSpreadsheet, iconBgClass: 'bg-emerald-100', iconColorClass: 'text-emerald-500', type: 'Spreadsheet', badge: 'XLS', size: '900 KB', modified: 'Oct 7, 2024' },
-  { id: 4, name: 'Whiteboard Notes.png', icon: ImageIcon, iconBgClass: 'bg-purple-100', iconColorClass: 'text-purple-500', type: 'Image', badge: 'IMG', size: '1.8 MB', modified: 'Oct 6, 2024' },
-  { id: 5, name: 'Client Proposal.pdf', icon: FileText, iconBgClass: 'bg-red-100', iconColorClass: 'text-red-500', type: 'PDF', badge: 'PDF', size: '3.2 MB', modified: 'Oct 5, 2024' },
-];
+const documentsData: DocumentItem[] = [];
+
+type RecentDocument = {
+  id: number;
+  name: string;
+  icon: any;
+  iconBgClass: string;
+  iconColorClass: string;
+  type: string;
+  badge: string;
+  size: string;
+  modified: string;
+};
+
+const recentDocuments: RecentDocument[] = [];
 
 const downloadCsv = (filename: string, rows: (string | number)[][]) => {
   const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -241,6 +256,12 @@ export default function PathiiDocumentsDashboard() {
     return matchesFilter && matchesSearch;
   });
 
+  const pdfCount = docsList.filter((doc) => doc.badge === 'PDF').length;
+  const docsCount = docsList.filter((doc) => doc.badge === 'DOC').length;
+  const imagesCount = docsList.filter((doc) => doc.badge === 'IMG').length;
+  const linksCount = docsList.filter((doc) => doc.badge && !['PDF', 'DOC', 'IMG'].includes(doc.badge)).length;
+  const selectedDoc = docsList[0] || null;
+
   return (
     <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
@@ -272,7 +293,7 @@ export default function PathiiDocumentsDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto">
           <div onClick={() => handleAction('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -302,11 +323,10 @@ export default function PathiiDocumentsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => handleAction('Notifications opened — 2 new alerts')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => handleAction('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
             </button>
-            <img onClick={() => handleAction('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => handleAction('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -359,14 +379,14 @@ export default function PathiiDocumentsDashboard() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-              <StatCard icon={FileText} count="12" label="PDF Files" colorClass="bg-red-50" iconColorClass="text-red-500" />
-              <StatCard icon={File} count="18" label="Documents" colorClass="bg-blue-50" iconColorClass="text-blue-500" />
-              <StatCard icon={ImageIcon} count="9" label="Images" colorClass="bg-emerald-50" iconColorClass="text-emerald-500" />
-              <StatCard icon={LinkIcon} count="6" label="Links & Others" colorClass="bg-purple-50" iconColorClass="text-purple-500" />
+              <StatCard icon={FileText} count={pdfCount} label="PDF Files" colorClass="bg-red-50" iconColorClass="text-red-500" />
+              <StatCard icon={File} count={docsCount} label="Documents" colorClass="bg-blue-50" iconColorClass="text-blue-500" />
+              <StatCard icon={ImageIcon} count={imagesCount} label="Images" colorClass="bg-emerald-50" iconColorClass="text-emerald-500" />
+              <StatCard icon={LinkIcon} count={linksCount} label="Links & Others" colorClass="bg-purple-50" iconColorClass="text-purple-500" />
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
-              {visibleDocuments.map((doc) => (
+              {visibleDocuments.length > 0 ? visibleDocuments.map((doc) => (
                 <FileCard
                   key={doc.id}
                   type={doc.type}
@@ -378,7 +398,11 @@ export default function PathiiDocumentsDashboard() {
                   onOpen={() => handleAction(doc.type === 'folder' ? `Opening folder '${doc.title}'` : `Opening '${doc.title}'`)}
                   onMore={() => handleAction(`More options for '${doc.title}'`)}
                 />
-              ))}
+              )) : (
+                <div className="col-span-full bg-white rounded-2xl border border-slate-200 shadow-sm">
+                  <EmptyState icon={Folder} title="No documents yet" subtitle="Files you upload will appear here." />
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -401,7 +425,7 @@ export default function PathiiDocumentsDashboard() {
                   <div className="w-[5%] text-right">Actions</div>
                 </div>
                 
-                {visibleRecentDocuments.map((doc) => (
+                {visibleRecentDocuments.length > 0 ? visibleRecentDocuments.map((doc) => (
                   <ListItem
                     key={doc.id}
                     name={doc.name}
@@ -421,7 +445,9 @@ export default function PathiiDocumentsDashboard() {
                     }}
                     onMore={() => handleAction(`More options for '${doc.name}'`)}
                   />
-                ))}
+                )) : (
+                  <EmptyState icon={Clock} title="No documents yet" subtitle="Documents you open will be listed here." />
+                )}
               </div>
             </div>
 
@@ -429,6 +455,8 @@ export default function PathiiDocumentsDashboard() {
 
           <div className="w-full xl:w-[380px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-fit">
             
+            {selectedDoc ? (
+            <>
             {/* File Preview Area */}
             <div className="bg-slate-100 h-[240px] m-2 rounded-2xl relative flex items-center justify-center overflow-hidden border border-slate-200 group">
               <button 
@@ -440,8 +468,7 @@ export default function PathiiDocumentsDashboard() {
               
               {/* Mock Document Content */}
               <div className="w-[85%] h-[90%] bg-white rounded-md shadow-md p-6 flex flex-col relative overflow-hidden">
-                <h4 className="text-[16px] font-extrabold text-slate-800 mb-2 leading-tight">AI Research Paper</h4>
-                <p className="text-[8px] text-slate-400 mb-4 uppercase tracking-widest font-semibold">Exploring the Future of Personal AI Assistants</p>
+                <h4 className="text-[16px] font-extrabold text-slate-800 mb-2 leading-tight">{selectedDoc.title}</h4>
                 <div className="space-y-1.5 w-3/4">
                   <div className="h-1 bg-slate-200 rounded w-full"></div>
                   <div className="h-1 bg-slate-200 rounded w-[90%]"></div>
@@ -458,7 +485,7 @@ export default function PathiiDocumentsDashboard() {
 
               {/* Float Controls */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/80 backdrop-blur-md rounded-xl px-4 py-2 flex items-center gap-4 text-white shadow-lg">
-                <div className="text-[11px] font-semibold opacity-90">1 <span className="opacity-50">/ 12</span> <ChevronDown size={10} className="inline ml-1" /></div>
+                <div className="text-[11px] font-semibold opacity-90">1 <ChevronDown size={10} className="inline ml-1" /></div>
                 <div className="w-px h-3 bg-white/20"></div>
                 <div className="flex items-center gap-3 opacity-80">
                   <button onClick={() => handleAction('Zoom decreased')} className="hover:opacity-100 transition-opacity"><Minus size={14}/></button>
@@ -480,132 +507,38 @@ export default function PathiiDocumentsDashboard() {
                     <FileText size={20} />
                   </div>
                   <div>
-                    <h3 className="text-[18px] font-extrabold text-slate-900 leading-snug">AI Research Paper.pdf</h3>
-                    <p className="text-[13px] text-slate-500 font-medium mt-0.5">2.4 MB • Oct 10, 2024</p>
+                    <h3 className="text-[18px] font-extrabold text-slate-900 leading-snug">{selectedDoc.title}</h3>
+                    <p className="text-[13px] text-slate-500 font-medium mt-0.5">{selectedDoc.meta}</p>
                   </div>
                 </div>
-                <button onClick={() => handleAction("More options for 'AI Research Paper.pdf'")} className="text-slate-400 hover:text-slate-600"><MoreVertical size={18}/></button>
+                <button onClick={() => handleAction(`More options for '${selectedDoc.title}'`)} className="text-slate-400 hover:text-slate-600"><MoreVertical size={18}/></button>
               </div>
 
               <div className="flex gap-3">
                 <button 
-                  onClick={() => handleAction('Opening AI Research Paper.pdf...')}
+                  onClick={() => handleAction(`Opening ${selectedDoc.title}...`)}
                   className="flex-1 bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white font-bold text-[13px] py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
                 >
                   <Maximize2 size={16} /> Open
                 </button>
                 <button 
-                  onClick={() => handleAction('Downloading AI Research Paper.pdf...')}
+                  onClick={() => handleAction(`Downloading ${selectedDoc.title}...`)}
                   className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-700 font-bold text-[13px] py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
                 >
                   <Download size={16} /> Download
                 </button>
               </div>
             </div>
-
-            <div className="px-6 py-5 border-b border-slate-100">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles size={18} className="text-[#6366F1]" />
-                <h4 className="text-[14px] font-bold text-slate-900">AI Summary</h4>
-              </div>
-              <p className="text-[13px] text-slate-600 font-medium leading-relaxed mb-4">
-                This paper discusses the role of AI in personal memory assistants, focusing on how multimodal inputs (text, voice, images) can improve information retrieval and productivity.
-              </p>
-              <div>
-                <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wide mb-2 block">Key Topics</span>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[12px] font-semibold">AI</span>
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[12px] font-semibold">Memory</span>
-                  <span className="px-3 py-1 bg-rose-50 text-rose-700 rounded-full text-[12px] font-semibold">Productivity</span>
-                  <span className="px-3 py-1 bg-sky-50 text-sky-700 rounded-full text-[12px] font-semibold">RAG</span>
-                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[12px] font-semibold">Personal Assistant</span>
+            </>
+            ) : (
+              <div className="m-2 flex flex-col items-center justify-center text-center py-16">
+                <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                  <FileText size={24} className="text-slate-400" strokeWidth={2} />
                 </div>
+                <p className="text-[15px] font-semibold text-slate-700">No document selected</p>
+                <p className="text-[13px] text-slate-400 mt-1">Upload or open a document to preview it here.</p>
               </div>
-            </div>
-
-            <div className="px-6 py-5 border-b border-slate-100">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckSquare size={16} className="text-slate-700" />
-                <h4 className="text-[14px] font-bold text-slate-900">Extracted Items</h4>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-start justify-between group">
-                  <div className="flex gap-3">
-                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                       <CheckCircle2 size={16} />
-                     </div>
-                     <div>
-                       <p className="text-[13px] font-bold text-slate-900 leading-tight">Create research summary</p>
-                       <p className="text-[11px] text-slate-500 font-medium">Task</p>
-                     </div>
-                  </div>
-                  <button 
-                    onClick={() => handleAction('Task "Create research summary" added!')}
-                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Plus size={12} /> Add
-                  </button>
-                </div>
-
-                <div className="flex items-start justify-between group">
-                  <div className="flex gap-3">
-                     <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                       <CalendarIcon size={16} />
-                     </div>
-                     <div>
-                       <p className="text-[13px] font-bold text-slate-900 leading-tight">Follow up with team</p>
-                       <p className="text-[11px] text-slate-500 font-medium">Event</p>
-                     </div>
-                  </div>
-                  <button 
-                    onClick={() => handleAction('Event "Follow up with team" added to calendar!')}
-                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Plus size={12} /> Add
-                  </button>
-                </div>
-
-                <div className="flex items-start justify-between group">
-                  <div className="flex gap-3">
-                     <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                       <FileText size={16} />
-                     </div>
-                     <div>
-                       <p className="text-[13px] font-bold text-slate-900 leading-tight">Key findings</p>
-                       <p className="text-[11px] text-slate-500 font-medium">Note</p>
-                     </div>
-                  </div>
-                  <button 
-                    onClick={() => handleAction('Note "Key findings" saved to memories!')}
-                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Plus size={12} /> Add
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-5 pb-8">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Tag size={16} className="text-slate-700" />
-                  <h4 className="text-[14px] font-bold text-slate-900">Tags</h4>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span onClick={() => handleAction("Tag 'Research' — showing related documents")} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Research</span>
-                <span onClick={() => handleAction("Tag 'AI' — showing related documents")} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">AI</span>
-                <span onClick={() => handleAction("Tag 'Paper' — showing related documents")} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Paper</span>
-                <button 
-                  onClick={() => handleAction('Add tag modal opened')}
-                  className="w-7 h-7 bg-white border border-slate-200 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50 hover:text-slate-600 transition-colors shadow-sm"
-                >
-                  <Plus size={14} />
-                </button>
-              </div>
-            </div>
-
+            )}
           </div>
 
         </div>
