@@ -17,11 +17,20 @@ import {
 
 type TrendPoint = { name: string; docs: number };
 
-const documentTrendsData: TrendPoint[] = [];
+const documentTrendsData: TrendPoint[] = [
+  { name: 'Oct 1', docs: 1 },
+  { name: 'Oct 5', docs: 0 },
+  { name: 'Oct 8', docs: 1 },
+  { name: 'Oct 11', docs: 1 },
+];
 
 type TypeSlice = { name: string; value: number; fill: string; percent: string };
 
-const documentTypesData: TypeSlice[] = [];
+const documentTypesData: TypeSlice[] = [
+  { name: 'PDF', value: 1, fill: '#ef4444', percent: '34%' },
+  { name: 'Word', value: 1, fill: '#3b82f6', percent: '33%' },
+  { name: 'Spreadsheet', value: 1, fill: '#10b981', percent: '33%' },
+];
 
 type DocumentRecord = {
   type: string; name: string; uploader: string; initials: string;
@@ -29,15 +38,27 @@ type DocumentRecord = {
   size: string; date: string; time: string;
 };
 
-const documentsList: DocumentRecord[] = [];
+const documentsList: DocumentRecord[] = [
+  { type: 'pdf', name: 'Project_Proposal.pdf', uploader: 'Sarah Kumar', initials: 'SK', avatarColor: 'bg-purple-100 text-purple-600', category: 'Projects', catColor: 'text-amber-600 bg-amber-100', size: '2.4 MB', date: 'Today', time: '10:24 AM' },
+  { type: 'word', name: 'Meeting_Notes.docx', uploader: 'Arun Raj', initials: 'AR', avatarColor: 'bg-blue-100 text-blue-600', category: 'Work', catColor: 'text-blue-600 bg-blue-100', size: '1.8 MB', date: 'Yesterday', time: '04:12 PM' },
+  { type: 'spreadsheet', name: 'Budget_Planner.xlsx', uploader: 'Vikram S', initials: 'VS', avatarColor: 'bg-indigo-100 text-indigo-600', category: 'Work', catColor: 'text-blue-600 bg-blue-100', size: '856 KB', date: 'Oct 7', time: '11:03 AM' },
+];
 
 type StorageType = { name: string; color: string; gb: number; pct: string };
 
-const storageByType: StorageType[] = [];
+const storageByType: StorageType[] = [
+  { name: 'Documents', color: 'bg-blue-500', gb: 1.6, pct: '67%' },
+  { name: 'Images', color: 'bg-amber-500', gb: 0.6, pct: '25%' },
+  { name: 'Others', color: 'bg-slate-400', gb: 0.2, pct: '8%' },
+];
 
 type Activity = { icon: any; color: string; bg: string; title: string; sub: string; time: string };
 
-const recentDocumentActivity: Activity[] = [];
+const recentDocumentActivity: Activity[] = [
+  { icon: CloudUpload, color: 'text-blue-600', bg: 'bg-blue-100', title: 'Document uploaded', sub: 'Project_Proposal.pdf', time: '2 min ago' },
+  { icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-100', title: 'Document processed', sub: 'Meeting_Notes.docx', time: '18 min ago' },
+  { icon: Trash2, color: 'text-rose-600', bg: 'bg-rose-100', title: 'Document deleted', sub: 'Old_Draft.docx', time: '1 hour ago' },
+];
 
 const docTypeOptions = ['All Types', 'pdf', 'word', 'spreadsheet', 'image', 'others'];
 const docCategoryOptions = ['All Categories', 'Projects', 'Work', 'Personal', 'Academic', 'Research', 'Others'];

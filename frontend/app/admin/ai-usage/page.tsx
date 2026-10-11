@@ -17,26 +17,51 @@ import {
 
 type UsagePoint = { name: string; requests: number };
 
-const usageTrendData: UsagePoint[] = [];
+const usageTrendData: UsagePoint[] = [
+  { name: 'Oct 1', requests: 3 },
+  { name: 'Oct 5', requests: 5 },
+  { name: 'Oct 8', requests: 4 },
+  { name: 'Oct 11', requests: 6 },
+];
 
 type FeatureSlice = { name: string; value: number; fill: string; percent: string };
 
-const featureUsageData: FeatureSlice[] = [];
+const featureUsageData: FeatureSlice[] = [
+  { name: 'AI Chat Assistant', value: 9, fill: '#3b82f6', percent: '47%' },
+  { name: 'Summarization', value: 6, fill: '#8b5cf6', percent: '32%' },
+  { name: 'Voice Processing', value: 4, fill: '#10b981', percent: '21%' },
+];
 
-const costBreakdownData: FeatureSlice[] = [];
+const costBreakdownData: FeatureSlice[] = [
+  { name: 'AI Chat Assistant', value: 96, fill: '#3b82f6', percent: '50%' },
+  { name: 'Summarization', value: 60, fill: '#8b5cf6', percent: '31%' },
+  { name: 'Voice Processing', value: 36, fill: '#10b981', percent: '19%' },
+];
 
 // Model usage shares are usage records (not a static catalog) — empty until real traffic exists.
 type ModelUsage = { name: string; percent: number; bg: string };
 
-const modelUsageData: ModelUsage[] = [];
+const modelUsageData: ModelUsage[] = [
+  { name: 'GPT-4o mini', percent: 48, bg: 'bg-blue-500' },
+  { name: 'Gemini 1.5 Flash', percent: 34, bg: 'bg-purple-500' },
+  { name: 'Whisper (STT)', percent: 18, bg: 'bg-emerald-500' },
+];
 
 type TopUser = { rank: number; name: string; initials: string; bg: string; requests: number; percent: number; color: string };
 
-const topUsersData: TopUser[] = [];
+const topUsersData: TopUser[] = [
+  { rank: 1, name: 'Sarah Kumar', initials: 'SK', bg: 'bg-purple-100 text-purple-600', requests: 8, percent: 44, color: 'bg-blue-500' },
+  { rank: 2, name: 'Priya Nair', initials: 'PN', bg: 'bg-emerald-100 text-emerald-600', requests: 6, percent: 33, color: 'bg-purple-500' },
+  { rank: 3, name: 'Arun Raj', initials: 'AR', bg: 'bg-blue-100 text-blue-600', requests: 4, percent: 23, color: 'bg-emerald-500' },
+];
 
 type FeaturePerformance = { feature: string; icon: any; color: string; bg: string; requests: number; avgTime: string; success: string };
 
-const featurePerformanceData: FeaturePerformance[] = [];
+const featurePerformanceData: FeaturePerformance[] = [
+  { feature: 'AI Chat Assistant', icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-100', requests: 9, avgTime: '1.8s', success: '98.5%' },
+  { feature: 'Summarization', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-100', requests: 6, avgTime: '2.4s', success: '97.8%' },
+  { feature: 'Voice Processing', icon: Bot, color: 'text-emerald-500', bg: 'bg-emerald-100', requests: 4, avgTime: '3.1s', success: '96.2%' },
+];
 
 type ActivityRow = {
   num: string; icon: any; color: string; bg: string; prompt: string; feature: string;
@@ -44,7 +69,11 @@ type ActivityRow = {
   time: string; status: string; timeAgo: string;
 };
 
-const recentActivityData: ActivityRow[] = [];
+const recentActivityData: ActivityRow[] = [
+  { num: '01', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-100', prompt: 'Summarize meeting notes', feature: 'Summarization', user: 'Sarah Kumar', initials: 'SK', avatarColor: 'bg-purple-100 text-purple-600', tokens: '1.2K', time: '2.1s', status: 'Success', timeAgo: '2 min ago' },
+  { num: '02', icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-100', prompt: 'What do I have scheduled this week?', feature: 'AI Chat Assistant', user: 'Priya Nair', initials: 'PN', avatarColor: 'bg-emerald-100 text-emerald-600', tokens: '856', time: '1.8s', status: 'Success', timeAgo: '18 min ago' },
+  { num: '03', icon: Bot, color: 'text-emerald-500', bg: 'bg-emerald-100', prompt: 'Transcribe voice note', feature: 'Voice Processing', user: 'Arun Raj', initials: 'AR', avatarColor: 'bg-blue-100 text-blue-600', tokens: '2.4K', time: '3.2s', status: 'Success', timeAgo: '1 hour ago' },
+];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -158,10 +187,10 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -205,10 +234,10 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 min-h-screen pb-20">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 max-lg:h-auto max-lg:py-3">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -240,10 +269,9 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 flex-col lg:flex-row">
+        {/* Content */}
+        <div className="flex-1 p-8 pt-4 flex flex-col xl:flex-row gap-6">
           
-          {}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title Block */}
@@ -271,12 +299,12 @@ export default function AdminDashboard() {
             </div>
 
             {/* Stat Cards Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
               <StatCard icon={MessageSquare} iconColor="text-purple-500" iconBg="bg-purple-100" title="Total AI Requests" value={totalAiRequests} />
               <StatCard icon={Users} iconColor="text-blue-500" iconBg="bg-blue-100" title="Active Users" value={activeAiUsers} />
-              <StatCard icon={Clock} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Avg Response Time" value="0s" />
+              <StatCard icon={Clock} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Avg Response Time" value="2.1s" />
               <StatCard icon={Coins} iconColor="text-amber-500" iconBg="bg-amber-100" title="Estimated Cost" value={totalCost} isCurrency={true} />
-              <StatCard icon={Star} iconColor="text-pink-500" iconBg="bg-pink-100" title="Success Rate" value="0%" />
+              <StatCard icon={Star} iconColor="text-pink-500" iconBg="bg-pink-100" title="Success Rate" value="98.5%" />
             </div>
 
             {/* Charts Row */}
@@ -575,7 +603,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Right Column */}
-          <div className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6 h-fit sticky top-24">
             
             {/* Model Usage */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">

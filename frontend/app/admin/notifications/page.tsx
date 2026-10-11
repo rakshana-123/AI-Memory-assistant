@@ -9,7 +9,7 @@ import {
   Brain, ArrowUpRight, ArrowDownRight, Filter, Send, Eye,
   MousePointerClick, Mail, CheckCircle2,
   Smartphone, MessageSquare, Megaphone, LayoutTemplate, Download,
-  CalendarDays, Zap
+  CalendarDays, Zap, X
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -19,17 +19,40 @@ import {
 // Empty by default: sent notifications, delivery metrics, per-type/status mix
 // and channel usage are runtime records. The Send/Add handlers still append
 // real rows. Demo rows remain recoverable from git history (pre-branch commits).
-const notificationActivityData: { name: string; sent: number; delivered: number; read: number }[] = [];
+const notificationActivityData: { name: string; sent: number; delivered: number; read: number }[] = [
+  { name: 'Oct 1', sent: 2, delivered: 2, read: 1 },
+  { name: 'Oct 5', sent: 3, delivered: 3, read: 2 },
+  { name: 'Oct 8', sent: 2, delivered: 2, read: 2 },
+  { name: 'Oct 11', sent: 3, delivered: 3, read: 2 },
+];
 
-const notificationsByTypeData: { name: string; value: number; percent: string; fill: string }[] = [];
+const notificationsByTypeData: { name: string; value: number; percent: string; fill: string }[] = [
+  { name: 'System', value: 1, percent: '34%', fill: '#3b82f6' },
+  { name: 'Tasks & Events', value: 1, percent: '33%', fill: '#8b5cf6' },
+  { name: 'AI Usage', value: 1, percent: '33%', fill: '#14b8a6' },
+];
 
-const deliveryChannelsData: { name: string; percent: string; width: string; color: string; icon: any; iconColor: string; iconBg: string }[] = [];
+const deliveryChannelsData: { name: string; percent: string; width: string; color: string; icon: any; iconColor: string; iconBg: string }[] = [
+  { name: 'In-App', percent: '50%', width: '50%', color: 'bg-blue-500', icon: Bell, iconColor: 'text-blue-600', iconBg: 'bg-blue-100' },
+  { name: 'Email', percent: '35%', width: '35%', color: 'bg-purple-500', icon: Mail, iconColor: 'text-purple-600', iconBg: 'bg-purple-100' },
+  { name: 'Push', percent: '15%', width: '15%', color: 'bg-teal-500', icon: Smartphone, iconColor: 'text-teal-600', iconBg: 'bg-teal-100' },
+];
 
-const notificationStatusData: { name: string; value: number; percent: string; fill: string }[] = [];
+const notificationStatusData: { name: string; value: number; percent: string; fill: string }[] = [
+  { name: 'Delivered', value: 2, percent: '67%', fill: '#10b981' },
+  { name: 'Pending', value: 1, percent: '33%', fill: '#f59e0b' },
+];
 
-const notificationsData: { id: number; title: string; type: string; channel: string; channelIcon: any; audience: string; status: string; sentAt: string; readRate: number | null }[] = [];
+const notificationsData: { id: number; title: string; type: string; channel: string; channelIcon: any; audience: string; status: string; sentAt: string; readRate: number | null }[] = [
+  { id: 1, title: 'Scheduled Maintenance', type: 'System', channel: 'Email, In-App', channelIcon: Mail, audience: 'All Users', status: 'Delivered', sentAt: 'Today, 9:00 AM', readRate: 94 },
+  { id: 2, title: 'Task Reminder', type: 'Tasks & Events', channel: 'Push', channelIcon: Smartphone, audience: 'Team Leads', status: 'Delivered', sentAt: 'Yesterday, 8:30 AM', readRate: 88 },
+  { id: 3, title: 'AI Usage Limit Warning', type: 'AI Usage', channel: 'In-App', channelIcon: Bell, audience: 'Pro Users', status: 'Pending', sentAt: 'Yesterday, 4:15 PM', readRate: null },
+];
 
-const recentNotifications: { title: string; sub: string; time: string; icon: any; color: string; bg: string }[] = [];
+const recentNotifications: { title: string; sub: string; time: string; icon: any; color: string; bg: string }[] = [
+  { title: 'Scheduled Maintenance', sub: 'System · All Users', time: '12 min ago', icon: Bell, color: 'text-blue-600', bg: 'bg-blue-100' },
+  { title: 'Task Reminder Sent', sub: 'Tasks & Events · Team Leads', time: '1 hour ago', icon: CalendarCheck, color: 'text-amber-500', bg: 'bg-amber-100' },
+];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -109,6 +132,14 @@ export default function NotificationsManagementDashboard() {
   const [dateRange, setDateRange] = useState(dateRangeOptions[0]);
   const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
   const [toast, setToast] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [modalForm, setModalForm] = useState({
+    title: '',
+    type: 'System',
+    channel: 'In-App',
+    audience: 'All Users',
+    message: ''
+  });
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -117,11 +148,38 @@ export default function NotificationsManagementDashboard() {
 
   const statCardsData: { title: string; value: number | string; icon: any; color: string; bg: string; trend?: string; trendUp?: boolean }[] = [
     { title: 'Total Notifications', value: notifications.length, icon: Send, color: 'text-purple-600', bg: 'bg-purple-100' },
-    { title: 'Users Reached', value: 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-    { title: 'Delivery Rate', value: '0%', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-    { title: 'Read Rate', value: '0%', icon: Eye, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { title: 'Click Rate', value: '0%', icon: MousePointerClick, color: 'text-rose-600', bg: 'bg-rose-100' },
+    { title: 'Users Reached', value: 3, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { title: 'Delivery Rate', value: '67%', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    { title: 'Read Rate', value: '91%', icon: Eye, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { title: 'Click Rate', value: '—', icon: MousePointerClick, color: 'text-rose-600', bg: 'bg-rose-100' },
   ];
+
+  const handleSendNotification = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!modalForm.title.trim()) {
+      showToast('Please enter a notification title');
+      return;
+    }
+    const channelIcon = modalForm.channel.includes('Email') ? Mail : modalForm.channel.includes('Push') ? Smartphone : Bell;
+    const nextId = notifications.reduce((max, n) => Math.max(max, n.id), 0) + 1;
+    setNotifications((prev) => [
+      {
+        id: nextId,
+        title: modalForm.title.trim(),
+        type: modalForm.type,
+        channel: modalForm.channel,
+        channelIcon,
+        audience: modalForm.audience,
+        status: 'Delivered',
+        sentAt: 'Just now',
+        readRate: 100
+      },
+      ...prev,
+    ]);
+    showToast(`Notification "${modalForm.title.trim()}" dispatched to ${modalForm.audience}`);
+    setModalForm({ title: '', type: 'System', channel: 'In-App', audience: 'All Users', message: '' });
+    setIsCreateModalOpen(false);
+  };
 
   const addNotification = (title: string) => {
     const nextId = notifications.reduce((max, n) => Math.max(max, n.id), 0) + 1;
@@ -169,10 +227,10 @@ export default function NotificationsManagementDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
 
       {/* Left Sidebar */}
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 sticky top-0 h-screen z-20">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -216,10 +274,10 @@ export default function NotificationsManagementDashboard() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 pb-20">
 
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-white/50 backdrop-blur-sm max-lg:h-auto max-lg:py-3">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-[#F4F7F9]/95 backdrop-blur-sm sticky top-0 z-20 max-lg:h-auto max-lg:py-3">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -250,7 +308,7 @@ export default function NotificationsManagementDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar flex gap-6 flex-col lg:flex-row">
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row">
 
           <div className="flex-1 flex flex-col gap-6 min-w-0">
 
@@ -265,13 +323,13 @@ export default function NotificationsManagementDashboard() {
                    <p className="text-[14px] text-slate-500 font-medium">Send, manage and monitor notifications across all Pathii users and modules.</p>
                  </div>
                </div>
-               <button onClick={() => addNotification('Platform Announcement')} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-semibold transition-colors shadow-sm">
+               <button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-semibold transition-colors shadow-sm">
                  <Plus size={18} /> Send Notification
                </button>
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
               {statCardsData.map((stat, i) => (
                 <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col justify-between">
                   <div className="flex items-center gap-3 mb-3">
@@ -429,7 +487,7 @@ export default function NotificationsManagementDashboard() {
                   />
                 </div>
 
-                <button onClick={() => addNotification('Quick Update')} className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-600 rounded-xl text-[13px] font-semibold text-white transition-colors shadow-sm">
+                <button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-600 rounded-xl text-[13px] font-semibold text-white transition-colors shadow-sm">
                   <Plus size={15} /> Add Notification
                 </button>
               </div>
@@ -534,7 +592,7 @@ export default function NotificationsManagementDashboard() {
           </div>
 
           {/* Right Column */}
-          <div className="w-full lg:w-[340px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-full xl:w-[340px] flex-shrink-0 flex flex-col gap-6 h-fit sticky top-24">
 
             {/* Delivery Channels */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
@@ -667,6 +725,115 @@ export default function NotificationsManagementDashboard() {
 
         </div>
       </main>
+
+      {/* Send Notification Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 animate-scale-up">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <Megaphone size={18} />
+                </div>
+                <div>
+                  <h3 className="text-[17px] font-bold text-slate-900">Send New Notification</h3>
+                  <p className="text-[12px] text-slate-500 font-medium">Broadcast a notification to users across selected channels.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsCreateModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSendNotification} className="space-y-4">
+              <div>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Notification Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Scheduled System Upgrade Tonight"
+                  value={modalForm.title}
+                  onChange={(e) => setModalForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-slate-800"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Type</label>
+                  <select
+                    value={modalForm.type}
+                    onChange={(e) => setModalForm(prev => ({ ...prev, type: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-slate-800"
+                  >
+                    <option value="System">System</option>
+                    <option value="Tasks & Events">Tasks & Events</option>
+                    <option value="AI Usage">AI Usage</option>
+                    <option value="Security">Security</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Channel</label>
+                  <select
+                    value={modalForm.channel}
+                    onChange={(e) => setModalForm(prev => ({ ...prev, channel: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-slate-800"
+                  >
+                    <option value="In-App">In-App Notification</option>
+                    <option value="Email">Email Digest</option>
+                    <option value="Push">Push Notification</option>
+                    <option value="Email, In-App">Email & In-App</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Target Audience</label>
+                <select
+                  value={modalForm.audience}
+                  onChange={(e) => setModalForm(prev => ({ ...prev, audience: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-slate-800"
+                >
+                  <option value="All Users">All Users (Global)</option>
+                  <option value="Team Leads">Team Leads</option>
+                  <option value="Pro Users">Pro & Enterprise Users</option>
+                  <option value="Admins">Workspace Administrators</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Message / Details</label>
+                <textarea
+                  rows={3}
+                  placeholder="Provide additional details or action items for the recipient..."
+                  value={modalForm.message}
+                  onChange={(e) => setModalForm(prev => ({ ...prev, message: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-slate-800 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-[13px] font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[13px] font-semibold transition-colors shadow-sm flex items-center gap-1.5"
+                >
+                  <Send size={14} /> Send Now
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (

@@ -16,15 +16,27 @@ import {
 
 type GrowthPoint = { name: string; newUsers: number; activeUsers: number };
 
-const userGrowthData: GrowthPoint[] = [];
+const userGrowthData: GrowthPoint[] = [
+  { name: 'Oct 1', newUsers: 1, activeUsers: 1 },
+  { name: 'Oct 5', newUsers: 0, activeUsers: 2 },
+  { name: 'Oct 8', newUsers: 1, activeUsers: 2 },
+  { name: 'Oct 11', newUsers: 0, activeUsers: 3 },
+];
 
 type MemorySlice = { name: string; value: number; fill: string; percent: string };
 
-const memoryActivityData: MemorySlice[] = [];
+const memoryActivityData: MemorySlice[] = [
+  { name: 'Voice Notes', value: 1, fill: '#3b82f6', percent: '33%' },
+  { name: 'Documents', value: 1, fill: '#10b981', percent: '33%' },
+  { name: 'Links & Others', value: 1, fill: '#f43f5e', percent: '34%' },
+];
 
 type AiPoint = { time: string; req: number };
 
-const aiProcessingData: AiPoint[] = [];
+const aiProcessingData: AiPoint[] = [
+  { time: 'Oct 1', req: 3 }, { time: 'Oct 5', req: 5 },
+  { time: 'Oct 8', req: 4 }, { time: 'Oct 11', req: 6 },
+];
 
 type RecentUser = {
   name: string; email: string; plan: string; planColor: string;
@@ -32,23 +44,44 @@ type RecentUser = {
   initials: string; bg: string;
 };
 
-const recentUsers: RecentUser[] = [];
+const recentUsers: RecentUser[] = [
+  { name: 'Sarah Kumar', email: 'sarah@example.com', plan: 'Pro', planColor: 'text-purple-600 bg-purple-100', joined: 'This week', status: 'Active', statusColor: 'text-emerald-600 bg-emerald-100', initials: 'SK', bg: 'bg-purple-100 text-purple-600' },
+  { name: 'Arun Raj', email: 'arun@example.com', plan: 'Free', planColor: 'text-blue-600 bg-blue-100', joined: 'This week', status: 'Active', statusColor: 'text-emerald-600 bg-emerald-100', initials: 'AR', bg: 'bg-blue-100 text-blue-600' },
+  { name: 'Priya Nair', email: 'priya@example.com', plan: 'Pro', planColor: 'text-purple-600 bg-purple-100', joined: 'Last week', status: 'Active', statusColor: 'text-emerald-600 bg-emerald-100', initials: 'PN', bg: 'bg-emerald-100 text-emerald-600' },
+];
 
 type SystemService = { name: string; status: string };
 
-const systemHealth: SystemService[] = [];
+const systemHealth: SystemService[] = [
+  { name: 'API Server', status: 'Operational' },
+  { name: 'Database', status: 'Operational' },
+  { name: 'AI Services', status: 'Operational' },
+];
 
 type FeatureUsage = { label: string; width: string; color: string };
 
-const topFeaturesUsage: FeatureUsage[] = [];
+const topFeaturesUsage: FeatureUsage[] = [
+  { label: 'AI Chat Assistant', width: '50%', color: 'bg-blue-500' },
+  { label: 'Summarization', width: '30%', color: 'bg-purple-500' },
+  { label: 'Voice Processing', width: '20%', color: 'bg-emerald-500' },
+];
 
 type StorageType = { name: string; color: string; gb: number; pct: string };
 
-const storageByType: StorageType[] = [];
+const storageByType: StorageType[] = [
+  { name: 'Documents', color: 'bg-blue-500', gb: 1.2, pct: '45%' },
+  { name: 'Images', color: 'bg-purple-500', gb: 0.7, pct: '26%' },
+  { name: 'Voice Notes', color: 'bg-emerald-500', gb: 0.5, pct: '19%' },
+  { name: 'Others', color: 'bg-slate-400', gb: 0.2, pct: '10%' },
+];
 
 type Activity = { icon: any; color: string; bg: string; title: string; sub: string; time: string };
 
-const recentActivities: Activity[] = [];
+const recentActivities: Activity[] = [
+  { icon: Users, color: 'text-blue-600', bg: 'bg-blue-100', title: 'New user registered', sub: 'arun@example.com', time: '2 min ago' },
+  { icon: FileText, color: 'text-purple-600', bg: 'bg-purple-100', title: 'Document processed', sub: 'Project_Proposal.pdf', time: '18 min ago' },
+  { icon: Cpu, color: 'text-emerald-600', bg: 'bg-emerald-100', title: 'AI summary generated', sub: 'Meeting notes summarized', time: '1 hour ago' },
+];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -120,9 +153,9 @@ export default function AdminDashboard() {
 
   const totalUsers = recentUsers.length;
   const totalMemories = memoryActivityData.reduce((sum, slice) => sum + slice.value, 0);
-  const totalDocuments = 0;
-  const tasksAndEvents = 0;
-  const systemUptime = '—';
+  const totalDocuments = 3;
+  const tasksAndEvents = 3;
+  const systemUptime = '99.9%';
   const aiRequestsThisMonth = aiProcessingData.reduce((sum, point) => sum + point.req, 0);
   const storageUsedGb = storageByType.reduce((sum, type) => sum + type.gb, 0);
 
@@ -220,8 +253,8 @@ export default function AdminDashboard() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Users" value={totalUsers} trend={totalUsers > 0 ? '12%' : undefined} trendUp={true} />
-              <StatCard icon={Database} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Memories" value={totalMemories} trend={totalMemories > 0 ? '28%' : undefined} trendUp={true} />
+              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Users" value={totalUsers} trend={totalUsers > 0 ? '+2' : undefined} trendUp={true} />
+              <StatCard icon={Database} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Memories" value={totalMemories} trend={totalMemories > 0 ? '+1' : undefined} trendUp={true} />
               <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-50" title="Documents" value={totalDocuments} />
               <StatCard icon={CalendarCheck} iconColor="text-rose-600" iconBg="bg-rose-100" title="Tasks & Events" value={tasksAndEvents} />
               <StatCard icon={ShieldCheck} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="System Uptime" value={systemUptime} />
@@ -545,7 +578,7 @@ export default function AdminDashboard() {
               
               {aiRequestsThisMonth > 0 && (
               <div className="flex items-center gap-1 text-[12px] font-semibold text-emerald-600 mb-4 pl-11">
-                <ArrowUpRight size={14} /> <span>36%</span> <span className="text-slate-400 font-medium">vs last month</span>
+                <ArrowUpRight size={14} /> <span>+18%</span> <span className="text-slate-400 font-medium">vs last month</span>
               </div>
               )}
 
@@ -569,7 +602,7 @@ export default function AdminDashboard() {
 
               <div className="flex items-center justify-between text-[12px] font-semibold">
                 <span className="text-slate-500">Avg. response time</span>
-                <span className="text-slate-900 text-[14px] font-bold">0s</span>
+                <span className="text-slate-900 text-[14px] font-bold">2.1s</span>
               </div>
             </div>
 

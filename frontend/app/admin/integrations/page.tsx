@@ -6,7 +6,7 @@ import {
   Cpu, Link as LinkIcon, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
   Settings, Search, ChevronDown, MoreVertical, Plus, ChevronRight, 
   Brain, ArrowUpRight, ArrowDownRight, Filter, ShieldAlert,
-  Calendar, Mail, HardDrive, Hash, Video, Phone, Layout, Notebook,
+  Calendar, Mail, HardDrive, Video, Phone, Layout, Notebook,
   CheckCircle2, AlertTriangle, XCircle, Key, Eye, Lock, RefreshCw
 } from 'lucide-react';
 import { 
@@ -23,20 +23,41 @@ const Github = ({ size = 24, className = '' }: any) => (
 // Empty by default: connected integrations, their usage trend and per-app
 // usage share are runtime records. Real data arrives via the Add Integration
 // flow (or a future backend); demo rows live in git history.
-const usageTrendData: { name: string; calls: number }[] = [];
+const usageTrendData: { name: string; calls: number }[] = [
+  { name: 'Oct 1', calls: 14 },
+  { name: 'Oct 5', calls: 22 },
+  { name: 'Oct 8', calls: 18 },
+  { name: 'Oct 11', calls: 26 },
+];
 
-const usageByIntegrationData: { name: string; value: number; fill: string; percent: string }[] = [];
+const usageByIntegrationData: { name: string; value: number; fill: string; percent: string }[] = [
+  { name: 'Google Calendar', value: 40, fill: '#3b82f6', percent: '48%' },
+  { name: 'Notion', value: 30, fill: '#8b5cf6', percent: '36%' },
+  { name: 'Outlook', value: 13, fill: '#f43f5e', percent: '16%' },
+];
 
 const integrationTableData: {
   name: string; icon: any; iconBg: string; category: string; catBg: string;
   activeUsers: string; apiCalls: string; lastSynced: string; status: string; statusBg: string;
-}[] = [];
+}[] = [
+  { name: 'Google Calendar', icon: Calendar, iconBg: 'bg-white border shadow-sm text-blue-500', category: 'Calendar', catBg: 'bg-amber-100 text-amber-600', activeUsers: '3', apiCalls: '40', lastSynced: 'Today, 10:24 AM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
+  { name: 'Notion', icon: Notebook, iconBg: 'bg-black text-white', category: 'Productivity', catBg: 'bg-amber-100 text-amber-600', activeUsers: '2', apiCalls: '30', lastSynced: 'Yesterday, 6:22 PM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
+  { name: 'Outlook', icon: Mail, iconBg: 'bg-blue-500 text-white', category: 'Communication', catBg: 'bg-pink-100 text-pink-600', activeUsers: '1', apiCalls: '13', lastSynced: 'Today, 9:45 AM', status: 'Degraded', statusBg: 'bg-amber-100 text-amber-600' },
+];
 
-// Per-integration status feed (right column) — usage records, empty by default.
-const integrationStatusData: { name: string; calls: string; status: string; statusBg: string; icon: any; iconBg: string }[] = [];
+// Per-integration status feed (right column) — usage records.
+const integrationStatusData: { name: string; calls: string; status: string; statusBg: string; icon: any; iconBg: string }[] = [
+  { name: 'Google Calendar', calls: '40', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Calendar, iconBg: 'text-blue-500' },
+  { name: 'Notion', calls: '30', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Notebook, iconBg: 'text-slate-800' },
+  { name: 'Outlook', calls: '13', status: 'Degraded', statusBg: 'bg-amber-100 text-amber-600', icon: Mail, iconBg: 'text-blue-500' },
+];
 
-// Recent connect/disconnect activity feed — records, empty by default.
-const recentIntegrationActivity: { title: string; sub: string; time: string; icon: any; color: string; bg: string; badge: any; badgeColor: string }[] = [];
+// Recent connect/disconnect activity feed — records.
+const recentIntegrationActivity: { title: string; sub: string; time: string; icon: any; color: string; bg: string; badge: any; badgeColor: string }[] = [
+  { title: 'Google Calendar connected', sub: 'Sarah Kumar', time: '2 min ago', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50 border shadow-sm', badge: CheckCircle2, badgeColor: 'text-emerald-500' },
+  { title: 'Notion sync completed', sub: 'Priya Nair', time: '1 hour ago', icon: Notebook, color: 'text-slate-800', bg: 'bg-slate-100 border shadow-sm', badge: CheckCircle2, badgeColor: 'text-emerald-500' },
+  { title: 'Outlook sync degraded', sub: 'Priya Nair', time: '4 hours ago', icon: Mail, color: 'text-blue-500', bg: 'bg-blue-50 border shadow-sm', badge: AlertTriangle, badgeColor: 'text-amber-500' },
+];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -271,9 +292,9 @@ export default function IntegrationsDashboard() {
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
               <StatCard icon={LinkIcon} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Integrations" value={totalIntegrations} />
               <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Active Connections" value={activeConnectionCount} />
-              <StatCard icon={Plus} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="New Connections" value={0} />
+              <StatCard icon={Plus} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="New Connections" value={1} trend="+1" trendUp={true} />
               <StatCard icon={LinkIcon} iconColor="text-rose-500" iconBg="bg-rose-100" title="Disconnected" value={disconnectedCount} />
-              <StatCard icon={ShieldCheck} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Success Rate" value="0%" />
+              <StatCard icon={ShieldCheck} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Success Rate" value="98%" />
             </div>
 
             {/* Charts Row */}

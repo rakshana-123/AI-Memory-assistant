@@ -88,11 +88,17 @@ export default function PathiiDashboard() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isRecording, setIsRecording] = React.useState(false);
   const [seconds, setSeconds] = React.useState(0);
-  const [captures, setCaptures] = React.useState<Capture[]>([]);
+  const [captures, setCaptures] = React.useState<Capture[]>([
+    { id: 1, title: "Project idea discussion", time: "Today, 10:42 AM • 02:14", tag: "Idea", tagColor: "bg-[#EBF3FF] text-[#2563EB]" },
+    { id: 2, title: "Meeting with Sarah", time: "Yesterday, 4:20 PM • 05:30", tag: "Meeting", tagColor: "bg-[#F3E8FF] text-[#8B5CF6]" },
+    { id: 3, title: "Grocery list reminder", time: "2 days ago • 00:48", tag: "Task", tagColor: "bg-[#E6F8F0] text-[#10B981]" },
+  ]);
   const [toast, setToast] = React.useState<string | null>(null);
   const [inputSourceIndex, setInputSourceIndex] = React.useState(0);
 
   const inputSources = ['Default (Microphone)', 'AirPods Pro', 'System Audio'];
+
+  const [selectedCapture, setSelectedCapture] = React.useState<Capture | null>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -126,15 +132,18 @@ export default function PathiiDashboard() {
       setCaptures(prev => [newCap, ...prev]);
       setIsRecording(false);
       setSeconds(0);
+      showToast("Voice recording saved to your memories!");
     } else {
       setIsRecording(true);
       setSeconds(0);
+      showToast("Recording started...");
     }
   };
 
   const cancelRecording = () => {
     setIsRecording(false);
     setSeconds(0);
+    showToast("Recording cancelled");
   };
 
   const mins = Math.floor(seconds / 60);
@@ -152,10 +161,10 @@ export default function PathiiDashboard() {
   ];
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
-      {}
-      <aside className="w-[260px] bg-[#F4F7F9] flex flex-col z-10 flex-shrink-0 py-6 px-4">
+      {/* Sidebar */}
+      <aside className="w-[260px] bg-[#F4F7F9] flex flex-col z-20 flex-shrink-0 py-6 px-4 sticky top-0 h-screen">
         {/* Logo Area */}
         <div className="flex items-center gap-3 mb-8 px-2">
           <div className="text-[#2563EB]">
@@ -199,11 +208,11 @@ export default function PathiiDashboard() {
         </div>
       </aside>
 
-      {}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9] relative rounded-tl-[40px] border-l border-slate-200/50 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9] relative rounded-tl-[40px] border-l border-slate-200/50 shadow-[-10px_0_30px_rgba(0,0,0,0.02)] min-h-screen pb-20">
         
         {/* Header Search & Notification */}
-        <header className="h-[90px] px-8 flex items-center justify-between z-20">
+        <header className="h-[90px] px-8 flex items-center justify-between sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[450px] lg:w-[450px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -219,7 +228,7 @@ export default function PathiiDashboard() {
           </div>
 
           <div className="flex items-center gap-4 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened')} className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <button onClick={() => showToast('Notifications checked')} className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <Bell size={20} />
             </button>
             <NextLink href="/settings">
@@ -228,8 +237,8 @@ export default function PathiiDashboard() {
           </div>
         </header>
 
-        {/* Scrollable Main View */}
-        <div className="flex-1 overflow-y-auto p-8 pt-2 pb-12">
+        {/* Main View */}
+        <div className="flex-1 p-8 pt-4">
           
           {}
           <div className="flex flex-col lg:flex-row items-center max-lg:items-start justify-between mb-6 pl-2 max-lg:gap-4">
@@ -255,8 +264,8 @@ export default function PathiiDashboard() {
             </div>
           </div>
 
-          {}
-          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 mb-6">
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-6 mb-6">
             
             {/* Left: Main Recording Area */}
             <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] flex flex-col items-center relative min-h-[500px]">
@@ -442,7 +451,7 @@ export default function PathiiDashboard() {
               </NextLink>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {filteredCaptures.length > 0 ? (
                 filteredCaptures.map((capture) => (
                   <CaptureCard
@@ -451,12 +460,12 @@ export default function PathiiDashboard() {
                     time={capture.time}
                     tag={capture.tag}
                     tagColor={capture.tagColor}
-                    onCardClick={() => showToast(`Playing '${capture.title}'`)}
-                    onMoreClick={() => showToast(`More options for '${capture.title}'`)}
+                    onCardClick={() => setSelectedCapture(capture)}
+                    onMoreClick={() => showToast(`Actions opened for '${capture.title}'`)}
                   />
                 ))
               ) : (
-                <div className="sm:col-span-2 lg:col-span-4">
+                <div className="sm:col-span-2 xl:col-span-4">
                   <EmptyState icon={Mic} title="No captures yet" subtitle="Recordings you make will appear here." />
                 </div>
               )}
@@ -465,6 +474,74 @@ export default function PathiiDashboard() {
 
         </div>
       </main>
+
+      {/* Capture Detail Modal */}
+      {selectedCapture && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <span className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full mb-2 ${selectedCapture.tagColor}`}>
+                  {selectedCapture.tag}
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">{selectedCapture.title}</h3>
+                <p className="text-xs text-slate-500 mt-1">{selectedCapture.time}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedCapture(null)} 
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100">
+              <div className="flex items-center gap-3 mb-3">
+                <button 
+                  onClick={() => showToast("Playing audio...")}
+                  className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors"
+                >
+                  <Play size={18} fill="currentColor" className="ml-0.5" />
+                </button>
+                <div className="flex-1">
+                  <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full w-1/3 bg-blue-600 rounded-full"></div>
+                  </div>
+                  <div className="flex justify-between text-[11px] text-slate-400 mt-1 font-medium">
+                    <span>0:42</span>
+                    <span>2:14</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-slate-200/60">
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Transcript Preview</p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  "Discussing the AI memory assistant architecture. The core requirements include multi-modal recording, immediate speech-to-text transcript processing, and automatic action item assignment."
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button 
+                onClick={() => {
+                  showToast("Transcript copied to clipboard");
+                  setSelectedCapture(null);
+                }} 
+                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors text-center"
+              >
+                Copy Transcript
+              </button>
+              <NextLink 
+                href="/memories"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors text-center"
+              >
+                Open in Memories
+              </NextLink>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (

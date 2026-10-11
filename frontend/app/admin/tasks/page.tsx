@@ -16,15 +16,27 @@ import {
 
 type TrendPoint = { name: string; tasks: number; events: number };
 
-const trendsData: TrendPoint[] = [];
+const trendsData: TrendPoint[] = [
+  { name: 'Oct 1', tasks: 1, events: 0 },
+  { name: 'Oct 5', tasks: 0, events: 1 },
+  { name: 'Oct 8', tasks: 1, events: 0 },
+  { name: 'Oct 11', tasks: 1, events: 1 },
+];
 
 type StatusSlice = { name: string; value: number; fill: string };
 
-const statusData: StatusSlice[] = [];
+const statusData: StatusSlice[] = [
+  { name: 'Pending', value: 1, fill: '#f59e0b' },
+  { name: 'Upcoming', value: 1, fill: '#0ea5e9' },
+  { name: 'Completed', value: 1, fill: '#10b981' },
+];
 
 type EventTypeSlice = { name: string; value: number; fill: string };
 
-const eventTypesData: EventTypeSlice[] = [];
+const eventTypesData: EventTypeSlice[] = [
+  { name: 'Meetings', value: 1, fill: '#3b82f6' },
+  { name: 'Calls', value: 1, fill: '#8b5cf6' },
+];
 
 type TaskRow = {
   title: string; icon: any; iconBg: string; type: string; typeColor: string;
@@ -33,15 +45,25 @@ type TaskRow = {
   createdAvatarColor?: string; createdName: string;
 };
 
-const tableData: TaskRow[] = [];
+const tableData: TaskRow[] = [
+  { title: 'Complete project proposal', icon: CheckSquare, iconBg: 'bg-purple-100 text-purple-600', type: 'Task', typeColor: 'text-purple-700 bg-purple-100', status: 'Pending', statusColor: 'text-amber-700 bg-amber-100', initials: 'SK', avatarColor: 'bg-purple-100 text-purple-600', assignedName: 'Sarah Kumar', date: 'Today', time: '11:59 PM', createdInitials: 'AR', createdAvatarColor: 'bg-blue-100 text-blue-600', createdName: 'Arun Raj' },
+  { title: 'Team meeting', icon: Calendar, iconBg: 'bg-blue-100 text-blue-600', type: 'Event', typeColor: 'text-blue-700 bg-blue-100', status: 'Upcoming', statusColor: 'text-sky-700 bg-sky-100', initials: 'PN', avatarColor: 'bg-emerald-100 text-emerald-600', assignedName: 'Priya Nair', date: 'Tomorrow', time: '10:00 AM', createdInitials: 'SK', createdAvatarColor: 'bg-purple-100 text-purple-600', createdName: 'Sarah Kumar' },
+  { title: 'Client call with ABC Corp', icon: Calendar, iconBg: 'bg-emerald-100 text-emerald-600', type: 'Event', typeColor: 'text-blue-700 bg-blue-100', status: 'Completed', statusColor: 'text-emerald-700 bg-emerald-100', initials: 'VS', avatarColor: 'bg-amber-100 text-amber-600', assignedName: 'Vikram S', date: 'Yesterday', time: '02:00 PM', createdInitials: 'PN', createdAvatarColor: 'bg-emerald-100 text-emerald-600', createdName: 'Priya Nair' },
+];
 
 type UpcomingEvent = { day: string; mth: string; title: string; time: string; icon: any; color: string };
 
-const upcomingEvents: UpcomingEvent[] = [];
+const upcomingEvents: UpcomingEvent[] = [
+  { day: '13', mth: 'OCT', title: 'Team meeting', time: '10:00 AM', icon: Calendar, color: 'bg-blue-100 text-blue-600' },
+  { day: '16', mth: 'OCT', title: 'Product demo', time: '03:00 PM', icon: Calendar, color: 'bg-emerald-100 text-emerald-600' },
+];
 
 type Activity = { icon: any; color: string; bg: string; title: string; desc: string; time: string };
 
-const recentActivity: Activity[] = [];
+const recentActivity: Activity[] = [
+  { icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-100', title: 'Event completed', desc: '"Client call with ABC Corp" marked completed', time: '1 hour ago' },
+  { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-100', title: 'Task due soon', desc: '"Complete project proposal" due today', time: '3 hours ago' },
+];
 
 const taskTypeOptions = ['All Types', 'Task', 'Event'];
 const taskStatusOptions = ['All Status', 'Pending', 'Upcoming', 'Completed', 'Overdue'];
@@ -237,10 +259,10 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -266,7 +288,7 @@ export default function AdminDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-100 mt-auto">
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
@@ -277,14 +299,17 @@ export default function AdminDashboard() {
             </div>
             <ChevronRight size={18} className="text-slate-400" />
           </div>
+          <NextLink href="/" className="text-[11.5px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 py-1.5 px-3 rounded-xl text-center transition-colors">
+            ← Switch to User App
+          </NextLink>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 min-h-screen pb-20">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-[#F4F7F9] max-lg:h-auto max-lg:flex-wrap max-lg:py-3 max-lg:gap-3">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -316,8 +341,8 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Scrollable Workspace */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar flex gap-6 max-lg:flex-col">
+        {/* Workspace */}
+        <div className="flex-1 p-8 pt-4 flex flex-col xl:flex-row gap-6">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -338,7 +363,7 @@ export default function AdminDashboard() {
                </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
               <StatCard icon={CheckSquare} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Tasks" value={totalTasks} />
               <StatCard icon={Calendar} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Events" value={totalEvents} />
               <StatCard icon={CheckCircle2} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Completed" value={completedCount} />
@@ -614,10 +639,10 @@ export default function AdminDashboard() {
                  </div>
               </div>
             </div>
-
           </div>
 
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
+          {/* Right Column */}
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6 h-fit sticky top-24">
             
             {/* Upcoming Events */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">

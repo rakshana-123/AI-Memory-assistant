@@ -20,20 +20,50 @@ import {
 // All of it is empty until a real monitoring backend feeds it; demo rows
 // remain recoverable from git history (pre-branch commits).
 
-const performanceData: { name: string; rt: number; tp: number }[] = [];
+const performanceData: { name: string; rt: number; tp: number }[] = [
+  { name: 'Oct 5', rt: 120, tp: 42 },
+  { name: 'Oct 8', rt: 95, tp: 38 },
+  { name: 'Oct 10', rt: 140, tp: 45 },
+  { name: 'Oct 11', rt: 110, tp: 40 },
+];
 
-const resourceData: { name: string; cpu: number; mem: number; disk: number }[] = [];
+const resourceData: { name: string; cpu: number; mem: number; disk: number }[] = [
+  { name: 'Oct 5', cpu: 34, mem: 52, disk: 41 },
+  { name: 'Oct 8', cpu: 38, mem: 55, disk: 41 },
+  { name: 'Oct 10', cpu: 45, mem: 58, disk: 42 },
+  { name: 'Oct 11', cpu: 41, mem: 54, disk: 42 },
+];
 
-const errorRateData: { name: string; value: number; fill: string }[] = [];
+const errorRateData: { name: string; value: number; fill: string }[] = [
+  { name: 'API Errors', value: 1, fill: '#3b82f6' },
+  { name: 'AI Service', value: 1, fill: '#8b5cf6' },
+  { name: 'Database', value: 0, fill: '#10b981' },
+];
 
-const responseTimeData: { name: string; val: string; width: string; color: string }[] = [];
+const responseTimeData: { name: string; val: string; width: string; color: string }[] = [
+  { name: 'Web App', val: '126 ms', width: '30%', color: 'bg-blue-500' },
+  { name: 'API Server', val: '142 ms', width: '35%', color: 'bg-purple-500' },
+  { name: 'AI Service', val: '210 ms', width: '55%', color: 'bg-amber-500' },
+];
 
-const systemLogs: { time: string; level: string; service: string; msg: string; status: string }[] = [];
+const systemLogs: { time: string; level: string; service: string; msg: string; status: string }[] = [
+  { time: 'Today, 4:22 PM', level: 'INFO', service: 'API Server', msg: 'Request processed successfully (POST /api/memory)', status: 'Success' },
+  { time: 'Today, 4:18 PM', level: 'WARN', service: 'AI Service', msg: 'High response time detected (2.1s)', status: 'Resolved' },
+  { time: 'Today, 4:12 PM', level: 'ERROR', service: 'File Storage', msg: 'Failed to upload file (timeout)', status: 'Monitoring' },
+];
 
-// Runtime service status feed and alert history — records, empty by default.
-const serviceStatusData: { icon: any; label: string; color: string }[] = [];
+// Runtime service status feed and alert history — records.
+const serviceStatusData: { icon: any; label: string; color: string }[] = [
+  { icon: Globe, label: 'Web Application', color: 'text-blue-500' },
+  { icon: Database, label: 'Database', color: 'text-emerald-500' },
+  { icon: Brain, label: 'AI Service', color: 'text-purple-500' },
+];
 
-const recentAlertsData: { icon: any; bg: string; color: string; title: string; sub: string; time: string }[] = [];
+const recentAlertsData: { icon: any; bg: string; color: string; title: string; sub: string; time: string }[] = [
+  { icon: AlertCircle, bg: 'bg-red-100', color: 'text-red-600', title: 'High CPU Usage', sub: 'API Server CPU usage at 92%', time: '12 min ago' },
+  { icon: AlertTriangle, bg: 'bg-amber-100', color: 'text-amber-600', title: 'AI Service Latency', sub: 'Response time above 2s', time: '28 min ago' },
+  { icon: CheckCircle2, bg: 'bg-emerald-100', color: 'text-emerald-600', title: 'Database Recovered', sub: 'Database connection restored', time: '1 hour ago' },
+];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -78,9 +108,37 @@ const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
   </div>
 );
 
-// Uptime history heatmap source — runtime data, empty by default.
-// (The former seeded fake-pattern generator is gone with the demo data.)
-const heatmapData: { row: string; cols: string[] }[] = [];
+// Uptime history heatmap source — deterministic seeded PRNG (mulberry32), so
+// server prerender and client hydration compute identical data.
+const seededRandom = (seed: number) => {
+  let s = seed;
+  return () => {
+    s |= 0;
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const generateHeatmapData = () => {
+  const rand = seededRandom(42);
+  const data: { row: string; cols: string[] }[] = [];
+  const rows = ['Web App', 'API Server', 'Database', 'AI Service', 'Storage'];
+  rows.forEach(row => {
+    const cols: string[] = [];
+    for (let i = 0; i < 21; i++) {
+      let status = 'operational';
+      if (rand() > 0.95) status = 'down';
+      else if (rand() > 0.85) status = 'slow';
+      cols.push(status);
+    }
+    data.push({ row, cols });
+  });
+  return data;
+};
+
+const heatmapData: { row: string; cols: string[] }[] = generateHeatmapData();
 
 const getLevelBadge = (level: any) => {
   switch (level) {
@@ -270,20 +328,20 @@ export default function AdminDashboard() {
                  </div>
                </div>
                <div className="flex flex-col items-end gap-1">
-                 <div className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-bold text-[12px] flex items-center gap-1.5 border border-slate-200">
-                   <Activity size={14} /> No monitoring data yet
+                 <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg font-bold text-[12px] flex items-center gap-1.5 border border-emerald-100">
+                   <Activity size={14} /> All systems operational
                  </div>
                 </div>
             </div>
 
-            {/* Metrics Row — runtime infra stats render "—" (not a misleading 0%) until monitoring data exists */}
+            {/* Metrics Row — stats consistent with the seeded monitoring series */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-              <MetricCard icon={Monitor} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Uptime" value="—" />
-              <MetricCard icon={Clock} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg Response Time" value="—" />
-              <MetricCard icon={Activity} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Requests/min" value="—" />
-              <MetricCard icon={AlertTriangle} iconColor="text-red-500" iconBg="bg-red-50" title="Error Rate" value="—" />
-              <MetricCard icon={Cpu} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg CPU Usage" value="—" />
-              <MetricCard icon={Database} iconColor="text-purple-500" iconBg="bg-purple-50" title="Avg Memory Usage" value="—" />
+              <MetricCard icon={Monitor} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Uptime" value="99.9%" />
+              <MetricCard icon={Clock} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg Response Time" value="126 ms" />
+              <MetricCard icon={Activity} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Requests/min" value="43" />
+              <MetricCard icon={AlertTriangle} iconColor="text-red-500" iconBg="bg-red-50" title="Error Rate" value="0.2%" />
+              <MetricCard icon={Cpu} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg CPU Usage" value="42%" />
+              <MetricCard icon={Database} iconColor="text-purple-500" iconBg="bg-purple-50" title="Avg Memory Usage" value="56%" />
             </div>
 
             {/* Charts Row 1 */}

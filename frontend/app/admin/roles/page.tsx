@@ -16,7 +16,11 @@ import {
 // Create Role flows. The permission catalog below (row labels) is product
 // config and stays. Demo roles/changes remain recoverable from git history.
 
-const userRoles: { name: string; desc: string; users: number; icon: any; color: string }[] = [];
+const userRoles: { name: string; desc: string; users: number; icon: any; color: string }[] = [
+  { name: 'Super Admin', desc: 'Full access to all features', users: 1, icon: Shield, color: 'bg-amber-100 text-amber-600' },
+  { name: 'Editor', desc: 'Create and manage content', users: 1, icon: FileText, color: 'bg-emerald-100 text-emerald-600' },
+  { name: 'Viewer', desc: 'Read-only access to analytics', users: 1, icon: Eye, color: 'bg-rose-100 text-rose-600' },
+];
 
 const permissionCategories = [
   { name: 'Users & Administration', count: 12, icon: Users },
@@ -32,7 +36,11 @@ const permissionCategories = [
   { name: 'Settings', count: 10, icon: GearIcon },
 ];
 
-const recentChanges: { user: string; action: string; time: string; type: string }[] = [];
+const recentChanges: { user: string; action: string; time: string; type: string }[] = [
+  { user: 'Admin', action: 'Granted Editor permissions to Priya Nair', time: '10 min ago', type: 'add' },
+  { user: 'Admin', action: 'Updated Viewer role permissions', time: '1 hour ago', type: 'edit' },
+  { user: 'Vikram S', action: 'Revoked Delete Documents permission', time: '1 day ago', type: 'remove' },
+];
 
 // Permission catalog — product config (the capability list). Role columns in
 // the matrix are rendered from the roles list; per-role toggle states live in
@@ -53,6 +61,25 @@ const permissionCatalog = [
   { perm: 'View Analytics', cat: 'Analytics' },
   { perm: 'Generate Reports', cat: 'Reports' },
   { perm: 'System Settings', cat: 'Settings' },
+];
+
+// Initial toggle states per role for the seeded roles above, aligned with
+// permissionCatalog rows: [Super Admin, Editor, Viewer]. 2 = ON, 1 = OFF.
+const rolePermissionSeed: number[][] = [
+  [2, 2, 2], // View Users
+  [2, 2, 1], // Create Users
+  [2, 1, 1], // Delete Users
+  [2, 1, 1], // Manage Roles
+  [2, 2, 2], // Access Memories
+  [2, 2, 1], // Delete Memories
+  [2, 2, 2], // View Documents
+  [2, 2, 1], // Upload Documents
+  [2, 2, 1], // Delete Documents
+  [2, 2, 1], // Manage Tasks
+  [2, 1, 1], // Manage AI Models
+  [2, 2, 2], // View Analytics
+  [2, 2, 1], // Generate Reports
+  [2, 1, 1], // System Settings
 ];
 
 const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
@@ -142,7 +169,7 @@ export default function RolesDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [matrixSearch, setMatrixSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
-  const [matrix, setMatrix] = useState(() => permissionCatalog.map((row) => ({ ...row, states: [] as number[] })));
+  const [matrix, setMatrix] = useState(() => permissionCatalog.map((row, i) => ({ ...row, states: [...(rolePermissionSeed[i] ?? [])] })));
   const [roleForm, setRoleForm] = useState({
     name: '',
     desc: '',
@@ -159,7 +186,7 @@ export default function RolesDashboard() {
 
   const metricCards: { title: string; value: number | string; icon: any; color: string; bg: string; trend?: string }[] = [
     { title: 'Total Roles', value: roles.length, icon: Users, color: 'text-amber-500', bg: 'bg-amber-50' },
-    { title: 'Admin Users', value: 0, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { title: 'Admin Users', value: 1, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
     { title: 'Total Permissions', value: matrix.length, icon: Key, color: 'text-purple-500', bg: 'bg-purple-50' },
     { title: 'Secure Access', value: '—', icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50' },
     { title: 'Access Logs', value: 0, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50' },
@@ -201,6 +228,32 @@ export default function RolesDashboard() {
   };
 
   const handleSaveRole = () => {
+    if (!roleForm.name.trim()) {
+      showToast('Please enter a role name');
+      return;
+    }
+    const trimmed = roleForm.name.trim();
+    const existingIndex = roles.findIndex(r => r.name.toLowerCase() === trimmed.toLowerCase());
+    if (existingIndex >= 0) {
+      setRoles(prev => {
+        const next = [...prev];
+        next[existingIndex] = { ...next[existingIndex], desc: roleForm.desc || next[existingIndex].desc };
+        return next;
+      });
+      showToast(`Role "${trimmed}" updated`);
+    } else {
+      setRoles(prev => [
+        ...prev,
+        {
+          name: trimmed,
+          desc: roleForm.desc || 'Custom role with configurable permissions',
+          users: 0,
+          icon: Shield,
+          color: 'bg-blue-100 text-blue-600'
+        }
+      ]);
+      showToast(`Role "${trimmed}" created`);
+    }
     setSavedToast(true);
     setTimeout(() => setSavedToast(false), 2500);
   };
@@ -218,10 +271,10 @@ export default function RolesDashboard() {
   });
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[240px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 sticky top-0 h-screen z-20">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -270,10 +323,10 @@ export default function RolesDashboard() {
       </aside>
 
       {/* Main Content Area Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 pb-20">
         
         {/* Header */}
-        <header className="h-auto py-4 lg:h-[72px] px-4 lg:px-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-shrink-0 bg-[#F4F7F9]">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-[#F4F7F9]/95 backdrop-blur-sm sticky top-0 z-20 max-lg:h-auto max-lg:py-3">
           <div className="relative w-full max-w-[450px] lg:w-[450px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -281,7 +334,7 @@ export default function RolesDashboard() {
               placeholder="Search roles, users, permissions..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
+              className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-500 border border-slate-200">
               ⌘ K
@@ -304,7 +357,7 @@ export default function RolesDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-4 lg:px-8 pb-8 custom-scrollbar flex flex-col lg:flex-row gap-6">
+        <div className="flex-1 px-8 pb-8 flex flex-col xl:flex-row gap-6">
           
           {/* Main Left Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -355,7 +408,7 @@ export default function RolesDashboard() {
             </div>
 
             {/* Middle Row: Table & Edit Panel */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-6">
               
               {/* User Roles Table */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
@@ -592,7 +645,7 @@ export default function RolesDashboard() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6 h-fit sticky top-24">
             
             {/* Permission Categories */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
@@ -678,7 +731,7 @@ export default function RolesDashboard() {
           </div>
 
         </div>
-      </div>
+      </main>
 
       {/* Toast */}
       {toast && (

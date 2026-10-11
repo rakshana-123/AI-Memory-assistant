@@ -71,7 +71,11 @@ type ClassicMemory = {
   color?: string;
 };
 
-const memoriesData: ClassicMemory[] = [];
+const memoriesData: ClassicMemory[] = [
+  { id: 1, type: 'voice', title: 'Project idea discussion', date: 'Today, 10:42 AM', tags: ['Voice', 'Idea', 'AI'], duration: '02:14' },
+  { id: 2, type: 'note', title: 'Book recommendations', date: 'Yesterday', tags: ['Note', 'Personal'], color: 'green' },
+  { id: 3, type: 'document', docType: 'pdf', title: 'Research paper notes', date: 'Oct 8', tags: ['Document', 'Study'] },
+];
 
 const getTagStyles = (tag: any) => {
   const styles = {

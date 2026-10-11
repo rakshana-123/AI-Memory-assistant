@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreHorizontal, Plus, ChevronDown, ChevronLeft, MapPin, CheckCircle2,
-  Video, Clock, RefreshCw, Sparkles, Mail, Phone, Edit2, UserPlus, File, MessageSquare, Calendar
+  Video, Clock, RefreshCw, Sparkles, Mail, Phone, Edit2, UserPlus, File, MessageSquare, Calendar, X
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -57,7 +57,49 @@ type Person = {
   interactions?: Interaction[];
 };
 
-const peopleData: Person[] = [];
+const peopleData: Person[] = [
+  {
+    id: 1,
+    name: 'Sarah Chen',
+    role: 'Product Designer',
+    initials: 'SC',
+    bg: 'bg-purple-100 text-purple-600',
+    tags: [
+      { label: 'Friend', color: 'blue' },
+      { label: 'Team', color: 'emerald' },
+    ],
+    email: 'sarah.chen@example.com',
+    phone: '+91 98765 43210',
+    location: 'Bengaluru, India',
+    summary: 'Sarah is the product designer on your team and a close friend. You meet weekly to review design work, most recently discussing the onboarding flow redesign.',
+    interactions: [
+      { title: 'Voice note: Design review', detail: 'Capture • 2:14', date: 'Today', icon: Mic, iconBg: 'bg-blue-50', iconColor: 'text-blue-500' },
+      { title: 'Meeting notes shared', detail: 'Onboarding flow discussion', date: 'Yesterday', icon: FileText, iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
+      { title: 'Coffee catch-up', detail: 'Blue Bottle, Koramangala', date: 'Oct 4', icon: Calendar, iconBg: 'bg-rose-50', iconColor: 'text-rose-500' },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Mom',
+    role: 'Family',
+    initials: 'M',
+    bg: 'bg-blue-100 text-blue-600',
+    tags: [
+      { label: 'Family', color: 'rose' },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Rahul',
+    role: 'College Friend',
+    initials: 'R',
+    bg: 'bg-emerald-100 text-emerald-600',
+    tags: [
+      { label: 'Friend', color: 'blue' },
+      { label: 'Classmate', color: 'purple' },
+    ],
+  },
+];
 
 type UpcomingEvent = {
   id: number;
@@ -69,7 +111,10 @@ type UpcomingEvent = {
   badgeColor: string;
 };
 
-const upcomingEvents: UpcomingEvent[] = [];
+const upcomingEvents: UpcomingEvent[] = [
+  { id: 1, name: 'Project Review with Rahul', time: 'Today, 2:00 PM', initials: 'R', bg: 'bg-emerald-100 text-emerald-600', type: 'Meeting', badgeColor: 'bg-blue-50 text-blue-600' },
+  { id: 2, name: 'Call with Mom', time: 'Tomorrow, 11:00 AM', initials: 'M', bg: 'bg-blue-100 text-blue-600', type: 'Call', badgeColor: 'bg-emerald-50 text-emerald-600' },
+];
 
 const filterTabs = ['All', 'Friends', 'Family', 'Team', 'Work', 'Clients', 'Classmates', 'Others'];
 
@@ -118,27 +163,63 @@ export default function PathiiPeopleDashboard() {
   const [people, setPeople] = useState(peopleData);
   const [sortOrder, setSortOrder] = useState('A-Z');
   const [toast, setToast] = useState<string | null>(null);
+  const [selectedPersonId, setSelectedPersonId] = useState<number>(1);
+
+  // Add Contact Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newRole, setNewRole] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newLocation, setNewLocation] = useState('');
+  const [newTag, setNewTag] = useState('Friend');
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleAddPerson = () => {
+  const handleSaveContact = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) {
+      showToast('Please provide a name');
+      return;
+    }
     const nextId = people.reduce((max, p) => Math.max(max, p.id), 0) + 1;
+    const initials = newName.trim().split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const bgColors = [
+      'bg-blue-100 text-blue-600',
+      'bg-purple-100 text-purple-600',
+      'bg-emerald-100 text-emerald-600',
+      'bg-rose-100 text-rose-600',
+    ];
     const newPerson: Person = {
       id: nextId,
-      name: 'New Contact',
-      role: 'Recently added',
-      initials: 'NC',
-      bg: 'bg-blue-100 text-blue-600',
-      tags: [{ label: 'Friend', color: 'blue' }],
+      name: newName.trim(),
+      role: newRole.trim() || 'Contact',
+      initials,
+      bg: bgColors[nextId % bgColors.length],
+      tags: [{ label: newTag, color: 'blue' }],
+      email: newEmail.trim() || undefined,
+      phone: newPhone.trim() || undefined,
+      location: newLocation.trim() || undefined,
+      summary: `${newName.trim()} was added to your contacts. You can record meetings and notes with them.`,
+      interactions: [
+        { title: 'Contact created', detail: 'Added to Pathii AI Assistant', date: 'Just now', icon: UserPlus, iconBg: 'bg-blue-50', iconColor: 'text-blue-500' }
+      ]
     };
     setPeople(prev => [newPerson, ...prev]);
-    showToast('Person added');
+    setSelectedPersonId(nextId);
+    setIsAddModalOpen(false);
+    setNewName('');
+    setNewRole('');
+    setNewEmail('');
+    setNewPhone('');
+    setNewLocation('');
+    showToast(`Added ${newPerson.name} to contacts!`);
   };
 
-  const selectedPerson = people[0] || null;
+  const selectedPerson = people.find(p => p.id === selectedPersonId) || people[0] || null;
   const selectedInteractions = selectedPerson?.interactions || [];
 
   const visiblePeople = people.filter((person) => {
@@ -150,10 +231,10 @@ export default function PathiiPeopleDashboard() {
   });
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
             <BrainLogo className="w-8 h-8" />
@@ -177,8 +258,8 @@ export default function PathiiPeopleDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+        <div className="p-4 border-t border-slate-200/60 mt-auto flex flex-col gap-2">
+          <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
@@ -187,15 +268,18 @@ export default function PathiiPeopleDashboard() {
               </div>
             </div>
             <ChevronRight size={18} className="text-slate-400" />
-          </div>
+          </NextLink>
+          <NextLink href="/admin" className="text-[11.5px] font-bold text-[#2563EB] bg-[#EBF3FF] hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            Switch to Admin Panel →
+          </NextLink>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9] min-h-screen pb-20">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -211,18 +295,20 @@ export default function PathiiPeopleDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications checked')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
             </button>
-            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
+            <NextLink href="/settings">
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
+            </NextLink>
           </div>
         </header>
 
         {/* Layout Container */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        <div className="flex-1 p-8 pt-4 flex flex-col xl:flex-row gap-6">
 
           {/* Left Main Panel */}
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2 pb-2">
+          <div className="flex-1 flex flex-col min-w-0">
 
             {/* Hero Header */}
             <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-200 flex items-center justify-between mb-6 flex-shrink-0 max-lg:flex-wrap max-lg:gap-4">
@@ -235,7 +321,7 @@ export default function PathiiPeopleDashboard() {
                   <p className="text-[14px] text-slate-500 font-medium">Your important people, conversations and relationships in one place.</p>
                 </div>
               </div>
-              <button onClick={handleAddPerson} className="bg-[#2563EB] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] transition-colors shadow-sm flex items-center gap-2">
+              <button onClick={() => setIsAddModalOpen(true)} className="bg-[#2563EB] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] transition-colors shadow-sm flex items-center gap-2">
                 <Plus size={18} />
                 Add Person
               </button>
@@ -274,7 +360,15 @@ export default function PathiiPeopleDashboard() {
             {/* Grid of People */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                {visiblePeople.length > 0 ? visiblePeople.map((person) => (
-                 <div key={person.id} onClick={() => showToast(`Opening ${person.name}'s profile`)} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative group">
+                 <div 
+                   key={person.id} 
+                   onClick={() => setSelectedPersonId(person.id)} 
+                   className={`bg-white rounded-2xl p-5 transition-all cursor-pointer relative group ${
+                     selectedPersonId === person.id 
+                       ? 'border-[#2563EB] ring-2 ring-[#2563EB]/40 shadow-md' 
+                       : 'border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md'
+                   }`}
+                 >
                     <button onClick={(e) => { e.stopPropagation(); showToast(`More options for ${person.name}`); }} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
                       <MoreHorizontal size={18} />
                     </button>
@@ -330,7 +424,7 @@ export default function PathiiPeopleDashboard() {
                            <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${ev.badgeColor}`}>
                              {ev.type}
                            </span>
-                           <button onClick={() => showToast(`More options for '${ev.name}'`)} className="text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button onClick={() => showToast(`Options for '${ev.name}'`)} className="text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
                              <MoreHorizontal size={16} />
                            </button>
                          </div>
@@ -350,7 +444,7 @@ export default function PathiiPeopleDashboard() {
 
                   <div className="grid grid-cols-1 gap-3">
                      
-                     <div onClick={handleAddPerson} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
                            <UserPlus size={18} />
@@ -363,7 +457,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div onClick={() => showToast('New meeting scheduled')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('New meeting scheduled with contact')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center flex-shrink-0">
                            <Calendar size={18} />
@@ -376,7 +470,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div onClick={() => showToast('New note created')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('Note added to contact timeline')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
                            <FileText size={18} />
@@ -389,7 +483,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div onClick={() => showToast('Attach a file to this profile')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <NextLink href="/documents" className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
                            <File size={18} />
@@ -400,7 +494,7 @@ export default function PathiiPeopleDashboard() {
                          </div>
                        </div>
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
-                     </div>
+                     </NextLink>
 
                   </div>
                </div>
@@ -409,7 +503,7 @@ export default function PathiiPeopleDashboard() {
           </div>
 
           {/* Right Inspector Panel */}
-          <div className="w-[340px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
+          <div className="w-full xl:w-[340px] flex flex-col gap-6 flex-shrink-0 h-fit sticky top-24">
 
             {selectedPerson ? (
             <>
@@ -571,6 +665,116 @@ export default function PathiiPeopleDashboard() {
 
         </div>
       </main>
+
+      {/* Add Contact Modal Dialog */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">Add New Contact</h3>
+              <button 
+                onClick={() => setIsAddModalOpen(false)} 
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveContact} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Emily Watson"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Role / Relationship</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Lead Architect"
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Category Tag</label>
+                  <select
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 font-medium"
+                  >
+                    <option value="Friend">Friend</option>
+                    <option value="Family">Family</option>
+                    <option value="Team">Team</option>
+                    <option value="Work">Work</option>
+                    <option value="Client">Client</option>
+                    <option value="Classmate">Classmate</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+                <input
+                  type="email"
+                  placeholder="e.g., emily@example.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Phone Number</label>
+                  <input
+                    type="tel"
+                    placeholder="+91 98765..."
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Location</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Mumbai, India"
+                    value={newLocation}
+                    onChange={(e) => setNewLocation(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  Save Contact
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (

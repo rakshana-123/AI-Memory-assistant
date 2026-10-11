@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreVertical, Plus, ChevronDown, Clock, ArrowUp, ArrowDown,
-  CheckCircle2, Video, MapPin, Check, Sparkles, ImageIcon,
+  CheckCircle2, Video, MapPin, Check, Sparkles,
   Play, Pause, MoreHorizontal, Edit3, Type, List, Tag, Map, Link2, X, File, FileCode
 } from 'lucide-react';
 
@@ -139,18 +139,61 @@ type Memory = {
   iconBg: string;
 };
 
-const memoriesData: Memory[] = [];
+const memoriesData: Memory[] = [
+  {
+    id: 1,
+    type: 'voice',
+    title: 'Project idea discussion',
+    meta: 'Voice • Today, 10:42 AM',
+    duration: '02:14',
+    tags: [{ text: 'Idea', color: 'blue' }, { text: 'AI', color: 'purple' }],
+    active: true,
+    icon: Mic,
+    iconColor: 'text-blue-500',
+    iconBg: 'bg-blue-50',
+  },
+  {
+    id: 2,
+    type: 'note',
+    title: 'Book recommendations',
+    meta: 'Note • Yesterday',
+    snippet: 'Deep Work, Getting Things Done, Thinking Fast and Slow — read one chapter per evening...',
+    tags: [{ text: 'Learning', color: 'yellow' }, { text: 'Note', color: 'blue' }],
+    active: false,
+    icon: FileText,
+    iconColor: 'text-amber-500',
+    iconBg: 'bg-amber-50',
+  },
+  {
+    id: 3,
+    type: 'document',
+    title: 'Research paper notes',
+    meta: 'Document • Oct 8',
+    tags: [{ text: 'Research', color: 'green' }, { text: 'PDF', color: 'red' }],
+    active: false,
+    icon: FileText,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-50',
+  },
+];
 
 export default function PathiiMemoriesDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(memoriesData.length > 0 ? memoriesData[0].id : null);
   const [activeTab, setActiveTab] = useState('Transcript');
   const [isPlaying, setIsPlaying] = useState(false);
   const [memories, setMemories] = useState(memoriesData);
   const [sortOrder, setSortOrder] = useState('Newest first');
   const [playbackRate, setPlaybackRate] = useState('1x');
   const [toast, setToast] = useState<string | null>(null);
+
+  // Add Memory Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newType, setNewType] = useState('note');
+  const [newSnippet, setNewSnippet] = useState('');
+  const [newTag, setNewTag] = useState('');
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -175,30 +218,60 @@ export default function PathiiMemoriesDashboard() {
 
   const selectedMemory = memories.find(m => m.id === selectedId) || null;
 
-  const handleAddMemory = () => {
+  const handleSaveNewMemory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) {
+      showToast('Please provide a title');
+      return;
+    }
     const nextId = memories.reduce((max, m) => Math.max(max, m.id), 0) + 1;
-    const newMemory = {
+    
+    let icon = FileText;
+    let iconColor = 'text-amber-500';
+    let iconBg = 'bg-amber-50';
+    if (newType === 'voice') {
+      icon = Mic;
+      iconColor = 'text-blue-500';
+      iconBg = 'bg-blue-50';
+    } else if (newType === 'document') {
+      icon = FileText;
+      iconColor = 'text-emerald-500';
+      iconBg = 'bg-emerald-50';
+    } else if (newType === 'link') {
+      icon = LinkIcon;
+      iconColor = 'text-purple-500';
+      iconBg = 'bg-purple-50';
+    }
+
+    const created = {
       id: nextId,
-      type: 'note',
-      title: 'New quick note',
-      meta: 'Note • Just now',
-      snippet: 'Start typing your thoughts here...',
-      tags: [{ text: 'New', color: 'blue' }, { text: 'Note', color: 'yellow' }],
+      type: newType,
+      title: newTitle.trim(),
+      meta: `${newType.charAt(0).toUpperCase() + newType.slice(1)} • Just now`,
+      snippet: newSnippet.trim() || 'No preview text available',
+      tags: newTag ? [{ text: newTag, color: 'blue' }] : [{ text: 'Quick', color: 'blue' }],
       active: false,
-      icon: FileText,
-      iconColor: 'text-amber-500',
-      iconBg: 'bg-amber-50',
+      icon,
+      iconColor,
+      iconBg,
+      duration: newType === 'voice' ? '01:20' : undefined,
+      url: newType === 'link' ? (newSnippet.startsWith('http') ? newSnippet : `https://${newSnippet}`) : undefined,
     };
-    setMemories(prev => [newMemory, ...prev]);
+
+    setMemories(prev => [created, ...prev]);
     setSelectedId(nextId);
-    showToast('Memory added');
+    setIsAddModalOpen(false);
+    setNewTitle('');
+    setNewSnippet('');
+    setNewTag('');
+    showToast(`Memory "${created.title}" created successfully!`);
   };
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
             <BrainLogo className="w-8 h-8" />
@@ -239,11 +312,11 @@ export default function PathiiMemoriesDashboard() {
         </div>
       </aside>
 
-      {}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9] min-h-screen pb-20">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -259,18 +332,20 @@ export default function PathiiMemoriesDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications checked')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
             </button>
-            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
+            <NextLink href="/settings">
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
+            </NextLink>
           </div>
         </header>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        <div className="flex-1 p-8 pt-4 flex flex-col xl:flex-row gap-6">
           
-          {}
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+          {/* Left / Center: Memories List */}
+          <div className="flex-1 flex flex-col min-w-0">
             
             {/* Page Title & Controls */}
             <div className="flex items-start justify-between mb-6 mt-2 flex-shrink-0 max-lg:flex-col max-lg:gap-4">
@@ -281,13 +356,13 @@ export default function PathiiMemoriesDashboard() {
               <div className="flex flex-col items-end gap-3">
                 <div className="flex shadow-sm rounded-lg overflow-hidden">
                   <button 
-                    onClick={handleAddMemory}
+                    onClick={() => setIsAddModalOpen(true)}
                     className="bg-[#2563EB] hover:bg-blue-700 text-white px-4 py-2 text-[14px] font-semibold flex items-center gap-2 transition-colors border-r border-blue-600/50"
                   >
                     <Plus size={18} /> Add Memory
                   </button>
                   <button 
-                    onClick={() => showToast('Choose memory type: voice, note, document, image or link')}
+                    onClick={() => setIsAddModalOpen(true)}
                     className="bg-[#2563EB] hover:bg-blue-700 text-white px-3 py-2 transition-colors"
                   >
                     <ChevronDown size={18} />
@@ -324,8 +399,8 @@ export default function PathiiMemoriesDashboard() {
             </div>
 
             {/* Grid Container (2 Columns) */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
+            <div className="flex-1 pr-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
                 {filteredMemories.length > 0 ? filteredMemories.map((card) => (
                   <div 
                     key={card.id} 
@@ -352,7 +427,7 @@ export default function PathiiMemoriesDashboard() {
                             <p className="text-[13px] text-slate-500 font-medium">{card.meta}</p>
                           </div>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); showToast(`More options for '${card.title}'`); }} className="text-slate-400 hover:text-slate-600 p-1">
+                        <button onClick={(e) => { e.stopPropagation(); showToast(`Options for '${card.title}'`); }} className="text-slate-400 hover:text-slate-600 p-1">
                           <MoreVertical size={18} />
                         </button>
                       </div>
@@ -391,14 +466,14 @@ export default function PathiiMemoriesDashboard() {
 
                       {/* Bottom Tags */}
                       <div className="flex items-center gap-2 mt-auto pt-3">
-                        {card.tags.map((tag, idx) => (
+                        {card.tags.map((tag: any, idx: number) => (
                           <TagPill key={idx} text={tag.text} colorType={tag.color} />
                         ))}
                       </div>
                     </div>
                   </div>
                 )) : (
-                  <div className="lg:col-span-2">
+                  <div className="md:col-span-2">
                     <EmptyState icon={Database} title="No memories yet" subtitle="Memories you add will appear here." />
                   </div>
                 )}
@@ -406,9 +481,9 @@ export default function PathiiMemoriesDashboard() {
             </div>
           </div>
 
-          {}
-          <div className="w-[400px] bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-full overflow-hidden max-lg:w-full">
-            <div className="p-6 overflow-y-auto custom-scrollbar h-full flex flex-col">
+          {/* Right Inspector Panel */}
+          <div className="w-full xl:w-[400px] bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-fit sticky top-24">
+            <div className="p-6 flex flex-col">
               {selectedMemory ? (
               <>
               {/* Header Info */}
@@ -421,7 +496,7 @@ export default function PathiiMemoriesDashboard() {
                   <span className="text-slate-300">•</span>
                   <span>{selectedMemory.meta}</span>
                 </div>
-                <button onClick={() => showToast(`Closed details for '${selectedMemory.title}'`)} className="text-slate-400 hover:text-slate-600">
+                <button onClick={() => setSelectedId(null)} className="text-slate-400 hover:text-slate-600">
                   <X size={20} />
                 </button>
               </div>
@@ -429,31 +504,33 @@ export default function PathiiMemoriesDashboard() {
               <h2 className="text-[22px] font-bold text-slate-900 leading-tight mb-5">{selectedMemory.title}</h2>
 
               {/* Large Waveform Player */}
-              <div className="w-full relative mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <button 
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="w-10 h-10 rounded-full bg-[#2563EB] hover:bg-blue-700 transition-colors flex items-center justify-center text-white shadow-md flex-shrink-0"
-                  >
-                    {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
-                  </button>
-                  <WaveformLarge />
+              {selectedMemory.type === 'voice' && (
+                <div className="w-full relative mb-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <button 
+                      onClick={() => setIsPlaying(!isPlaying)}
+                      className="w-10 h-10 rounded-full bg-[#2563EB] hover:bg-blue-700 transition-colors flex items-center justify-center text-white shadow-md flex-shrink-0"
+                    >
+                      {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
+                    </button>
+                    <WaveformLarge />
+                  </div>
+                  <div className="flex items-center justify-between pl-14">
+                    <span className="text-[13px] font-bold text-slate-500">{isPlaying ? "0:42 / 2:14" : "0:00 / 2:14"}</span>
+                    <button 
+                      onClick={() => {
+                        const rates = ['1x', '1.5x', '2x', '0.5x'];
+                        const next = rates[(rates.indexOf(playbackRate) + 1) % rates.length];
+                        setPlaybackRate(next);
+                        showToast(`Playback speed: ${next}`);
+                      }}
+                      className="flex items-center gap-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors px-3 py-1 rounded-full text-[12px] font-bold text-slate-700"
+                    >
+                      {playbackRate} <ChevronDown size={14} />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between pl-14">
-                  <span className="text-[13px] font-bold text-slate-500">{isPlaying ? "0:42 / 2:14" : "0:00 / 2:14"}</span>
-                  <button 
-                    onClick={() => {
-                      const rates = ['1x', '1.5x', '2x', '0.5x'];
-                      const next = rates[(rates.indexOf(playbackRate) + 1) % rates.length];
-                      setPlaybackRate(next);
-                      showToast(`Playback speed: ${next}`);
-                    }}
-                    className="flex items-center gap-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors px-3 py-1 rounded-full text-[12px] font-bold text-slate-700"
-                  >
-                    {playbackRate} <ChevronDown size={14} />
-                  </button>
-                </div>
-              </div>
+              )}
 
               {/* Tabs */}
               <div className="flex items-center gap-6 border-b border-slate-200 mb-6">
@@ -469,100 +546,117 @@ export default function PathiiMemoriesDashboard() {
                 ))}
               </div>
 
-              {/* Transcript */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
-                    <FileText size={18} className="text-slate-700" /> Transcript
-                  </h3>
-                  <button 
-                    onClick={() => showToast('Transcript editing enabled')}
-                    className="flex items-center gap-1 text-[12px] font-semibold text-slate-600 hover:bg-slate-50 px-2 py-1 rounded-md transition-colors border border-transparent hover:border-slate-200"
-                  >
-                    <Edit3 size={14} /> Edit
-                  </button>
-                </div>
-                <div className="bg-[#F8FAFC] rounded-2xl p-5 border border-slate-100">
-                  <p className="text-[14px] text-slate-600 leading-relaxed">
-                    Okay, so the idea is to build an AI memory assistant that can save notes, documents, and important conversations. It should also integrate with calendar and email, and help me remember tasks automatically. We can start with a web app and later add a mobile app and a wearable device...
-                  </p>
-                </div>
-              </div>
-
-              {/* AI Summary */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
-                    <Sparkles size={18} className="text-purple-600" /> AI Summary
-                  </h3>
-                </div>
-                <div className="bg-[#F5F3FF] rounded-2xl p-5 border border-purple-100 text-purple-900 text-[14px] leading-relaxed">
-                  <ul className="list-disc pl-4 space-y-2">
-                    <li>Discussed building an AI memory assistant.</li>
-                    <li>Key features: note saving, document storage, conversation memory, calendar and email integration.</li>
-                    <li>Goal: automatically remember and suggest tasks.</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Extracted Items */}
-              <div className="mb-6">
-                <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2 mb-4">
-                  <CheckSquare size={18} className="text-slate-700" /> Extracted Items
-                </h3>
-                <div className="flex flex-col gap-3">
-                  {/* Task */}
-                  <div className="flex items-center justify-between group bg-white p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-green-500">
-                         <CheckCircle2 size={18} />
-                      </div>
-                      <div>
-                        <p className="text-[14px] font-bold text-slate-900 leading-snug">Build AI memory assistant</p>
-                        <p className="text-[12px] text-slate-500">Task</p>
-                      </div>
+              {/* Tab 1: Transcript */}
+              {activeTab === 'Transcript' && (
+                <div className="mb-6 space-y-6">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                        <FileText size={18} className="text-slate-700" /> Content & Transcript
+                      </h3>
+                      <button 
+                        onClick={() => showToast('Edit mode opened')}
+                        className="flex items-center gap-1 text-[12px] font-semibold text-slate-600 hover:bg-slate-50 px-2 py-1 rounded-md transition-colors border border-transparent hover:border-slate-200"
+                      >
+                        <Edit3 size={14} /> Edit
+                      </button>
                     </div>
-                    <button onClick={() => showToast('Task "Build AI memory assistant" added')} className="text-[12px] font-bold text-[#2563EB] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors">
-                      <Plus size={14} /> Add
-                    </button>
+                    <div className="bg-[#F8FAFC] rounded-2xl p-5 border border-slate-100">
+                      <p className="text-[14px] text-slate-600 leading-relaxed">
+                        {selectedMemory.snippet || "Okay, so the idea is to build an AI memory assistant that can save notes, documents, and important conversations. It should also integrate with calendar and email, and help me remember tasks automatically."}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Event */}
-                  <div className="flex items-center justify-between group bg-white p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-rose-500">
-                         <CalendarIcon size={18} />
+                  {/* Extracted Items */}
+                  <div>
+                    <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2 mb-4">
+                      <CheckSquare size={18} className="text-slate-700" /> Extracted Items
+                    </h3>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between group bg-white p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 text-green-500">
+                            <CheckCircle2 size={18} />
+                          </div>
+                          <div>
+                            <p className="text-[14px] font-bold text-slate-900 leading-snug">Build AI memory assistant</p>
+                            <p className="text-[12px] text-slate-500">Task</p>
+                          </div>
+                        </div>
+                        <button onClick={() => showToast('Task "Build AI memory assistant" added')} className="text-[12px] font-bold text-[#2563EB] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors">
+                          <Plus size={14} /> Add
+                        </button>
                       </div>
-                      <div>
-                        <p className="text-[14px] font-bold text-slate-900 leading-snug">Plan feature list</p>
-                        <p className="text-[12px] text-slate-500">Event</p>
-                      </div>
-                    </div>
-                    <button onClick={() => showToast('Event "Plan feature list" added to calendar')} className="text-[12px] font-bold text-[#2563EB] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors">
-                      <Plus size={14} /> Add
-                    </button>
-                  </div>
 
-                  {/* Note */}
-                  <div className="flex items-center justify-between group bg-white p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-amber-500">
-                         <FileText size={18} />
-                      </div>
-                      <div>
-                        <p className="text-[14px] font-bold text-slate-900 leading-snug">Research calendar integration</p>
-                        <p className="text-[12px] text-slate-500">Note</p>
+                      <div className="flex items-center justify-between group bg-white p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 text-rose-500">
+                            <CalendarIcon size={18} />
+                          </div>
+                          <div>
+                            <p className="text-[14px] font-bold text-slate-900 leading-snug">Plan feature list</p>
+                            <p className="text-[12px] text-slate-500">Event</p>
+                          </div>
+                        </div>
+                        <button onClick={() => showToast('Event "Plan feature list" added to calendar')} className="text-[12px] font-bold text-[#2563EB] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors">
+                          <Plus size={14} /> Add
+                        </button>
                       </div>
                     </div>
-                    <button onClick={() => showToast('Note "Research calendar integration" saved to memories')} className="text-[12px] font-bold text-[#2563EB] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors">
-                      <Plus size={14} /> Add
-                    </button>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Tab 2: Summary */}
+              {activeTab === 'Summary' && (
+                <div className="mb-6 space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                      <Sparkles size={18} className="text-purple-600" /> Executive AI Summary
+                    </h3>
+                  </div>
+                  <div className="bg-[#F5F3FF] rounded-2xl p-5 border border-purple-100 text-purple-900 text-[14px] leading-relaxed">
+                    <ul className="list-disc pl-4 space-y-2">
+                      <li>Captured key objectives regarding {selectedMemory.title}.</li>
+                      <li>High priority action items identified and extracted automatically.</li>
+                      <li>Recommended follow-up scheduled for the upcoming weekly review.</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: AI Insights */}
+              {activeTab === 'AI Insights' && (
+                <div className="mb-6 space-y-3">
+                  <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-800">
+                    <p className="font-semibold text-sm text-blue-900 mb-1">Entity Detection</p>
+                    <p>Detected 3 concepts: Architecture, Scheduling, Cross-device sync.</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 text-xs text-emerald-800">
+                    <p className="font-semibold text-sm text-emerald-900 mb-1">Sentiment & Tone</p>
+                    <p>Action-oriented, confident, and collaborative.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 4: Related */}
+              {activeTab === 'Related' && (
+                <div className="mb-6 space-y-2">
+                  <p className="text-xs text-slate-500 mb-2">Connected memories and files:</p>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm font-medium text-slate-700 flex items-center gap-2">
+                    <FileText size={16} className="text-blue-500" />
+                    <span>Quarterly Product Roadmap.pdf</span>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm font-medium text-slate-700 flex items-center gap-2">
+                    <LinkIcon size={16} className="text-purple-500" />
+                    <span>Figma design specifications</span>
+                  </div>
+                </div>
+              )}
 
               {/* Tags */}
-              <div className="mt-auto">
+              <div className="mt-4 pt-4 border-t border-slate-100">
                 <div className="flex items-center justify-between mb-3">
                    <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
                      <Tag size={18} className="text-slate-700" /> Tags
@@ -571,10 +665,9 @@ export default function PathiiMemoriesDashboard() {
                 </div>
                 
                 <div className="flex items-center flex-wrap gap-2">
-                  <TagPill text="Idea" colorType="blue" />
-                  <TagPill text="AI" colorType="purple" />
-                  <TagPill text="Project" colorType="blue" />
-                  <TagPill text="Productivity" colorType="red" />
+                  {selectedMemory.tags?.map((t: any, i: number) => (
+                    <TagPill key={i} text={t.text} colorType={t.color} />
+                  ))}
                   <button onClick={() => showToast('Add a tag to this memory')} className="w-7 h-7 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 transition-colors shadow-sm">
                     <Plus size={14} />
                   </button>
@@ -590,6 +683,102 @@ export default function PathiiMemoriesDashboard() {
 
         </div>
       </main>
+
+      {/* Add Memory Modal Dialog */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">Add New Memory</h3>
+              <button 
+                onClick={() => setIsAddModalOpen(false)} 
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNewMemory} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Memory Type</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: 'note', label: 'Note' },
+                    { id: 'voice', label: 'Voice' },
+                    { id: 'document', label: 'Doc' },
+                    { id: 'link', label: 'Link' },
+                  ].map((t) => (
+                    <button
+                      type="button"
+                      key={t.id}
+                      onClick={() => setNewType(t.id)}
+                      className={`py-2 text-xs font-semibold rounded-xl border text-center transition-colors ${
+                        newType === t.id 
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Client meeting key decisions"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  {newType === 'link' ? 'URL Link' : 'Content / Snippet'}
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder={newType === 'link' ? 'https://example.com' : 'Write note or thoughts here...'}
+                  value={newSnippet}
+                  onChange={(e) => setNewSnippet(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Tag (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Work, Personal, Strategy"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  Save Memory
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (

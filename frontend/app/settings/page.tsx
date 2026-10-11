@@ -69,10 +69,10 @@ const themeOptions = [
 type StorageCategory = { label: string; color: string; gb: number };
 
 const storageBreakdown: StorageCategory[] = [
-  { label: 'Voice Notes', color: 'bg-blue-500', gb: 0 },
-  { label: 'Documents', color: 'bg-purple-500', gb: 0 },
-  { label: 'Images', color: 'bg-emerald-500', gb: 0 },
-  { label: 'Others', color: 'bg-amber-500', gb: 0 },
+  { label: 'Voice Notes', color: 'bg-blue-500', gb: 0.4 },
+  { label: 'Documents', color: 'bg-purple-500', gb: 0.3 },
+  { label: 'Images', color: 'bg-emerald-500', gb: 0.2 },
+  { label: 'Others', color: 'bg-amber-500', gb: 0.1 },
 ];
 
 const storageQuotaGb = 10;
@@ -137,7 +137,7 @@ export default function PathiiSettingsDashboard() {
       ['End-to-end encryption', toggleStates.e2eEncryption ? 'On' : 'Off'],
       ['Local data processing', toggleStates.localProcessing ? 'On' : 'Off'],
       ['Two-factor authentication', toggleStates.twoFactor ? 'On' : 'Off'],
-      ['Storage Used', `0 GB of ${storageQuotaGb} GB`],
+      ['Storage Used', `${storageUsedGb} GB of ${storageQuotaGb} GB`],
       ['Plan', 'Free Plan'],
     ]);
     showToast('Exported your data');
@@ -154,10 +154,10 @@ export default function PathiiSettingsDashboard() {
     activeTab === 'General' || !sectionedTabs.includes(activeTab) || activeTab === section;
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
             <BrainLogo className="w-8 h-8" />
@@ -181,8 +181,8 @@ export default function PathiiSettingsDashboard() {
           <SidebarItem icon={Settings} label="Settings" active href="/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+        <div className="p-4 border-t border-slate-200/60 mt-auto flex flex-col gap-2">
+          <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
@@ -191,14 +191,17 @@ export default function PathiiSettingsDashboard() {
               </div>
             </div>
             <ChevronRight size={18} className="text-slate-400" />
-          </div>
+          </NextLink>
+          <NextLink href="/admin" className="text-[11.5px] font-bold text-[#2563EB] bg-[#EBF3FF] hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            Switch to Admin Panel →
+          </NextLink>
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9] min-h-screen pb-20">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -212,17 +215,19 @@ export default function PathiiSettingsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications checked')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
             </button>
-            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
+            <NextLink href="/settings">
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
+            </NextLink>
           </div>
         </header>
 
-        {/* Scrollable Layout Container */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        {/* Layout Container */}
+        <div className="flex-1 p-8 pt-4 flex flex-col xl:flex-row gap-6">
           
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2 pb-2">
+          <div className="flex-1 flex flex-col min-w-0">
             
             {/* Header & Tabs */}
             <div className="mb-6 flex-shrink-0">
@@ -353,7 +358,7 @@ export default function PathiiSettingsDashboard() {
 
           </div>
 
-          <div className="w-[360px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
+          <div className="w-full xl:w-[360px] flex flex-col gap-6 flex-shrink-0 h-fit sticky top-24">
             
             {/* Your Account Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative">

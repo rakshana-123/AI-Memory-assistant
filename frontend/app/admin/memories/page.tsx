@@ -17,26 +17,48 @@ import {
 // Area Chart (Stacked) source — empty until real data exists
 type TrendPoint = { name: string; voice: number; notes: number; docs: number; images: number; links: number };
 
-const memoryTrendsData: TrendPoint[] = [];
+const memoryTrendsData: TrendPoint[] = [
+  { name: 'Oct 1', voice: 0, notes: 1, docs: 0, images: 0, links: 0 },
+  { name: 'Oct 5', voice: 1, notes: 0, docs: 0, images: 0, links: 0 },
+  { name: 'Oct 8', voice: 0, notes: 0, docs: 1, images: 0, links: 0 },
+  { name: 'Oct 11', voice: 0, notes: 0, docs: 0, images: 0, links: 1 },
+];
 
 type BreakdownSlice = { name: string; value: number; fill: string; percent: string };
 
-const memoryBreakdownData: BreakdownSlice[] = [];
+const memoryBreakdownData: BreakdownSlice[] = [
+  { name: 'Voice Notes', value: 1, fill: '#3b82f6', percent: '34%' },
+  { name: 'Documents', value: 1, fill: '#10b981', percent: '33%' },
+  { name: 'Links & Others', value: 1, fill: '#f43f5e', percent: '33%' },
+];
 
 type MemoryRecord = {
   type: string; typeIcon: any; typeColor: string; typeBg: string;
   title: string; user: string; date: string; time: string; size: string;
 };
 
-const recentMemories: MemoryRecord[] = [];
+const recentMemories: MemoryRecord[] = [
+  { type: 'Voice Note', typeIcon: Mic, typeColor: 'text-blue-500', typeBg: 'bg-blue-100', title: 'Project discussion with team', user: 'sarah@example.com', date: 'Today', time: '10:24 AM', size: '2.4 MB' },
+  { type: 'Document', typeIcon: FileText, typeColor: 'text-purple-500', typeBg: 'bg-purple-100', title: 'Research_Paper.pdf', user: 'arun@example.com', date: 'Yesterday', time: '04:12 PM', size: '4.8 MB' },
+  { type: 'Link', typeIcon: Link2, typeColor: 'text-pink-500', typeBg: 'bg-pink-100', title: 'https://example.com', user: 'vikram@example.com', date: '2 days ago', time: '11:03 AM', size: '256 KB' },
+];
 
 type Activity = { icon: any; color: string; bg: string; title: string; sub: string; time: string };
 
-const recentActivity: Activity[] = [];
+const recentActivity: Activity[] = [
+  { icon: Mic, color: 'text-blue-600', bg: 'bg-blue-100', title: 'New voice note uploaded', sub: 'sarah@example.com', time: '2 min ago' },
+  { icon: FileText, color: 'text-purple-600', bg: 'bg-purple-100', title: 'Document processed', sub: 'Research_Paper.pdf', time: '18 min ago' },
+  { icon: Link2, color: 'text-pink-600', bg: 'bg-pink-100', title: 'Link added', sub: 'https://example.com', time: '1 hour ago' },
+];
 
 type StorageType = { color: string; label: string; val: number; pct: string };
 
-const storageByType: StorageType[] = [];
+const storageByType: StorageType[] = [
+  { color: 'bg-blue-500', label: 'Documents', val: 1.2, pct: '45%' },
+  { color: 'bg-purple-500', label: 'Images', val: 0.7, pct: '26%' },
+  { color: 'bg-emerald-500', label: 'Voice Notes', val: 0.5, pct: '19%' },
+  { color: 'bg-slate-400', label: 'Others', val: 0.2, pct: '10%' },
+];
 
 const memoryTypeOptions = ['All Types', 'Voice Note', 'Document', 'Image', 'Link'];
 const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
@@ -181,10 +203,10 @@ export default function MemoryManagementDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -210,10 +232,10 @@ export default function MemoryManagementDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-100 mt-auto">
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -221,14 +243,17 @@ export default function MemoryManagementDashboard() {
             </div>
             <ChevronRight size={18} className="text-slate-400" />
           </div>
+          <NextLink href="/" className="text-[11.5px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 py-1.5 px-3 rounded-xl text-center transition-colors">
+            ← Switch to User App
+          </NextLink>
         </div>
       </aside>
 
-      { }
-      <main className="flex-1 flex flex-col min-w-0">
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-w-0 min-h-screen pb-20">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -254,7 +279,7 @@ export default function MemoryManagementDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 max-lg:flex-col">
+        <div className="flex-1 p-8 pt-4 flex flex-col xl:flex-row gap-6">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -280,8 +305,8 @@ export default function MemoryManagementDashboard() {
                 </button>
             </div>
 
-            {}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Stat Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
                {memoryStats.map((stat, i) => (
                  <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${stat.iconBg}`}>
@@ -389,7 +414,7 @@ export default function MemoryManagementDashboard() {
                       onClick={() => {
                         if (action.label === 'Export Memories') exportMemories();
                         else if (action.label === 'Cleanup Old Memories') handleCleanup();
-                        else if (action.label === 'Manage Storage') showToast('Storage: 0 GB of 100 GB used');
+                        else if (action.label === 'Manage Storage') showToast('Storage: 40 GB of 100 GB used');
                         else showToast('Showing recent memories — use search and filters to narrow down');
                       }}
                       className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 rounded-xl transition-colors group">
@@ -526,8 +551,8 @@ export default function MemoryManagementDashboard() {
 
           </div>
 
-          {}
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
+          {/* Right Column */}
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6 h-fit sticky top-24">
             
             {/* Storage Usage */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">

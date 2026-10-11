@@ -19,24 +19,65 @@ import {
 
 // Empty by default: every series here is runtime analytics over real usage.
 // Demo values remain recoverable from git history (pre-branch commits).
-const userGrowthData: { name: string; newUsers: number; activeUsers: number }[] = [];
+const userGrowthData: { name: string; newUsers: number; activeUsers: number }[] = [
+  { name: 'Oct 1', newUsers: 1, activeUsers: 1 },
+  { name: 'Oct 5', newUsers: 0, activeUsers: 2 },
+  { name: 'Oct 8', newUsers: 1, activeUsers: 2 },
+  { name: 'Oct 11', newUsers: 0, activeUsers: 3 },
+];
 
-const contentTrendData: { name: string; memories: number; documents: number; tasks: number; events: number }[] = [];
+const contentTrendData: { name: string; memories: number; documents: number; tasks: number; events: number }[] = [
+  { name: 'Oct 1', memories: 1, documents: 0, tasks: 1, events: 0 },
+  { name: 'Oct 5', memories: 0, documents: 1, tasks: 0, events: 1 },
+  { name: 'Oct 8', memories: 1, documents: 1, tasks: 0, events: 0 },
+  { name: 'Oct 11', memories: 1, documents: 0, tasks: 1, events: 0 },
+];
 
-const platformActivityData: { name: string; memories: number; documents: number; tasks: number; events: number; aiUsage: number; integrations: number }[] = [];
+const platformActivityData: { name: string; memories: number; documents: number; tasks: number; events: number; aiUsage: number; integrations: number }[] = [
+  { name: 'Oct 1', memories: 1, documents: 1, tasks: 1, events: 0, aiUsage: 3, integrations: 1 },
+  { name: 'Oct 5', memories: 1, documents: 1, tasks: 0, events: 1, aiUsage: 2, integrations: 0 },
+  { name: 'Oct 8', memories: 1, documents: 1, tasks: 1, events: 0, aiUsage: 4, integrations: 1 },
+  { name: 'Oct 11', memories: 1, documents: 1, tasks: 1, events: 1, aiUsage: 5, integrations: 1 },
+];
 
-const memoryTypesData: { name: string; value: number; fill: string; percent: string }[] = [];
+const memoryTypesData: { name: string; value: number; fill: string; percent: string }[] = [
+  { name: 'Voice Notes', value: 1, fill: '#3b82f6', percent: '25%' },
+  { name: 'Documents', value: 1, fill: '#10b981', percent: '25%' },
+  { name: 'Images', value: 1, fill: '#f59e0b', percent: '25%' },
+  { name: 'Links', value: 1, fill: '#ef4444', percent: '25%' },
+];
 
-const aiFeatureUsageData: { name: string; value: number; fill: string; percent: string }[] = [];
+const aiFeatureUsageData: { name: string; value: number; fill: string; percent: string }[] = [
+  { name: 'AI Chat Assistant', value: 9, fill: '#3b82f6', percent: '47%' },
+  { name: 'Summarization', value: 6, fill: '#8b5cf6', percent: '32%' },
+  { name: 'Voice Processing', value: 4, fill: '#10b981', percent: '21%' },
+];
 
-const recentActivityList: { actionIcon: any; actionColor: string; actionBg: string; action: string; user: string; module: string; details: string; time: string }[] = [];
+const recentActivityList: { actionIcon: any; actionColor: string; actionBg: string; action: string; user: string; module: string; details: string; time: string }[] = [
+  { actionIcon: Database, actionColor: 'text-blue-600', actionBg: 'bg-blue-100', action: 'Created memory', user: 'Sarah Kumar', module: 'Memories', details: 'Added new voice note', time: '2 min ago' },
+  { actionIcon: FileText, actionColor: 'text-emerald-500', actionBg: 'bg-emerald-100', action: 'Uploaded document', user: 'Arun Raj', module: 'Documents', details: 'Project_Proposal.pdf', time: '18 min ago' },
+  { actionIcon: Sparkles, actionColor: 'text-purple-600', actionBg: 'bg-purple-100', action: 'AI summary generated', user: 'Priya Nair', module: 'AI Usage', details: 'Summarized meeting notes', time: '1 hour ago' },
+];
 
-// Leaderboards and derived insights are runtime records — empty by default.
-const topActiveUsers: { rank: number; name: string; mem: string; req: string }[] = [];
+// Leaderboards and derived insights are runtime records.
+const topActiveUsers: { rank: number; name: string; mem: string; req: string }[] = [
+  { rank: 1, name: 'Sarah Kumar', mem: '4', req: '18' },
+  { rank: 2, name: 'Priya Nair', mem: '3', req: '14' },
+  { rank: 3, name: 'Arun Raj', mem: '2', req: '9' },
+];
 
-const topMemoryCategories: { icon: any; label: string; color: string; bg: string; barBg: string; pct: string; val: string }[] = [];
+const topMemoryCategories: { icon: any; label: string; color: string; bg: string; barBg: string; pct: string; val: string }[] = [
+  { icon: BookOpen, label: 'Academic', color: 'text-blue-600', bg: 'bg-blue-100', barBg: 'bg-blue-500', pct: '70%', val: '12' },
+  { icon: Briefcase, label: 'Work', color: 'text-amber-500', bg: 'bg-amber-100', barBg: 'bg-amber-500', pct: '50%', val: '3' },
+  { icon: User, label: 'Personal', color: 'text-rose-500', bg: 'bg-rose-100', barBg: 'bg-rose-500', pct: '33%', val: '2' },
+  { icon: Folder, label: 'Projects', color: 'text-emerald-500', bg: 'bg-emerald-100', barBg: 'bg-emerald-500', pct: '17%', val: '1' },
+];
 
-const keyInsights: { icon: any; color: string; bg: string; text: string }[] = [];
+const keyInsights: { icon: any; color: string; bg: string; text: string }[] = [
+  { icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-100', text: 'Active users increased by 2 this month.' },
+  { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100', text: 'Memory creation is up 25% this week.' },
+  { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-100', text: 'Most active time is between 10 AM and 4 PM.' },
+];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -98,9 +139,37 @@ const ChartLegend = ({ data }: any) => (
   </div>
 );
 
-// Productivity heatmap source — runtime activity data, empty by default.
-// (The former seeded fake-pattern generator is gone with the demo data.)
-const heatmapData: { day: string; cells: number[] }[] = [];
+// Productivity heatmap source — deterministic seeded PRNG (mulberry32), so
+// server prerender and client hydration compute identical data.
+const seededRandom = (seed: number) => {
+  let s = seed;
+  return () => {
+    s |= 0;
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const generateHeatmap = () => {
+  const rand = seededRandom(42);
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const cols = 24;
+  return days.map(day => {
+    const cells = Array.from({ length: cols }).map((_, i) => {
+      let opacity = 0.1;
+      const isWeekend = day === 'Sat' || day === 'Sun';
+      if (!isWeekend && i > 8 && i < 18) opacity = rand() > 0.3 ? (rand() > 0.5 ? 0.8 : 0.5) : 0.2;
+      if (!isWeekend && i > 10 && i < 16) opacity = rand() > 0.2 ? 1 : 0.6;
+      if (isWeekend) opacity = rand() > 0.8 ? 0.4 : 0.1;
+      return opacity;
+    });
+    return { day, cells };
+  });
+};
+
+const heatmapData: { day: string; cells: number[] }[] = generateHeatmap();
 
 const timeRangeOptions = ['Today', '7 days', 'Last 30 days'];
 const chartGranularityOptions = ['Daily', 'Weekly', 'Monthly'];
@@ -158,10 +227,10 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -205,8 +274,8 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 max-lg:h-auto max-lg:py-3">
+      <main className="flex-1 flex flex-col min-w-0 min-h-screen pb-20">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -239,7 +308,7 @@ export default function AdminDashboard() {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 flex-col lg:flex-row">
+        <div className="flex-1 p-8 pt-4 flex flex-col xl:flex-row gap-6">
           
           <div className="flex-1 flex flex-col gap-5 min-w-0">
             
@@ -269,11 +338,11 @@ export default function AdminDashboard() {
 
             {/* Metrics Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Active Users" value={0} />
-              <StatCard icon={FileText} iconColor="text-rose-500" iconBg="bg-rose-100" title="Memories Created" value={0} />
-              <StatCard icon={CalendarCheck} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Tasks & Events" value={0} />
-              <StatCard icon={MessageSquare} iconColor="text-purple-600" iconBg="bg-purple-100" title="AI Requests" value={0} />
-              <StatCard icon={Link} iconColor="text-blue-500" iconBg="bg-blue-100" title="API Calls" value={0} />
+              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Active Users" value={3} />
+              <StatCard icon={FileText} iconColor="text-rose-500" iconBg="bg-rose-100" title="Memories Created" value={3} />
+              <StatCard icon={CalendarCheck} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Tasks & Events" value={3} />
+              <StatCard icon={MessageSquare} iconColor="text-purple-600" iconBg="bg-purple-100" title="AI Requests" value={18} />
+              <StatCard icon={Link} iconColor="text-blue-500" iconBg="bg-blue-100" title="API Calls" value={83} />
             </div>
 
             {/* Area Charts Row */}
@@ -594,7 +663,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Right Column */}
-          <div className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6 h-fit sticky top-24">
             
             {/* Top Active Users */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">

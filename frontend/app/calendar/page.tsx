@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreVertical, Plus, ChevronDown, ChevronLeft, MapPin, CheckCircle2,
-  Clock, RefreshCw, Sparkles, X, Check
+  Clock, RefreshCw, Sparkles, X, Check, Video
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -41,7 +41,11 @@ const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
 
 type CalendarEvent = { type: string; color: string; title: string; time: string };
 
-const calendarEvents: Record<number, CalendarEvent[]> = {};
+const calendarEvents: Record<number, CalendarEvent[]> = {
+  10: [{ type: 'solid-pill', color: 'blue', title: 'Team Standup', time: '9:00 AM' }],
+  14: [{ type: 'border-pill', color: 'purple', title: 'Design Review', time: '3:00 PM' }],
+  16: [{ type: 'dot', color: 'rose', title: 'Client Call', time: '2:00 PM' }],
+};
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -161,7 +165,33 @@ type ScheduleItem = {
   actionClick?: () => void;
 };
 
-const scheduleData: ScheduleItem[] = [];
+const scheduleData: ScheduleItem[] = [
+  {
+    time: '9:00 AM',
+    title: 'Team Standup',
+    subtitle: 'Google Meet',
+    Icon: Video,
+    dotColor: 'bg-blue-500',
+    action: 'Join',
+    actionClick: () => {},
+  },
+  {
+    time: '2:00 PM',
+    title: 'Project Review',
+    subtitle: 'Meeting Room A',
+    Icon: MapPin,
+    dotColor: 'bg-emerald-500',
+    action: 'In 1h',
+  },
+  {
+    time: '4:30 PM',
+    title: 'Research Discussion',
+    subtitle: 'Google Meet',
+    Icon: Video,
+    dotColor: 'bg-amber-500',
+    action: 'In 3h',
+  },
+];
 
 
 export default function PathiiCalendarDashboard() {

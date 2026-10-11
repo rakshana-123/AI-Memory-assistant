@@ -20,17 +20,34 @@ type UserRecord = {
 
 type GrowthPoint = { name: string; newUsers: number; activeUsers: number };
 
-const userGrowthData: GrowthPoint[] = [];
+const userGrowthData: GrowthPoint[] = [
+  { name: 'Oct 1', newUsers: 1, activeUsers: 1 },
+  { name: 'Oct 5', newUsers: 0, activeUsers: 2 },
+  { name: 'Oct 8', newUsers: 1, activeUsers: 2 },
+  { name: 'Oct 11', newUsers: 0, activeUsers: 3 },
+];
 
 type PlanSlice = { name: string; value: number; percent: string; fill: string };
 
-const planDistributionData: PlanSlice[] = [];
+const planDistributionData: PlanSlice[] = [
+  { name: 'Free', value: 1, percent: '34%', fill: '#3b82f6' },
+  { name: 'Pro', value: 1, percent: '33%', fill: '#a855f7' },
+  { name: 'Team', value: 1, percent: '33%', fill: '#f59e0b' },
+];
 
 type TeamStat = { name: string; value: number; percent: string; color: string; iconBg: string; iconColor: string };
 
-const topTeamsData: TeamStat[] = [];
+const topTeamsData: TeamStat[] = [
+  { name: 'Design', value: 1, percent: '34%', color: 'bg-blue-500', iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
+  { name: 'Development', value: 1, percent: '33%', color: 'bg-purple-500', iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
+  { name: 'Marketing', value: 1, percent: '33%', color: 'bg-amber-400', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+];
 
-const usersData: UserRecord[] = [];
+const usersData: UserRecord[] = [
+  { id: 1, name: 'Sarah Kumar', email: 'sarah@example.com', plan: 'Pro', status: 'Active', team: 'Design', joined: 'This week', lastActive: '2 min ago', initials: 'SK', bg: 'bg-purple-100 text-purple-600' },
+  { id: 2, name: 'Arun Raj', email: 'arun@example.com', plan: 'Free', status: 'Active', team: 'Development', joined: 'This week', lastActive: '15 min ago', initials: 'AR', bg: 'bg-blue-100 text-blue-600' },
+  { id: 3, name: 'Vikram S', email: 'vikram@example.com', plan: 'Team', status: 'Inactive', team: 'Marketing', joined: 'Last week', lastActive: '3 days ago', initials: 'VS', bg: 'bg-amber-100 text-amber-600' },
+];
 
 const userTabs = [
   { label: 'All Users', match: (u: UserRecord) => true },
@@ -43,7 +60,10 @@ const userTabs = [
 
 type Activity = { user: string; action: string; time: string; icon: any; bg: string; color: string };
 
-const recentUserActivity: Activity[] = [];
+const recentUserActivity: Activity[] = [
+  { user: 'Arun Raj', action: 'registered and joined Development', time: '2 min ago', icon: Users, bg: 'bg-blue-100', color: 'text-blue-600' },
+  { user: 'Sarah Kumar', action: 'created a new memory', time: '8 min ago', icon: Database, bg: 'bg-purple-100', color: 'text-purple-600' },
+];
 
 const planOptions = ['All Plans', 'Free', 'Pro', 'Team'];
 const statusOptions = ['All Status', 'Active', 'Inactive'];

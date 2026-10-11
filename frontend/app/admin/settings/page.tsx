@@ -121,10 +121,10 @@ export default function AdminSettingsDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[240px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 sticky top-0 h-screen z-20">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -185,10 +185,10 @@ export default function AdminSettingsDashboard() {
       </aside>
 
       {/* Main Content Area Container */}
-      <div className="flex-1 flex flex-col min-w-0 relative">
+      <main className="flex-1 flex flex-col min-w-0 relative pb-28">
         
         {/* Header */}
-        <header className="h-auto py-4 lg:h-[72px] px-4 lg:px-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-shrink-0 bg-[#F4F7F9]">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-[#F4F7F9]/95 backdrop-blur-sm sticky top-0 z-20 max-lg:h-auto max-lg:py-3">
           <div className="relative w-full max-w-[450px] lg:w-[450px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -196,7 +196,7 @@ export default function AdminSettingsDashboard() {
               placeholder="Search settings, users, integrations..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
+              className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-500 border border-slate-200">
               ⌘ K
@@ -220,7 +220,7 @@ export default function AdminSettingsDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-4 lg:px-8 pb-36 custom-scrollbar flex flex-col">
+        <div className="flex-1 px-4 lg:px-8 pb-12 flex flex-col">
           
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
@@ -602,8 +602,8 @@ export default function AdminSettingsDashboard() {
           </div>
         </div>
         
-        {/* Bottom Bar: Sticky/absolute within container, non-overlapping with pb-36 */}
-        <div className="fixed lg:absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 lg:px-8 py-3.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+        {/* Bottom Bar: Sticky/fixed to bottom of viewport, offset for sidebar */}
+        <div className="fixed bottom-0 left-0 right-0 lg:left-[260px] bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 lg:px-8 py-3.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-30">
           <div className="flex items-center gap-2">
             {savedToast && (
               <span className="text-[12px] font-bold text-emerald-600 flex items-center gap-1.5 animate-pulse">
@@ -627,7 +627,7 @@ export default function AdminSettingsDashboard() {
           </div>
         </div>
 
-      </div>
+      </main>
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {

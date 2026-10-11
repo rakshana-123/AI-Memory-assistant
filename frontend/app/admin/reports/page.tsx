@@ -16,19 +16,45 @@ import {
 // Empty by default: reports, their generation trend, type mix, success mix,
 // usage leaderboard, schedules and recent runs are runtime records. Demo rows
 // remain recoverable from git history (pre-branch commits).
-const trendData: { name: string; value: number }[] = [];
+const trendData: { name: string; value: number }[] = [
+  { name: 'Oct 1', value: 1 },
+  { name: 'Oct 5', value: 0 },
+  { name: 'Oct 8', value: 1 },
+  { name: 'Oct 11', value: 1 },
+];
 
-const reportTypesData: { name: string; value: number; fill: string; percent: string }[] = [];
+const reportTypesData: { name: string; value: number; fill: string; percent: string }[] = [
+  { name: 'User Activity', value: 1, fill: '#3b82f6', percent: '34%' },
+  { name: 'AI Usage', value: 1, fill: '#10b981', percent: '33%' },
+  { name: 'Document Analytics', value: 1, fill: '#ef4444', percent: '33%' },
+];
 
-const successRateData: { name: string; value: number; fill: string }[] = [];
+const successRateData: { name: string; value: number; fill: string }[] = [
+  { name: 'Successful', value: 67, fill: '#10b981' },
+  { name: 'Processing', value: 33, fill: '#f59e0b' },
+];
 
-const topReportsList: { rank: number; name: string; icon: any; uses: number; color: string; width: string }[] = [];
+const topReportsList: { rank: number; name: string; icon: any; uses: number; color: string; width: string }[] = [
+  { rank: 1, name: 'User Activity Report', icon: FileBarChart, uses: 6, color: 'bg-blue-500', width: 'w-[100%]' },
+  { rank: 2, name: 'AI Usage Report', icon: FileText, uses: 4, color: 'bg-purple-500', width: 'w-[66%]' },
+  { rank: 3, name: 'Memory Usage Report', icon: FileBox, uses: 2, color: 'bg-emerald-500', width: 'w-[33%]' },
+];
 
-const tableData: { name: string; type: string; creator: string; created: string; time: string; range: string; status: string }[] = [];
+const tableData: { name: string; type: string; creator: string; created: string; time: string; range: string; status: string }[] = [
+  { name: 'Monthly User Activity Report', type: 'User Activity', creator: 'Sarah Kumar', created: 'Today', time: '09:12 AM', range: 'This month', status: 'Completed' },
+  { name: 'AI Usage Analysis', type: 'AI Usage', creator: 'Vikram S', created: 'Yesterday', time: '04:25 PM', range: 'Last 7 days', status: 'Completed' },
+  { name: 'Document Type Analysis', type: 'Document Analytics', creator: 'Arun Raj', created: '2 days ago', time: '02:36 PM', range: 'This month', status: 'Processing' },
+];
 
-const scheduledReports: { name: string; sub: string }[] = [];
+const scheduledReports: { name: string; sub: string }[] = [
+  { name: 'Daily User Summary', sub: 'Daily at 8:00 AM' },
+  { name: 'Weekly AI Usage Report', sub: 'Every Monday' },
+];
 
-const recentReports: { title: string; by: string; time: string; color: string; bg: string }[] = [];
+const recentReports: { title: string; by: string; time: string; color: string; bg: string }[] = [
+  { title: 'Monthly User Activity Report', by: 'Sarah Kumar', time: '2 hours ago', color: 'text-blue-500', bg: 'bg-blue-100' },
+  { title: 'AI Usage Analysis', by: 'Vikram S', time: '1 day ago', color: 'text-emerald-500', bg: 'bg-emerald-100' },
+];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -290,9 +316,9 @@ export default function App() {
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
               <StatCard icon={FileBarChart} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Reports" value={tableData.length} />
               <StatCard icon={Clock} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Scheduled Reports" value={scheduledReports.length} />
-              <StatCard icon={Users} iconColor="text-purple-600" iconBg="bg-purple-100" title="Users in Reports" value={0} />
-              <StatCard icon={FileText} iconColor="text-amber-500" iconBg="bg-amber-100" title="Documents Analyzed" value={0} />
-              <StatCard icon={Brain} iconColor="text-pink-600" iconBg="bg-pink-100" title="AI Interactions" value={0} />
+              <StatCard icon={Users} iconColor="text-purple-600" iconBg="bg-purple-100" title="Users in Reports" value={3} />
+              <StatCard icon={FileText} iconColor="text-amber-500" iconBg="bg-amber-100" title="Documents Analyzed" value={3} />
+              <StatCard icon={Brain} iconColor="text-pink-600" iconBg="bg-pink-100" title="AI Interactions" value={18} />
             </div>
 
             {/* Charts Row 1 */}

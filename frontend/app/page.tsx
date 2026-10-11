@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar,
   FileText, Users, Link, BarChart2, Settings, ChevronRight,
   MoreVertical, TrendingUp, TrendingDown,
-  ArrowRight, Circle, CheckCircle2
+  ArrowRight, Circle, CheckCircle2, Play
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -120,14 +120,62 @@ const recentMemories: {
   time: string;
   actionIcon: any;
   isPlay?: boolean;
-}[] = [];
+}[] = [
+  {
+    icon: Mic,
+    iconBg: "bg-[#EBF3FF]",
+    iconColor: "text-[#2563EB]",
+    title: "Project idea for AI assistant",
+    subtitle: "Voice • 2 min",
+    time: "Today, 10:42 AM",
+    actionIcon: Play,
+    isPlay: true,
+  },
+  {
+    icon: FileText,
+    iconBg: "bg-[#F1F5F9]",
+    iconColor: "text-slate-500",
+    title: "Research notes on MCP",
+    subtitle: "Document • PDF",
+    time: "Yesterday",
+    actionIcon: MoreVertical,
+  },
+  {
+    icon: Calendar,
+    iconBg: "bg-[#F3E8FF]",
+    iconColor: "text-[#8B5CF6]",
+    title: "Team meeting with Sarah",
+    subtitle: "Meeting • Summary",
+    time: "Mon 4:30 PM",
+    actionIcon: MoreVertical,
+  },
+];
 
 const upcomingTasks: {
   title: string;
   subtitle: string;
   priority: string;
   priorityColor: string;
-}[] = [];
+}[] = [
+  {
+    title: "Prepare project presentation",
+    subtitle: "Today, 2:00 PM",
+    priority: "High",
+    priorityColor: "bg-rose-50 text-rose-600",
+  },
+  {
+    title: "Follow up with Sarah",
+    subtitle: "Tomorrow, 10:00 AM",
+    priority: "Medium",
+    priorityColor: "bg-amber-50 text-amber-600",
+  },
+  {
+    title: "Review research paper",
+    subtitle: "Fri, 4:00 PM",
+    priority: "Low",
+    priorityColor: "bg-blue-50 text-blue-600",
+  },
+];
 
 const upcomingEvents: {
   date: string;
@@ -135,7 +183,22 @@ const upcomingEvents: {
   title: string;
   time: string;
   dotColor: string;
-}[] = [];
+}[] = [
+  {
+    date: "14",
+    month: "Oct",
+    title: "Design Review",
+    time: "3:00 PM • 45 min",
+    dotColor: "#8B5CF6",
+  },
+  {
+    date: "16",
+    month: "Oct",
+    title: "Client Call",
+    time: "2:00 PM • 30 min",
+    dotColor: "#F43F5E",
+  },
+];
 
 export default function PathiiDashboard() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -266,25 +329,25 @@ export default function PathiiDashboard() {
             <NextLink href="/memories" className="transition-transform hover:-translate-y-0.5">
               <StatCard
                 icon={BrainLogo} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
-                value={0} label="Total Memories"
+                value={3} label="Total Memories" trend="+1 this week" trendUp
               />
             </NextLink>
             <NextLink href="/tasks" className="transition-transform hover:-translate-y-0.5">
               <StatCard
                 icon={CheckSquare} iconBg="bg-[#E6F8F0]" iconColor="text-[#10B981]"
-                value={0} label="Active Tasks"
+                value={2} label="Active Tasks"
               />
             </NextLink>
             <NextLink href="/calendar" className="transition-transform hover:-translate-y-0.5">
               <StatCard
                 icon={Calendar} iconBg="bg-[#FFEBEF]" iconColor="text-[#F43F5E]"
-                value={0} label="Upcoming Events"
+                value={2} label="Upcoming Events"
               />
             </NextLink>
             <NextLink href="/people" className="transition-transform hover:-translate-y-0.5">
               <StatCard
                 icon={Users} iconBg="bg-[#F3E8FF]" iconColor="text-[#8B5CF6]"
-                value={0} label="Important People"
+                value={3} label="Important People"
               />
             </NextLink>
           </div>

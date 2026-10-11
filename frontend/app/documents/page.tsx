@@ -183,7 +183,11 @@ type DocumentItem = {
   preview?: string;
 };
 
-const documentsData: DocumentItem[] = [];
+const documentsData: DocumentItem[] = [
+  { id: 1, type: 'file', title: 'AI Research Paper.pdf', meta: 'PDF • 2.4 MB • Today', badge: 'PDF', badgeColor: 'bg-red-500', preview: 'pdf' },
+  { id: 2, type: 'file', title: 'Project Plan.docx', meta: 'DOC • 1.1 MB • Yesterday', badge: 'DOC', badgeColor: 'bg-blue-500', preview: 'doc' },
+  { id: 3, type: 'file', title: 'Budget Sheet.xlsx', meta: 'XLS • 900 KB • Oct 7', badge: 'XLS', badgeColor: 'bg-emerald-500', preview: 'xls' },
+];
 
 type RecentDocument = {
   id: number;
@@ -197,7 +201,11 @@ type RecentDocument = {
   modified: string;
 };
 
-const recentDocuments: RecentDocument[] = [];
+const recentDocuments: RecentDocument[] = [
+  { id: 1, name: 'AI Research Paper.pdf', icon: FileText, iconBgClass: 'bg-red-100', iconColorClass: 'text-red-500', type: 'PDF', badge: 'PDF', size: '2.4 MB', modified: 'Today, 10:42 AM' },
+  { id: 2, name: 'Project Plan.docx', icon: File, iconBgClass: 'bg-blue-100', iconColorClass: 'text-blue-500', type: 'Document', badge: 'DOC', size: '1.1 MB', modified: 'Yesterday, 4:20 PM' },
+  { id: 3, name: 'Budget Sheet.xlsx', icon: File, iconBgClass: 'bg-emerald-100', iconColorClass: 'text-emerald-500', type: 'Spreadsheet', badge: 'XLS', size: '900 KB', modified: 'Oct 7, 9:15 AM' },
+];
 
 const downloadCsv = (filename: string, rows: (string | number)[][]) => {
   const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');

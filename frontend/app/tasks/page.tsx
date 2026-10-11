@@ -52,11 +52,52 @@ type Task = {
   completed: boolean;
 };
 
-const tasksData: Task[] = [];
+const tasksData: Task[] = [
+  {
+    id: 1,
+    title: 'Prepare project presentation',
+    date: 'Today, 2:00 PM',
+    category: 'Work',
+    categoryColor: 'blue',
+    priority: 'High',
+    priorityColor: 'red',
+    icon: 'document',
+    iconColor: 'purple',
+    completed: false,
+  },
+  {
+    id: 2,
+    title: 'Team sync with Sarah',
+    date: 'Tomorrow, 10:00 AM',
+    category: 'Meeting',
+    categoryColor: 'purple',
+    priority: 'Medium',
+    priorityColor: 'orange',
+    icon: 'calendar',
+    iconColor: 'pink',
+    completed: false,
+  },
+  {
+    id: 3,
+    title: 'Book travel tickets',
+    date: 'Yesterday, 6:00 PM',
+    category: 'Personal',
+    categoryColor: 'red',
+    priority: 'Medium',
+    priorityColor: 'orange',
+    icon: 'document',
+    iconColor: 'cyan',
+    completed: true,
+  },
+];
 
 type TimelineItem = { time: string; title: string; location: string; type: string; status: string; statusType: string; color: string };
 
-const timelineData: TimelineItem[] = [];
+const timelineData: TimelineItem[] = [
+  { time: '09:00 AM', title: 'Team Standup', location: 'Google Meet', type: 'video', status: 'Join', statusType: 'primary', color: 'bg-blue-500' },
+  { time: '02:00 PM', title: 'Project Review', location: 'Meeting Room A', type: 'location', status: 'In 1h', statusType: 'success', color: 'bg-green-500' },
+  { time: '04:30 PM', title: 'Research Discussion', location: 'Google Meet', type: 'video', status: 'Later', statusType: 'neutral', color: 'bg-slate-400' },
+];
 
 const CategoryTag = ({ text, color }: any) => {
   const styles = {

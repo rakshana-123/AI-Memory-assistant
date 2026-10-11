@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   ChevronDown, ArrowRight, X, Sparkles, CheckCircle2,
-  Clock, Link2, MapPin, ChevronLeft, MoreHorizontal, Lightbulb
+  Clock, Link2, ChevronLeft, MoreHorizontal, Lightbulb
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
@@ -45,21 +45,86 @@ const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
 
 type TrendPoint = { name: string; voice: number; notes: number; docs: number; images: number };
 
-const trendsData: TrendPoint[] = [];
+const trendsData: TrendPoint[] = [
+  { name: 'Oct 5', voice: 1, notes: 0, docs: 0, images: 0 },
+  { name: 'Oct 8', voice: 0, notes: 0, docs: 1, images: 0 },
+  { name: 'Oct 10', voice: 0, notes: 1, docs: 0, images: 0 },
+  { name: 'Oct 11', voice: 1, notes: 0, docs: 0, images: 0 },
+];
 
 type TypeSlice = { name: string; value: number; fill: string };
 
-const memoryTypesData: TypeSlice[] = [];
+const memoryTypesData: TypeSlice[] = [
+  { name: 'Voice', value: 1, fill: '#3B82F6' },
+  { name: 'Notes', value: 1, fill: '#A855F7' },
+  { name: 'Documents', value: 1, fill: '#10B981' },
+];
 
-const focusTimeData: TypeSlice[] = [];
+const focusTimeData: TypeSlice[] = [
+  { name: 'Deep Work', value: 3, fill: '#3B82F6' },
+  { name: 'Meetings', value: 2, fill: '#A855F7' },
+  { name: 'Planning', value: 1, fill: '#10B981' },
+];
 
 type Topic = { name: string; count: number; max: number; color: string };
 
-const topTopics: Topic[] = [];
+const topTopics: Topic[] = [
+  { name: 'Work', count: 2, max: 3, color: 'bg-blue-500' },
+  { name: 'Ideas', count: 1, max: 3, color: 'bg-purple-500' },
+  { name: 'Learning', count: 1, max: 3, color: 'bg-emerald-500' },
+];
 
 type HeatCell = { hour: number; intensity: number };
 
-const heatmapData: HeatCell[][] = [];
+// Deterministic activity pattern (no Math.random / Date — hydration-safe)
+const heatmapData: HeatCell[][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, dayIndex) =>
+  Array.from({ length: 24 }, (_, hour) => {
+    const weekday = dayIndex < 5;
+    let intensity = 0;
+    if (weekday) {
+      if (hour >= 9 && hour <= 11) intensity = 2;
+      else if (hour >= 14 && hour <= 16) intensity = 1;
+      else if (hour === 20) intensity = 1;
+    } else if (hour >= 10 && hour <= 15) {
+      intensity = 1;
+    }
+    return { hour, intensity };
+  })
+);
+
+type AiInsight = { title: string; desc: string; icon: any; iconBg: string; iconColor: string };
+
+const aiInsightsData: AiInsight[] = [
+  {
+    title: 'Voice captures are your richest memories',
+    desc: 'Your latest voice note produced a task, an event and a note — more extracted items than any other type.',
+    icon: Mic,
+    iconBg: 'bg-blue-50',
+    iconColor: 'text-blue-500',
+  },
+  {
+    title: 'Most of your tasks are still open',
+    desc: '2 of 3 tasks are pending — the high-priority one is due today at 2:00 PM.',
+    icon: CheckSquare,
+    iconBg: 'bg-purple-50',
+    iconColor: 'text-purple-500',
+  },
+  {
+    title: 'Sarah Chen is your top contact',
+    desc: '3 interactions with Sarah captured this week — more than anyone else.',
+    icon: Users,
+    iconBg: 'bg-emerald-50',
+    iconColor: 'text-emerald-500',
+  },
+];
+
+type RecentInsight = { title: string; subtitle: string; date: string; icon: any; iconBg: string; iconColor: string };
+
+const recentInsightsData: RecentInsight[] = [
+  { title: 'Meeting summary with Sarah', subtitle: 'Key points and action items', date: 'Today', icon: FileText, iconBg: 'bg-blue-50', iconColor: 'text-blue-500' },
+  { title: 'Book recommendations', subtitle: 'Reading list saved as a note', date: 'Yesterday', icon: Lightbulb, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500' },
+  { title: 'Research paper takeaways', subtitle: 'Main findings saved as a document', date: 'Oct 8', icon: Lightbulb, iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
+];
 
 const getIntensityColor = (intensity: any) => {
   switch(intensity) {
@@ -81,9 +146,9 @@ export default function PathiiInsightsDashboard() {
   const rangeOptions = ['This Week', 'This Month', 'This Year'];
 
   const totalMemories = memoryTypesData.reduce((sum, type) => sum + type.value, 0);
-  const tasksCreated = 0;
-  const peopleInteracted = 0;
-  const eventsScheduled = 0;
+  const tasksCreated = 3;
+  const peopleInteracted = 3;
+  const eventsScheduled = 3;
   const totalFocusHours = focusTimeData.reduce((sum, type) => sum + type.value, 0);
 
   const showToast = (msg: string) => {
@@ -437,7 +502,19 @@ export default function PathiiInsightsDashboard() {
               </div>
 
               <div className="space-y-4 relative z-10">
-                <EmptyState icon={Sparkles} title="No insights yet" subtitle="Insights will appear as you capture memories." />
+                {aiInsightsData.length > 0 ? aiInsightsData.map((insight) => (
+                  <div key={insight.title} className="flex items-start gap-4">
+                    <div className={`w-10 h-10 rounded-xl ${insight.iconBg} ${insight.iconColor} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                      <insight.icon size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-slate-900 leading-tight mb-1">{insight.title}</h4>
+                      <p className="text-[12px] text-slate-500 font-medium leading-relaxed">{insight.desc}</p>
+                    </div>
+                  </div>
+                )) : (
+                  <EmptyState icon={Sparkles} title="No insights yet" subtitle="Insights will appear as you capture memories." />
+                )}
               </div>
               
               {/* Decorative background element */}
@@ -520,7 +597,22 @@ export default function PathiiInsightsDashboard() {
               </div>
 
               <div className="space-y-4">
-                <EmptyState icon={Lightbulb} title="No recent insights" subtitle="Generated insights will appear here." />
+                {recentInsightsData.length > 0 ? recentInsightsData.map((item) => (
+                  <div key={item.title} className="flex items-start gap-3">
+                    <div className={`w-8 h-8 rounded-lg ${item.iconBg} ${item.iconColor} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                      <item.icon size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-0.5">
+                        <h4 className="text-[14px] font-bold text-slate-900 leading-tight truncate">{item.title}</h4>
+                        <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 ml-2">{item.date}</span>
+                      </div>
+                      <p className="text-[12px] text-slate-500 font-medium truncate">{item.subtitle}</p>
+                    </div>
+                  </div>
+                )) : (
+                  <EmptyState icon={Lightbulb} title="No recent insights" subtitle="Generated insights will appear here." />
+                )}
               </div>
             </div>
 
