@@ -11,24 +11,12 @@ import {
   Save, X, CheckCircle2
 } from 'lucide-react';
 
-// --- MOCK DATA ---
+// --- DATA ---
+// Roles are runtime records: the list starts empty and grows through the
+// Create Role flows. The permission catalog below (row labels) is product
+// config and stays. Demo roles/changes remain recoverable from git history.
 
-const metricCards = [
-  { title: 'Total Roles', value: '6', trend: '0%', up: true, icon: Users, color: 'text-amber-500', bg: 'bg-amber-50' },
-  { title: 'Admin Users', value: '24', trend: '20%', up: true, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  { title: 'Total Permissions', value: '128', trend: '5%', up: true, icon: Key, color: 'text-purple-500', bg: 'bg-purple-50' },
-  { title: 'Secure Access', value: '100%', trend: '0%', up: true, icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  { title: 'Access Logs', value: '342', trend: '18%', up: true, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50' },
-];
-
-const userRoles = [
-  { name: 'Super Admin', desc: 'Full access to all features', users: 3, icon: Shield, color: 'bg-amber-100 text-amber-600' },
-  { name: 'Admin', desc: 'Manage users, content and settings', users: 8, icon: GearIcon, color: 'bg-purple-100 text-purple-600' },
-  { name: 'Content Manager', desc: 'Manage memories, documents, tasks', users: 5, icon: FileText, color: 'bg-emerald-100 text-emerald-600' },
-  { name: 'AI Manager', desc: 'Manage AI usage and models', users: 3, icon: Brain, color: 'bg-indigo-100 text-indigo-600' },
-  { name: 'Support', desc: 'Handle user support and reports', users: 4, icon: Headset, color: 'bg-orange-100 text-orange-600' },
-  { name: 'Viewer', desc: 'Read-only access to analytics', users: 1, icon: Eye, color: 'bg-rose-100 text-rose-600' },
-];
+const userRoles: { name: string; desc: string; users: number; icon: any; color: string }[] = [];
 
 const permissionCategories = [
   { name: 'Users & Administration', count: 12, icon: Users },
@@ -44,31 +32,38 @@ const permissionCategories = [
   { name: 'Settings', count: 10, icon: GearIcon },
 ];
 
-const recentChanges = [
-  { user: 'Vikram S', action: 'Granted AI Usage permissions to AI Manager', time: '10 min ago', avatar: '11', type: 'add' },
-  { user: 'Priya Nair', action: 'Updated Content Manager role permissions', time: '32 min ago', avatar: '12', type: 'edit' },
-  { user: 'Admin', action: 'Added new Support user', time: '1 hour ago', avatar: '11', type: 'user' },
-  { user: 'Arun Raj', action: 'Revoked Delete Documents permission', time: '2 hours ago', avatar: '14', type: 'remove' },
-  { user: 'Meena R', action: 'Modified Analytics permissions for Viewer', time: '3 hours ago', avatar: '15', type: 'edit' },
+const recentChanges: { user: string; action: string; time: string; type: string }[] = [];
+
+// Permission catalog — product config (the capability list). Role columns in
+// the matrix are rendered from the roles list; per-role toggle states live in
+// component state and default to OFF (1) as roles are created.
+// Toggle states: 2 = ON, 1 = OFF, 0 = DISABLED
+const permissionCatalog = [
+  { perm: 'View Users', cat: 'Users' },
+  { perm: 'Create Users', cat: 'Users' },
+  { perm: 'Delete Users', cat: 'Users' },
+  { perm: 'Manage Roles', cat: 'Users' },
+  { perm: 'Access Memories', cat: 'Memories' },
+  { perm: 'Delete Memories', cat: 'Memories' },
+  { perm: 'View Documents', cat: 'Documents' },
+  { perm: 'Upload Documents', cat: 'Documents' },
+  { perm: 'Delete Documents', cat: 'Documents' },
+  { perm: 'Manage Tasks', cat: 'Tasks & Events' },
+  { perm: 'Manage AI Models', cat: 'AI Usage' },
+  { perm: 'View Analytics', cat: 'Analytics' },
+  { perm: 'Generate Reports', cat: 'Reports' },
+  { perm: 'System Settings', cat: 'Settings' },
 ];
 
-// Matrix states: 2 = ON, 1 = OFF, 0 = DISABLED
-const matrixData = [
-  { perm: 'View Users', cat: 'Users', states: [2, 2, 2, 2, 2, 0] },
-  { perm: 'Create Users', cat: 'Users', states: [2, 2, 0, 0, 0, 0] },
-  { perm: 'Delete Users', cat: 'Users', states: [2, 1, 0, 0, 0, 0] },
-  { perm: 'Manage Roles', cat: 'Users', states: [2, 2, 0, 0, 0, 0] },
-  { perm: 'Access Memories', cat: 'Memories', states: [2, 2, 2, 2, 0, 0] },
-  { perm: 'Delete Memories', cat: 'Memories', states: [2, 2, 0, 1, 0, 0] },
-  { perm: 'View Documents', cat: 'Documents', states: [2, 2, 2, 2, 2, 0] },
-  { perm: 'Upload Documents', cat: 'Documents', states: [2, 2, 2, 0, 0, 0] },
-  { perm: 'Delete Documents', cat: 'Documents', states: [2, 2, 0, 0, 0, 0] },
-  { perm: 'Manage Tasks', cat: 'Tasks & Events', states: [2, 2, 2, 0, 2, 0] },
-  { perm: 'Manage AI Models', cat: 'AI Usage', states: [2, 2, 0, 2, 0, 0] },
-  { perm: 'View Analytics', cat: 'Analytics', states: [2, 2, 2, 2, 2, 0] },
-  { perm: 'Generate Reports', cat: 'Reports', states: [2, 2, 1, 0, 1, 0] },
-  { perm: 'System Settings', cat: 'Settings', states: [2, 1, 2, 0, 0, 0] },
-];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -124,7 +119,7 @@ const ChangeIcon = ({ type }: any) => {
   }
 };
 
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 
 const cycleOption = (options: string[], current: string) => {
   const index = options.indexOf(current);
@@ -147,11 +142,11 @@ export default function RolesDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [matrixSearch, setMatrixSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
-  const [matrix, setMatrix] = useState(matrixData);
-  const [selectedRoleIndex, setSelectedRoleIndex] = useState(2);
+  const [matrix, setMatrix] = useState(() => permissionCatalog.map((row) => ({ ...row, states: [] as number[] })));
+  const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
   const [roleForm, setRoleForm] = useState({
-    name: 'Content Manager',
-    desc: 'Can manage memories, documents, tasks and events.',
+    name: '',
+    desc: '',
   });
   const [savedToast, setSavedToast] = useState(false);
   const [roles, setRoles] = useState(userRoles);
@@ -162,6 +157,14 @@ export default function RolesDashboard() {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
+
+  const metricCards: { title: string; value: number | string; icon: any; color: string; bg: string; trend?: string }[] = [
+    { title: 'Total Roles', value: roles.length, icon: Users, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { title: 'Admin Users', value: 0, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { title: 'Total Permissions', value: matrix.length, icon: Key, color: 'text-purple-500', bg: 'bg-purple-50' },
+    { title: 'Secure Access', value: '0%', icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { title: 'Access Logs', value: 0, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50' },
+  ];
 
   const handleCreateRole = () => {
     const suffix = roles.filter((r) => r.name.startsWith('Custom Role')).length + 1;
@@ -175,8 +178,11 @@ export default function RolesDashboard() {
 
   const handleExportPermissions = () => {
     downloadCsv('pathii-permissions.csv', [
-      ['Permission', 'Category', ...userRoles.map((r) => r.name)],
-      ...matrix.map((row) => [row.perm, row.cat, ...row.states.map((s) => (s === 2 ? 'ON' : s === 1 ? 'OFF' : 'N/A'))]),
+      ['Permission', 'Category', ...roles.map((r) => r.name)],
+      ...matrix.map((row) => [row.perm, row.cat, ...roles.map((_, roleIdx) => {
+        const s = row.states[roleIdx];
+        return s === 2 ? 'ON' : s === 1 ? 'OFF' : 'N/A';
+      })]),
     ]);
     showToast(`Exported ${matrix.length} permissions`);
   };
@@ -185,6 +191,8 @@ export default function RolesDashboard() {
     setMatrix(prev => {
       const next = [...prev];
       const targetRow = { ...next[rowIndex], states: [...next[rowIndex].states] };
+      // Pad with OFF (1) for roles created after this row was last touched.
+      while (targetRow.states.length <= roleIndex) targetRow.states.push(1);
       const current = targetRow.states[roleIndex];
       if (current === 2) targetRow.states[roleIndex] = 1;
       else if (current === 1) targetRow.states[roleIndex] = 2;
@@ -235,7 +243,7 @@ export default function RolesDashboard() {
           <SidebarItem icon={Link} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
           <SidebarItem icon={Lock} label="Roles & Permissions" active href="/admin/roles" />
@@ -244,7 +252,7 @@ export default function RolesDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -287,12 +295,11 @@ export default function RolesDashboard() {
               {dateRange}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
-            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4 lg:pl-5">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
@@ -337,11 +344,13 @@ export default function RolesDashboard() {
                       <p className="text-[12px] text-slate-500 font-medium leading-none whitespace-nowrap">{metric.title}</p>
                     </div>
                   </div>
+                  {metric.trend && (
                   <div className={`flex items-center gap-1 text-[11px] font-bold mt-1 text-emerald-500`}>
                     <span className="text-lg leading-none mb-1">↑</span>
                     <span>{metric.trend}</span>
                     <span className="text-slate-400 font-medium ml-1">vs last month</span>
                   </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -367,9 +376,15 @@ export default function RolesDashboard() {
                       </tr>
                     </thead>
                     <tbody className="text-[12px]">
-                      {filteredRoles.length === 0 ? (
+                      {roles.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                          <td colSpan={5} className="py-2">
+                            <EmptyState icon={ShieldCheck} title="No roles yet" subtitle="Roles you create will appear here." />
+                          </td>
+                        </tr>
+                      ) : filteredRoles.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-12 text-center text-slate-400 font-medium">
                             No roles match "{searchQuery}"
                           </td>
                         </tr>
@@ -526,32 +541,25 @@ export default function RolesDashboard() {
                      <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-500 tracking-wider">
                        <th className="py-3 px-5 bg-slate-50 w-[200px]">Permission</th>
                        <th className="py-3 px-5 bg-slate-50 w-[150px]">Category</th>
-                       
-                       {/* Role Headers */}
-                       <th className="py-3 px-4 bg-slate-50">
-                         <div className="flex items-center gap-1.5 justify-center"><Shield size={14} className="text-amber-500"/> Super Admin</div>
-                       </th>
-                       <th className="py-3 px-4 bg-slate-50">
-                         <div className="flex items-center gap-1.5 justify-center"><GearIcon size={14} className="text-blue-500"/> Admin</div>
-                       </th>
-                       <th className="py-3 px-4 bg-slate-50">
-                         <div className="flex items-center gap-1.5 justify-center"><FileText size={14} className="text-emerald-500"/> Content Manager</div>
-                       </th>
-                       <th className="py-3 px-4 bg-slate-50">
-                         <div className="flex items-center gap-1.5 justify-center"><Brain size={14} className="text-purple-500"/> AI Manager</div>
-                       </th>
-                       <th className="py-3 px-4 bg-slate-50">
-                         <div className="flex items-center gap-1.5 justify-center"><Headset size={14} className="text-orange-500"/> Support</div>
-                       </th>
-                       <th className="py-3 px-4 bg-slate-50">
-                         <div className="flex items-center gap-1.5 justify-center"><Eye size={14} className="text-rose-500"/> Viewer</div>
-                       </th>
+
+                       {/* Role Headers — rendered from the roles list */}
+                       {roles.map((role) => (
+                         <th key={role.name} className="py-3 px-4 bg-slate-50">
+                           <div className="flex items-center gap-1.5 justify-center"><role.icon size={14} className="text-blue-500"/> {role.name}</div>
+                         </th>
+                       ))}
                      </tr>
                    </thead>
                    <tbody className="text-[12px]">
-                     {filteredMatrix.length === 0 ? (
+                     {roles.length === 0 ? (
                        <tr>
-                         <td colSpan={8} className="py-8 text-center text-slate-400 font-medium">
+                         <td colSpan={3} className="py-2">
+                           <EmptyState icon={Lock} title="No roles yet" subtitle="Create a role to configure its permissions." />
+                         </td>
+                       </tr>
+                     ) : filteredMatrix.length === 0 ? (
+                       <tr>
+                         <td colSpan={2 + roles.length} className="py-12 text-center text-slate-400 font-medium">
                            No permissions match "{matrixSearch}"
                          </td>
                        </tr>
@@ -562,14 +570,14 @@ export default function RolesDashboard() {
                            <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                              <td className="py-3 px-5 font-bold text-slate-800">{row.perm}</td>
                              <td className="py-3 px-5 text-blue-600 font-medium">{row.cat}</td>
-                             
+
                              {/* Toggles for each role */}
-                             {row.states.map((state, roleIdx) => (
+                             {roles.map((_, roleIdx) => (
                                <td key={roleIdx} className="py-3 px-4 text-center">
                                  <div className="flex justify-center">
-                                   <MatrixToggle 
-                                     state={state} 
-                                     onToggle={() => handleToggle(origIndex, roleIdx)} 
+                                   <MatrixToggle
+                                     state={row.states[roleIdx] ?? 1}
+                                     onToggle={() => handleToggle(origIndex, roleIdx)}
                                    />
                                  </div>
                                </td>
@@ -626,20 +634,22 @@ export default function RolesDashboard() {
                <div className="space-y-4 relative">
                  {/* Connecting Line */}
                  <div className="absolute left-[11px] top-4 bottom-4 w-px bg-slate-100 z-0"></div>
-                 
-                 {recentChanges.map((change, i) => (
+
+                 {recentChanges.length > 0 ? recentChanges.map((change, i) => (
                    <div key={i} className="flex items-start gap-3 relative z-10">
                      <ChangeIcon type={change.type} />
                      <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <img src={`https://i.pravatar.cc/150?img=${change.avatar}`} alt="User" className="w-5 h-5 rounded-full" />
+                          <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[9px]">{change.user.charAt(0)}</div>
                           <span className="text-[13px] font-bold text-slate-900">{change.user}</span>
                           <span className="text-[10px] text-slate-400 font-medium ml-auto whitespace-nowrap">{change.time}</span>
                         </div>
                         <p className="text-[12px] text-slate-500 font-medium leading-snug truncate pl-7">{change.action}</p>
                      </div>
                    </div>
-                 ))}
+                 )) : (
+                   <EmptyState icon={UserCheck} title="No permission changes yet" subtitle="Changes will appear here as permissions are edited." />
+                 )}
                </div>
             </div>
 
@@ -660,7 +670,7 @@ export default function RolesDashboard() {
                     <Save size={16} className="text-blue-600 flex-shrink-0" />
                     <span className="text-[11px] font-bold leading-tight text-left">Export Permissions</span>
                   </button>
-                  <button onClick={() => showToast('342 access log entries recorded this month')} className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-600 rounded-xl transition-colors">
+                  <button onClick={() => showToast('No access logs yet')} className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-600 rounded-xl transition-colors">
                     <FileText size={16} className="text-blue-600 flex-shrink-0" />
                     <span className="text-[11px] font-bold leading-tight text-left">View Access Logs</span>
                   </button>

@@ -136,7 +136,7 @@ export default function AdminSettingsDashboard() {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 space-y-0.5 custom-scrollbar">
-          {[
+          {([
             { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
             { icon: Users, label: 'Users', href: '/admin/users' },
             { icon: Database, label: 'Memories', href: '/admin/memories' },
@@ -146,10 +146,10 @@ export default function AdminSettingsDashboard() {
             { icon: Link, label: 'Integrations', href: '/admin/integrations' },
             { icon: BarChart2, label: 'Analytics', href: '/admin/analytics' },
             { icon: FileSpreadsheet, label: 'Reports', href: '/admin/reports' },
-            { icon: Bell, label: 'Notifications', badge: '3', href: '/admin/notifications' },
+            { icon: Bell, label: 'Notifications', href: '/admin/notifications' },
             { icon: ShieldCheck, label: 'System Health', href: '/admin/system-health' },
             { icon: Settings, label: 'Settings', active: true, href: '/admin/settings' },
-          ].map((item, idx) => (
+          ] as { icon: any; label: string; href: string; active?: boolean; badge?: string }[]).map((item, idx) => (
             <NextLink key={idx} href={item.href}>
               <div className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${item.active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
                 <div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ export default function AdminSettingsDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <div onClick={() => showSettingsToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -204,18 +204,17 @@ export default function AdminSettingsDashboard() {
           </div>
 
           <div className="flex items-center gap-3 lg:gap-5 justify-end">
-            <button onClick={() => showSettingsToast('Date range Oct 1 – Oct 31, 2024 is active')} className="hidden sm:flex bg-white border border-slate-200 rounded-lg px-3 py-2 items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <button onClick={() => showSettingsToast('Date range Last 30 days is active')} className="hidden sm:flex bg-white border border-slate-200 rounded-lg px-3 py-2 items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-blue-600" />
-              Oct 1, 2024 - Oct 31, 2024
+              Last 30 days
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button onClick={() => showSettingsToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showSettingsToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showSettingsToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4 lg:pl-5">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>

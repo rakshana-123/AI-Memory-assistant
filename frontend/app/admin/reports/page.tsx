@@ -13,46 +13,22 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-const trendData = [
-  { name: 'Oct 1', value: 8 }, { name: 'Oct 5', value: 12 },
-  { name: 'Oct 10', value: 18 }, { name: 'Oct 15', value: 14 },
-  { name: 'Oct 20', value: 24 }, { name: 'Oct 25', value: 22 },
-  { name: 'Oct 31', value: 35 },
-];
+// Empty by default: reports, their generation trend, type mix, success mix,
+// usage leaderboard, schedules and recent runs are runtime records. Demo rows
+// remain recoverable from git history (pre-branch commits).
+const trendData: { name: string; value: number }[] = [];
 
-const reportTypesData = [
-  { name: 'User Activity', value: 6, fill: '#3b82f6', percent: '25%' },
-  { name: 'Memory Usage', value: 5, fill: '#f59e0b', percent: '21%' },
-  { name: 'AI Usage', value: 4, fill: '#10b981', percent: '17%' },
-  { name: 'Document Analytics', value: 3, fill: '#ef4444', percent: '13%' },
-  { name: 'Task & Event', value: 3, fill: '#ec4899', percent: '13%' },
-  { name: 'System Reports', value: 3, fill: '#8b5cf6', percent: '13%' },
-];
+const reportTypesData: { name: string; value: number; fill: string; percent: string }[] = [];
 
-const successRateData = [
-  { name: 'Successful', value: 98.2, fill: '#10b981' },
-  { name: 'Partial', value: 1.7, fill: '#f59e0b' },
-  { name: 'Failed', value: 0.1, fill: '#ef4444' },
-];
+const successRateData: { name: string; value: number; fill: string }[] = [];
 
-const topReportsList = [
-  { rank: 1, name: 'User Activity Report', icon: FileBarChart, uses: 128, color: 'bg-blue-500', width: 'w-[100%]' },
-  { rank: 2, name: 'AI Usage Report', icon: FileText, uses: 96, color: 'bg-purple-500', width: 'w-[75%]' },
-  { rank: 3, name: 'Memory Usage Report', icon: FileBox, uses: 84, color: 'bg-emerald-500', width: 'w-[65%]' },
-  { rank: 4, name: 'Document Analytics', icon: FileSpreadsheet, uses: 62, color: 'bg-amber-500', width: 'w-[45%]' },
-  { rank: 5, name: 'Task & Event Report', icon: FileClock, uses: 48, color: 'bg-pink-500', width: 'w-[35%]' },
-];
+const topReportsList: { rank: number; name: string; icon: any; uses: number; color: string; width: string }[] = [];
 
-const tableData = [
-  { name: 'Monthly User Activity Report', type: 'User Activity', creator: 'Sarah Kumar', avatar: 'https://i.pravatar.cc/150?img=1', created: 'Oct 31, 2024', time: '09:12 AM', range: 'Oct 1 - Oct 31, 2024', status: 'Completed' },
-  { name: 'AI Usage Analysis', type: 'AI Usage', creator: 'Vikram S', avatar: 'https://i.pravatar.cc/150?img=11', created: 'Oct 30, 2024', time: '04:25 PM', range: 'Oct 1 - Oct 30, 2024', status: 'Completed' },
-  { name: 'Memory Storage Report', type: 'Memory Usage', creator: 'Priya Nair', avatar: 'https://i.pravatar.cc/150?img=5', created: 'Oct 29, 2024', time: '11:48 AM', range: 'Oct 1 - Oct 29, 2024', status: 'Completed' },
-  { name: 'Document Type Analysis', type: 'Document Analytics', creator: 'Arun Raj', avatar: 'https://i.pravatar.cc/150?img=15', created: 'Oct 28, 2024', time: '02:36 PM', range: 'Oct 1 - Oct 28, 2024', status: 'Processing' },
-  { name: 'Weekly Productivity Report', type: 'Task & Event', creator: 'Meena R', avatar: 'https://i.pravatar.cc/150?img=9', created: 'Oct 27, 2024', time: '09:15 AM', range: 'Oct 20 - Oct 26, 2024', status: 'Completed' },
-  { name: 'System Performance Report', type: 'System Health', creator: 'Admin', avatar: 'https://i.pravatar.cc/150?img=68', created: 'Oct 26, 2024', time: '01:24 PM', range: 'Oct 1 - Oct 26, 2024', status: 'Completed' },
-  { name: 'Integration Usage Report', type: 'Integrations', creator: 'Karthik P', avatar: 'https://i.pravatar.cc/150?img=12', created: 'Oct 25, 2024', time: '03:11 PM', range: 'Oct 1 - Oct 25, 2024', status: 'Failed' },
-  { name: 'Custom Report - Research', type: 'Custom', creator: 'Sneha B', avatar: 'https://i.pravatar.cc/150?img=20', created: 'Oct 24, 2024', time: '10:05 AM', range: 'Oct 1 - Oct 24, 2024', status: 'Completed' },
-];
+const tableData: { name: string; type: string; creator: string; created: string; time: string; range: string; status: string }[] = [];
+
+const scheduledReports: { name: string; sub: string }[] = [];
+
+const recentReports: { title: string; by: string; time: string; color: string; bg: string }[] = [];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -78,11 +54,23 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend }: any) =
         <p className="text-[12px] text-slate-500 font-medium leading-tight truncate">{title}</p>
       </div>
     </div>
-    <div className="flex items-center gap-1 text-[12px] font-semibold text-emerald-600">
-      <ArrowUpRight size={14} />
-      <span>{trend}</span>
-      <span className="text-slate-400 font-medium ml-1">vs last month</span>
+    {trend && (
+      <div className="flex items-center gap-1 text-[12px] font-semibold text-emerald-600">
+        <ArrowUpRight size={14} />
+        <span>{trend}</span>
+        <span className="text-slate-400 font-medium ml-1">vs last month</span>
+      </div>
+    )}
+  </div>
+);
+
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
     </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
   </div>
 );
 
@@ -111,7 +99,18 @@ const StatusPill = ({ status }: any) => {
   );
 };
 
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 
 const cycleOption = (options: string[], current: string) => {
@@ -132,6 +131,18 @@ export default function App() {
   const handleAction = (msg: string) => {
     setActionFeedback(msg);
     setTimeout(() => setActionFeedback(null), 3500);
+  };
+
+  const handleExportReports = () => {
+    if (visibleReports.length === 0) {
+      handleAction('No data to export');
+      return;
+    }
+    downloadCsv('pathii-reports.csv', [
+      ['Report Name', 'Type', 'Generated By', 'Created On', 'Date Range', 'Status'],
+      ...visibleReports.map((row) => [row.name, row.type, row.creator, row.created, row.range, row.status]),
+    ]);
+    handleAction(`Exported ${visibleReports.length} rows`);
   };
 
   const visibleReports = tableData.filter(row => {
@@ -183,7 +194,7 @@ export default function App() {
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileBarChart} label="Reports" active href="/admin/reports" />
           <div className="my-3 border-t border-slate-100 mx-2"></div>
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -191,7 +202,7 @@ export default function App() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=68" alt="Admin" className="w-9 h-9 rounded-full object-cover shadow-sm" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -231,12 +242,11 @@ export default function App() {
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button onClick={() => handleAction('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => handleAction('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => handleAction('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
-              <img src="https://i.pravatar.cc/150?img=68" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
@@ -278,11 +288,11 @@ export default function App() {
 
             {/* Metrics Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-              <StatCard icon={FileBarChart} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Reports" value="24" trend="33%" />
-              <StatCard icon={Clock} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Scheduled Reports" value="18" trend="28%" />
-              <StatCard icon={Users} iconColor="text-purple-600" iconBg="bg-purple-100" title="Users in Reports" value="8,426" trend="18%" />
-              <StatCard icon={FileText} iconColor="text-amber-500" iconBg="bg-amber-100" title="Documents Analyzed" value="3,198" trend="24%" />
-              <StatCard icon={Brain} iconColor="text-pink-600" iconBg="bg-pink-100" title="AI Interactions" value="12,845" trend="28%" />
+              <StatCard icon={FileBarChart} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Reports" value={tableData.length} />
+              <StatCard icon={Clock} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Scheduled Reports" value={scheduledReports.length} />
+              <StatCard icon={Users} iconColor="text-purple-600" iconBg="bg-purple-100" title="Users in Reports" value={0} />
+              <StatCard icon={FileText} iconColor="text-amber-500" iconBg="bg-amber-100" title="Documents Analyzed" value={0} />
+              <StatCard icon={Brain} iconColor="text-pink-600" iconBg="bg-pink-100" title="AI Interactions" value={0} />
             </div>
 
             {/* Charts Row 1 */}
@@ -300,6 +310,7 @@ export default function App() {
                   </button>
                 </div>
                 <div className="flex-1 -ml-4">
+                  {trendData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <defs>
@@ -315,12 +326,16 @@ export default function App() {
                       <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorReports)" />
                     </AreaChart>
                   </ResponsiveContainer>
+                  ) : (
+                    <EmptyState icon={FileBarChart} title="No report data yet" subtitle="Report generation activity will appear here." />
+                  )}
                 </div>
               </div>
 
               {/* Reports by Type Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[280px]">
                 <h3 className="text-[16px] font-bold text-slate-900 mb-4">Reports by Type</h3>
+                {reportTypesData.length > 0 ? (
                 <div className="flex flex-1 items-center gap-4 max-lg:overflow-x-auto">
                   <div className="relative w-[130px] h-[130px] flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
@@ -340,7 +355,7 @@ export default function App() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[22px] font-extrabold text-slate-900 leading-none">24</span>
+                      <span className="text-[22px] font-extrabold text-slate-900 leading-none">{reportTypesData.reduce((sum, e) => sum + e.value, 0)}</span>
                       <span className="text-[10px] text-slate-500 font-semibold mt-0.5 leading-tight">Total Reports</span>
                     </div>
                   </div>
@@ -360,6 +375,9 @@ export default function App() {
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={FileBox} title="No type data yet" subtitle="Report type distribution will appear here." />
+                )}
               </div>
             </div>
 
@@ -370,7 +388,7 @@ export default function App() {
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                  <h3 className="text-[16px] font-bold text-slate-900 mb-5">Top Reports by Usage</h3>
                  <div className="flex flex-col justify-between flex-1 gap-2">
-                   {topReportsList.map((item, i) => (
+                   {topReportsList.length > 0 ? topReportsList.map((item, i) => (
                      <div key={i} className="flex items-center gap-3">
                        <span className="w-4 text-[11px] font-bold text-slate-400">{item.rank}</span>
                        <div className="w-6 h-6 rounded bg-slate-50 flex items-center justify-center text-blue-600">
@@ -382,13 +400,16 @@ export default function App() {
                           <div className={`h-full rounded-full ${item.color} ${item.width}`}></div>
                        </div>
                      </div>
-                   ))}
+                   )) : (
+                     <EmptyState icon={FileBarChart} title="No reports yet" subtitle="Report usage will appear here." />
+                   )}
                  </div>
               </div>
 
               {/* Report Success Rate */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative p-5">
                  <h3 className="text-[16px] font-bold text-slate-900 self-start mb-4">Report Success Rate</h3>
+                 {successRateData.length > 0 ? (
                  <div className="flex items-center gap-6 w-full px-2">
                    <div className="relative w-[130px] h-[130px] flex-shrink-0">
                      <ResponsiveContainer width="100%" height="100%">
@@ -408,11 +429,11 @@ export default function App() {
                        </PieChart>
                      </ResponsiveContainer>
                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                       <span className="text-[20px] font-extrabold text-slate-900 leading-none">98.2%</span>
+                       <span className="text-[20px] font-extrabold text-slate-900 leading-none">{successRateData[0] ? `${successRateData[0].value}%` : '—'}</span>
                        <span className="text-[10px] text-slate-500 font-semibold mt-1">Success Rate</span>
                      </div>
                    </div>
-                   
+
                    <div className="flex flex-col gap-2">
                       {successRateData.map((item, i) => (
                         <div key={i} className="flex flex-col">
@@ -420,11 +441,14 @@ export default function App() {
                             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.fill }}></div>
                             {item.name}
                           </div>
-                          <span className="text-[11px] text-slate-500 ml-4.5 font-medium">{item.value === 98.2 ? '118 (98.2%)' : item.value === 1.7 ? '2 (1.7%)' : '1 (0.1%)'}</span>
+                          <span className="text-[11px] text-slate-500 ml-4.5 font-medium">{item.value}%</span>
                         </div>
                       ))}
                    </div>
                  </div>
+                 ) : (
+                   <EmptyState icon={CheckCircle2} title="No run data yet" subtitle="Success rates will appear once reports run." />
+                 )}
               </div>
 
               {/* Scheduled Reports */}
@@ -436,19 +460,14 @@ export default function App() {
                        <Clock size={16} />
                      </div>
                      <div className="flex flex-col">
-                       <span className="text-[14px] font-bold text-slate-900 leading-none">18</span>
+                       <span className="text-[14px] font-bold text-slate-900 leading-none">{scheduledReports.length}</span>
                        <span className="text-[10px] text-slate-500 font-medium">Active Schedules</span>
                      </div>
                    </div>
                  </div>
 
                  <div className="flex flex-col justify-between flex-1 gap-2">
-                   {[
-                     { name: 'Daily User Summary', sub: 'Daily at 8:00 AM' },
-                     { name: 'Weekly AI Usage Report', sub: 'Every Monday' },
-                     { name: 'Monthly Analytics Report', sub: '1st of every month' },
-                     { name: 'System Health Report', sub: 'Daily at 12:00 AM' },
-                   ].map((item, i) => (
+                   {scheduledReports.length > 0 ? scheduledReports.map((item, i) => (
                      <div key={i} className="flex items-center justify-between">
                        <div className="flex items-start gap-2">
                           <div className="mt-1 text-emerald-500"><ArrowUpRight size={14} className="rotate-45" /></div>
@@ -459,7 +478,9 @@ export default function App() {
                        </div>
                        <CustomToggle active={true} />
                      </div>
-                   ))}
+                   )) : (
+                     <EmptyState icon={Clock} title="No scheduled reports yet" subtitle="Schedules you create will appear here." />
+                   )}
                  </div>
               </div>
             </div>
@@ -526,9 +547,15 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleReports.length === 0 ? (
+                    {tableData.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-8 text-center text-slate-400 text-[13px] font-medium">
+                        <td colSpan={8} className="py-2">
+                          <EmptyState icon={FileBarChart} title="No reports yet" subtitle="Reports you generate will appear here." />
+                        </td>
+                      </tr>
+                    ) : visibleReports.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-12 text-center text-slate-400 text-[13px] font-medium">
                           No reports found matching your criteria.
                         </td>
                       </tr>
@@ -552,7 +579,7 @@ export default function App() {
                           <td className="py-3 px-4 text-slate-500 font-medium text-[12px]">{row.type}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2 font-semibold text-slate-700 text-[12px]">
-                               <img src={row.avatar} alt={row.creator} className="w-6 h-6 rounded-full object-cover shadow-sm" />
+                               <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] shadow-sm">{row.creator.charAt(0)}</div>
                                {row.creator}
                             </div>
                           </td>
@@ -663,13 +690,7 @@ export default function App() {
               </div>
 
               <div className="space-y-4">
-                {[
-                  { title: 'Monthly User Activity Report', by: 'Sarah Kumar', time: '2 min ago', color: 'text-blue-500', bg: 'bg-blue-100' },
-                  { title: 'AI Usage Analysis', by: 'Vikram S', time: '12 min ago', color: 'text-purple-500', bg: 'bg-purple-100' },
-                  { title: 'Memory Storage Report', by: 'Priya Nair', time: '28 min ago', color: 'text-amber-500', bg: 'bg-amber-100' },
-                  { title: 'Document Type Analysis', by: 'Arun Raj', time: '1 hour ago', color: 'text-emerald-500', bg: 'bg-emerald-100' },
-                  { title: 'Weekly Productivity Report', by: 'Meena R', time: '2 hours ago', color: 'text-pink-500', bg: 'bg-pink-100' },
-                ].map((rep, i) => (
+                {recentReports.length > 0 ? recentReports.map((rep, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${rep.bg}`}>
                       <FileText size={16} className={rep.color} />
@@ -680,7 +701,9 @@ export default function App() {
                     </div>
                     <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap mt-1">{rep.time}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={FileText} title="No recent reports yet" subtitle="Recently generated reports will appear here." />
+                )}
               </div>
             </div>
 
@@ -695,9 +718,15 @@ export default function App() {
                    { icon: Download, label: 'Export Reports' },
                    { icon: Settings2, label: 'Manage Templates' },
                  ].map((action, i) => (
-                   <button 
-                     key={i} 
-                     onClick={() => handleAction(`${action.label} initiated successfully!`)}
+                   <button
+                     key={i}
+                     onClick={() => {
+                       if (action.label === 'Export Reports') {
+                         handleExportReports();
+                       } else {
+                         handleAction(`${action.label} initiated successfully!`);
+                       }
+                     }}
                      className="flex items-center gap-2 px-3 py-3.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-700 text-slate-700 rounded-xl transition-all group active:scale-95 shadow-sm"
                    >
                      <action.icon size={18} className="text-blue-600 flex-shrink-0" />

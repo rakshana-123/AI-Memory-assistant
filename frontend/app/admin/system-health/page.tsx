@@ -14,58 +14,26 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-// --- MOCK DATA ---
+// --- DATA (empty by default) ---
+// System Health surfaces runtime infrastructure data (performance series,
+// resource usage, error mix, response times, logs, service status, alerts).
+// All of it is empty until a real monitoring backend feeds it; demo rows
+// remain recoverable from git history (pre-branch commits).
 
-const performanceData = [
-  { name: 'Oct 1', rt: 250, tp: 300 },
-  { name: 'Oct 5', rt: 350, tp: 480 },
-  { name: 'Oct 10', rt: 280, tp: 400 },
-  { name: 'Oct 15', rt: 300, tp: 450 },
-  { name: 'Oct 20', rt: 420, tp: 600 },
-  { name: 'Oct 25', rt: 320, tp: 500 },
-  { name: 'Oct 31', rt: 380, tp: 650 },
-];
+const performanceData: { name: string; rt: number; tp: number }[] = [];
 
-const resourceData = [
-  { name: 'Oct 1', cpu: 45, mem: 60, disk: 30 },
-  { name: 'Oct 5', cpu: 55, mem: 65, disk: 32 },
-  { name: 'Oct 10', cpu: 48, mem: 62, disk: 35 },
-  { name: 'Oct 15', cpu: 60, mem: 70, disk: 38 },
-  { name: 'Oct 20', cpu: 75, mem: 80, disk: 40 },
-  { name: 'Oct 25', cpu: 65, mem: 75, disk: 42 },
-  { name: 'Oct 31', cpu: 70, mem: 78, disk: 45 },
-];
+const resourceData: { name: string; cpu: number; mem: number; disk: number }[] = [];
 
-const errorRateData = [
-  { name: 'API Errors', value: 38, fill: '#3b82f6' },
-  { name: 'AI Service', value: 24, fill: '#8b5cf6' },
-  { name: 'Database', value: 16, fill: '#10b981' },
-  { name: 'Auth Errors', value: 10, fill: '#f59e0b' },
-  { name: 'File Storage', value: 8, fill: '#ec4899' },
-  { name: 'Others', value: 4, fill: '#64748b' },
-];
+const errorRateData: { name: string; value: number; fill: string }[] = [];
 
-const responseTimeData = [
-  { name: 'Web Application', val: '210 ms', width: '40%', color: 'bg-blue-500' },
-  { name: 'API Server', val: '284 ms', width: '55%', color: 'bg-purple-500' },
-  { name: 'Database', val: '320 ms', width: '65%', color: 'bg-emerald-500' },
-  { name: 'AI Service', val: '420 ms', width: '85%', color: 'bg-amber-500' },
-  { name: 'File Storage', val: '180 ms', width: '35%', color: 'bg-pink-500' },
-  { name: 'Integrations', val: '260 ms', width: '50%', color: 'bg-indigo-500' },
-];
+const responseTimeData: { name: string; val: string; width: string; color: string }[] = [];
 
-const systemLogs = [
-  { time: 'Oct 31, 04:22 PM', level: 'INFO', service: 'API Server', msg: 'Request processed successfully (POST /api/memory)', status: 'Success' },
-  { time: 'Oct 31, 04:21 PM', level: 'WARN', service: 'AI Service', msg: 'High response time detected (1.8s)', status: 'Resolved' },
-  { time: 'Oct 31, 04:20 PM', level: 'INFO', service: 'Database', msg: 'Database connection restored', status: 'Success' },
-  { time: 'Oct 31, 04:18 PM', level: 'ERROR', service: 'File Storage', msg: 'Failed to upload file (timeout)', status: 'Resolved' },
-  { time: 'Oct 31, 04:15 PM', level: 'INFO', service: 'Auth Service', msg: 'User login successful (user_id: 2481)', status: 'Success' },
-  { time: 'Oct 31, 04:12 PM', level: 'WARN', service: 'Integration', msg: 'Notion API rate limit approaching', status: 'Resolved' },
-  { time: 'Oct 31, 04:10 PM', level: 'INFO', service: 'Web App', msg: 'New user registration (user_id: 2842)', status: 'Success' },
-  { time: 'Oct 31, 04:08 PM', level: 'ERROR', service: 'AI Service', msg: 'Model API timeout (OpenAI)', status: 'Resolved' },
-  { time: 'Oct 31, 04:05 PM', level: 'INFO', service: 'Email Service', msg: 'Welcome email sent to user', status: 'Success' },
-  { time: 'Oct 31, 04:02 PM', level: 'WARN', service: 'Database', msg: 'High memory usage (78%)', status: 'Monitoring' },
-];
+const systemLogs: { time: string; level: string; service: string; msg: string; status: string }[] = [];
+
+// Runtime service status feed and alert history — records, empty by default.
+const serviceStatusData: { icon: any; label: string; color: string }[] = [];
+
+const recentAlertsData: { icon: any; bg: string; color: string; title: string; sub: string; time: string }[] = [];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -90,47 +58,29 @@ const MetricCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendU
         <p className="text-[13px] text-slate-500 font-medium leading-none">{title}</p>
       </div>
     </div>
-    <div className={`flex items-center gap-1 text-[12px] font-bold mt-1 ${trendColor}`}>
-      {trendUp ? <span className="text-lg leading-none mb-1">↑</span> : <span className="text-lg leading-none mb-1">↓</span>}
-      <span>{trend}</span>
-      <span className="text-slate-400 font-medium ml-1">vs last month</span>
-    </div>
+    {trend && (
+      <div className={`flex items-center gap-1 text-[12px] font-bold mt-1 ${trendColor}`}>
+        {trendUp ? <span className="text-lg leading-none mb-1">↑</span> : <span className="text-lg leading-none mb-1">↓</span>}
+        <span>{trend}</span>
+        <span className="text-slate-400 font-medium ml-1">vs last month</span>
+      </div>
+    )}
   </div>
 );
 
-// Deterministic seeded PRNG (mulberry32). Replaces Math.random(): the
-// module-level heatmap generator produced different values on server prerender
-// vs client hydration, causing a React hydration mismatch on the heatmap grid
-// divs. Seeded so both runs compute identical data.
-const seededRandom = (seed: number) => {
-  let s = seed;
-  return () => {
-    s |= 0;
-    s = (s + 0x6D2B79F5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-};
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
 
-// Generates fake heatmap data
-const generateHeatmapData = () => {
-  const rand = seededRandom(42);
-  const data: any[] = [];
-  const rows = ['Web App', 'API Server', 'Database', 'AI Service', 'Storage', 'Integrations'];
-  rows.forEach(row => {
-    const cols: string[] = [];
-    for (let i = 0; i < 35; i++) {
-      let status = 'operational';
-      if (rand() > 0.95) status = 'down';
-      else if (rand() > 0.85) status = 'slow';
-      cols.push(status);
-    }
-    data.push({ row, cols });
-  });
-  return data;
-};
-const heatmapData = generateHeatmapData();
+// Uptime history heatmap source — runtime data, empty by default.
+// (The former seeded fake-pattern generator is gone with the demo data.)
+const heatmapData: { row: string; cols: string[] }[] = [];
 
 const getLevelBadge = (level: any) => {
   switch (level) {
@@ -157,7 +107,7 @@ const getStatusBadge = (status: any) => {
   );
 };
 
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 
 const cycleOption = (options: string[], current: string) => {
@@ -234,7 +184,7 @@ export default function AdminDashboard() {
           <SidebarItem icon={Link} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" active href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -242,7 +192,7 @@ export default function AdminDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -283,12 +233,11 @@ export default function AdminDashboard() {
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button onClick={() => showFeedback('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showFeedback('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showFeedback('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
@@ -321,21 +270,20 @@ export default function AdminDashboard() {
                  </div>
                </div>
                <div className="flex flex-col items-end gap-1">
-                 <div className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg font-bold text-[12px] flex items-center gap-1.5 border border-emerald-200">
-                   <CheckCircle2 size={14} /> All Systems Operational
+                 <div className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-bold text-[12px] flex items-center gap-1.5 border border-slate-200">
+                   <Activity size={14} /> No monitoring data yet
                  </div>
-                 <span className="text-[11px] text-slate-400 font-medium">Last updated: Oct 31, 2024 04:25 PM</span>
-               </div>
+                </div>
             </div>
 
-            {/* Metrics Row */}
+            {/* Metrics Row — runtime infra stats render "—" (not a misleading 0%) until monitoring data exists */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-              <MetricCard icon={Monitor} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Uptime" value="99.98%" trend="0.02%" trendUp={true} trendColor="text-emerald-500" />
-              <MetricCard icon={Clock} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg Response Time" value="284 ms" trend="32%" trendUp={false} trendColor="text-emerald-500" />
-              <MetricCard icon={Activity} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Requests/min" value="12.4K" trend="18%" trendUp={true} trendColor="text-emerald-500" />
-              <MetricCard icon={AlertTriangle} iconColor="text-red-500" iconBg="bg-red-50" title="Error Rate" value="0.12%" trend="48%" trendUp={false} trendColor="text-red-500" />
-              <MetricCard icon={Cpu} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg CPU Usage" value="65%" trend="12%" trendUp={true} trendColor="text-emerald-500" />
-              <MetricCard icon={Database} iconColor="text-purple-500" iconBg="bg-purple-50" title="Avg Memory Usage" value="72%" trend="15%" trendUp={false} trendColor="text-emerald-500" />
+              <MetricCard icon={Monitor} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Uptime" value="—" />
+              <MetricCard icon={Clock} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg Response Time" value="—" />
+              <MetricCard icon={Activity} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Requests/min" value="—" />
+              <MetricCard icon={AlertTriangle} iconColor="text-red-500" iconBg="bg-red-50" title="Error Rate" value="—" />
+              <MetricCard icon={Cpu} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg CPU Usage" value="—" />
+              <MetricCard icon={Database} iconColor="text-purple-500" iconBg="bg-purple-50" title="Avg Memory Usage" value="—" />
             </div>
 
             {/* Charts Row 1 */}
@@ -357,6 +305,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500"></div>Throughput (req/min)</div>
                 </div>
                 <div className="flex-1 min-h-0">
+                  {performanceData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={performanceData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
                       <defs>
@@ -377,6 +326,9 @@ export default function AdminDashboard() {
                       <Area type="monotone" dataKey="rt" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRt)" />
                     </AreaChart>
                   </ResponsiveContainer>
+                  ) : (
+                    <EmptyState icon={Activity} title="No performance data yet" subtitle="Performance metrics will appear here." />
+                  )}
                 </div>
               </div>
 
@@ -398,6 +350,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500"></div>Disk Usage</div>
                 </div>
                 <div className="flex-1 min-h-0">
+                  {resourceData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={resourceData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -409,6 +362,9 @@ export default function AdminDashboard() {
                       <Line type="monotone" dataKey="disk" stroke="#10b981" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
+                  ) : (
+                    <EmptyState icon={Cpu} title="No resource data yet" subtitle="Resource usage will appear here." />
+                  )}
                 </div>
               </div>
             </div>
@@ -427,6 +383,8 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex-1 flex gap-2 max-lg:overflow-x-auto">
+                   {heatmapData.length > 0 ? (
+                   <>
                    {/* Y Axis Labels */}
                    <div className="flex flex-col justify-between text-[10px] font-medium text-slate-400 pb-5">
                       {heatmapData.map(d => <span key={d.row}>{d.row}</span>)}
@@ -440,11 +398,13 @@ export default function AdminDashboard() {
                           ))}
                         </div>
                       ))}
-                      {/* X Axis Labels (Approximate) */}
-                      <div className="absolute bottom-0 left-0 w-full flex justify-between text-[10px] font-medium text-slate-400">
-                         <span>Oct 1</span><span>Oct 7</span><span>Oct 14</span><span>Oct 21</span><span>Oct 28</span><span>Oct 31</span>
-                      </div>
                    </div>
+                   </>
+                   ) : (
+                     <div className="flex-1">
+                       <EmptyState icon={Monitor} title="No uptime data yet" subtitle="Uptime history will appear here once monitoring data flows in." />
+                     </div>
+                   )}
                 </div>
               </div>
 
@@ -452,7 +412,7 @@ export default function AdminDashboard() {
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[240px]">
                 <h3 className="text-[15px] font-bold text-slate-900 mb-4">Response Time by Service</h3>
                 <div className="flex-1 flex flex-col justify-between">
-                  {responseTimeData.map((item, i) => (
+                  {responseTimeData.length > 0 ? responseTimeData.map((item, i) => (
                     <div key={i} className="flex items-center justify-between gap-3">
                       <span className="text-[11px] font-semibold text-slate-600 w-24 truncate">{item.name}</span>
                       <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -460,15 +420,18 @@ export default function AdminDashboard() {
                       </div>
                       <span className="text-[11px] font-semibold text-slate-900 w-12 text-right">{item.val}</span>
                     </div>
-                  ))}
+                  )) : (
+                    <EmptyState icon={Clock} title="No response data yet" subtitle="Response times will appear here." />
+                  )}
                 </div>
               </div>
 
               {/* Error Rate by Service Donut */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[240px]">
                 <h3 className="text-[15px] font-bold text-slate-900 mb-2">Error Rate by Service</h3>
+                {errorRateData.length > 0 ? (
                 <div className="flex-1 flex items-center justify-between">
-                  
+
                   <div className="relative w-[110px] h-[110px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -487,7 +450,7 @@ export default function AdminDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[14px] font-extrabold text-slate-900 leading-none">0.12%</span>
+                      <span className="text-[14px] font-extrabold text-slate-900 leading-none">{errorRateData.reduce((sum, e) => sum + e.value, 0)}%</span>
                       <span className="text-[8px] text-slate-500 font-semibold mt-0.5">Total Errors</span>
                     </div>
                   </div>
@@ -505,6 +468,9 @@ export default function AdminDashboard() {
                   </div>
 
                 </div>
+                ) : (
+                  <EmptyState icon={AlertTriangle} title="No error data yet" subtitle="Error rates will appear here." />
+                )}
               </div>
 
             </div>
@@ -569,9 +535,15 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[12px]">
-                    {visibleLogs.length === 0 ? (
+                    {systemLogs.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                        <td colSpan={6} className="py-2">
+                          <EmptyState icon={FileText} title="No system logs yet" subtitle="Log entries will appear here." />
+                        </td>
+                      </tr>
+                    ) : visibleLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-slate-400 font-medium">
                           No logs found matching "{searchQuery}"
                         </td>
                       </tr>
@@ -620,19 +592,10 @@ export default function AdminDashboard() {
                        {page}
                      </button>
                    ))}
-                   <span className="px-1 text-slate-400">...</span>
-                   <button 
-                     onClick={() => setCurrentPage(12)}
-                     className={`w-7 h-7 flex items-center justify-center rounded-lg font-semibold transition-all ${
-                       currentPage === 12 ? 'bg-blue-600 text-white shadow-sm' : 'hover:bg-slate-100 text-slate-700'
-                     }`}
-                   >
-                     12
-                   </button>
-                   <button 
-                     onClick={() => setCurrentPage(prev => Math.min(12, prev + 1))}
+                   <button
+                     onClick={() => setCurrentPage(prev => Math.min(3, prev + 1))}
                      className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30"
-                     disabled={currentPage === 12}
+                     disabled={currentPage === 3}
                    >
                      <ChevronDown size={14} className="-rotate-90" />
                    </button>
@@ -658,16 +621,7 @@ export default function AdminDashboard() {
               </div>
               
               <div className="flex flex-col space-y-3.5">
-                {[
-                  { icon: Globe, label: 'Web Application', color: 'text-blue-500' },
-                  { icon: Code2, label: 'API Server', color: 'text-blue-500' },
-                  { icon: Database, label: 'Database (MongoDB)', color: 'text-emerald-500' },
-                  { icon: Brain, label: 'AI Service (LLM)', color: 'text-purple-500' },
-                  { icon: HardDrive, label: 'File Storage', color: 'text-amber-500' },
-                  { icon: Lock, label: 'Authentication', color: 'text-rose-500' },
-                  { icon: Mail, label: 'Email Service', color: 'text-blue-400' },
-                  { icon: Link2, label: 'Third-party Integrations', color: 'text-indigo-500' },
-                ].map((service, i) => (
+                {serviceStatusData.length > 0 ? serviceStatusData.map((service, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-7 h-7 rounded bg-slate-50 border border-slate-100 flex items-center justify-center ${service.color}`}>
@@ -679,7 +633,9 @@ export default function AdminDashboard() {
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Operational
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Server} title="No service data yet" subtitle="Service statuses will appear here." />
+                )}
               </div>
             </div>
 
@@ -690,13 +646,7 @@ export default function AdminDashboard() {
                <button onClick={() => showFeedback('Showing alerts from the last 24 hours')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ChevronRight size={14} /></button>
                </div>
                <div className="space-y-4">
-                 {[
-                   { icon: AlertCircle, bg: 'bg-red-100', color: 'text-red-600', title: 'High CPU Usage', sub: 'API Server CPU usage at 92%', time: '12 min ago' },
-                   { icon: AlertTriangle, bg: 'bg-amber-100', color: 'text-amber-600', title: 'AI Service Latency', sub: 'Response time above 2s', time: '28 min ago' },
-                   { icon: CheckCircle2, bg: 'bg-emerald-100', color: 'text-emerald-600', title: 'Database Recovered', sub: 'Database connection restored', time: '45 min ago' },
-                   { icon: FileWarning, bg: 'bg-red-100', color: 'text-red-600', title: 'File Upload Failures', sub: 'Multiple upload failures detected', time: '1 hour ago' },
-                   { icon: AlertTriangle, bg: 'bg-amber-100', color: 'text-amber-600', title: 'High Memory Usage', sub: 'Memory usage at 78%', time: '2 hours ago' },
-                 ].map((alert, i) => (
+                 {recentAlertsData.length > 0 ? recentAlertsData.map((alert, i) => (
                    <div key={i} className="flex items-start gap-3">
                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${alert.bg} ${alert.color}`}>
                        <alert.icon size={16} />
@@ -707,7 +657,9 @@ export default function AdminDashboard() {
                      </div>
                      <span className="text-[10px] text-slate-400 font-semibold flex-shrink-0 whitespace-nowrap mt-1">{alert.time}</span>
                    </div>
-                 ))}
+                 )) : (
+                   <EmptyState icon={AlertCircle} title="No alerts yet" subtitle="Alerts will appear here." />
+                 )}
                </div>
             </div>
 

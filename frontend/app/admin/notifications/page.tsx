@@ -16,68 +16,20 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 
-const statCardsData = [
-  { title: 'Total Notifications', value: '3,842', trend: '28%', trendUp: true, icon: Send, color: 'text-purple-600', bg: 'bg-purple-100' },
-  { title: 'Users Reached', value: '2,156', trend: '18%', trendUp: true, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-  { title: 'Delivery Rate', value: '98.4%', trend: '2%', trendUp: true, icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-  { title: 'Read Rate', value: '76.2%', trend: '6%', trendUp: true, icon: Eye, color: 'text-blue-500', bg: 'bg-blue-50' },
-  { title: 'Click Rate', value: '24.8%', trend: '4%', trendUp: true, icon: MousePointerClick, color: 'text-rose-600', bg: 'bg-rose-100' },
-];
+// Empty by default: sent notifications, delivery metrics, per-type/status mix
+// and channel usage are runtime records. The Send/Add handlers still append
+// real rows. Demo rows remain recoverable from git history (pre-branch commits).
+const notificationActivityData: { name: string; sent: number; delivered: number; read: number }[] = [];
 
-const notificationActivityData = [
-  { name: 'Oct 1', sent: 84, delivered: 82, read: 63 },
-  { name: 'Oct 5', sent: 112, delivered: 108, read: 84 },
-  { name: 'Oct 10', sent: 96, delivered: 94, read: 71 },
-  { name: 'Oct 15', sent: 148, delivered: 143, read: 112 },
-  { name: 'Oct 20', sent: 132, delivered: 129, read: 101 },
-  { name: 'Oct 25', sent: 176, delivered: 171, read: 135 },
-  { name: 'Oct 31', sent: 198, delivered: 194, read: 152 },
-];
+const notificationsByTypeData: { name: string; value: number; percent: string; fill: string }[] = [];
 
-const notificationsByTypeData = [
-  { name: 'System', value: 1232, percent: '32%', fill: '#3b82f6' },
-  { name: 'Tasks & Events', value: 692, percent: '18%', fill: '#8b5cf6' },
-  { name: 'AI Usage', value: 576, percent: '15%', fill: '#10b981' },
-  { name: 'Memories', value: 538, percent: '14%', fill: '#22c55e' },
-  { name: 'Documents', value: 384, percent: '10%', fill: '#f59e0b' },
-  { name: 'Promotions', value: 269, percent: '7%', fill: '#ec4899' },
-  { name: 'Security', value: 151, percent: '4%', fill: '#ef4444' },
-];
+const deliveryChannelsData: { name: string; percent: string; width: string; color: string; icon: any; iconColor: string; iconBg: string }[] = [];
 
-const deliveryChannelsData = [
-  { name: 'In-App', percent: '45%', width: '45%', color: 'bg-blue-500', icon: Bell, iconColor: 'text-blue-600', iconBg: 'bg-blue-100' },
-  { name: 'Email', percent: '28%', width: '28%', color: 'bg-purple-500', icon: Mail, iconColor: 'text-purple-600', iconBg: 'bg-purple-100' },
-  { name: 'Push', percent: '18%', width: '18%', color: 'bg-teal-500', icon: Smartphone, iconColor: 'text-teal-600', iconBg: 'bg-teal-100' },
-  { name: 'SMS', percent: '6%', width: '6%', color: 'bg-amber-500', icon: MessageSquare, iconColor: 'text-amber-600', iconBg: 'bg-amber-100' },
-  { name: 'Others', percent: '3%', width: '3%', color: 'bg-pink-500', icon: Megaphone, iconColor: 'text-pink-600', iconBg: 'bg-pink-100' },
-];
+const notificationStatusData: { name: string; value: number; percent: string; fill: string }[] = [];
 
-const notificationStatusData = [
-  { name: 'Delivered', value: 3782, percent: '98.4%', fill: '#10b981' },
-  { name: 'Pending', value: 38, percent: '1.0%', fill: '#f59e0b' },
-  { name: 'Failed', value: 22, percent: '0.6%', fill: '#ef4444' },
-];
+const notificationsData: { id: number; title: string; type: string; channel: string; channelIcon: any; audience: string; status: string; sentAt: string; readRate: number | null }[] = [];
 
-const notificationsData = [
-  { id: 1, title: 'Scheduled Maintenance', type: 'System', channel: 'Email, In-App', channelIcon: Mail, audience: 'All Users', status: 'Delivered', sentAt: 'Oct 30, 2024, 9:00 AM', readRate: 94 },
-  { id: 2, title: 'Task Reminder', type: 'Tasks & Events', channel: 'Push', channelIcon: Smartphone, audience: 'Team Leads', status: 'Delivered', sentAt: 'Oct 30, 2024, 8:30 AM', readRate: 88 },
-  { id: 3, title: 'Weekly Report', type: 'Documents', channel: 'Email', channelIcon: Mail, audience: 'All Users', status: 'Delivered', sentAt: 'Oct 29, 2024, 6:00 PM', readRate: 81 },
-  { id: 4, title: 'AI Usage Limit Warning', type: 'AI Usage', channel: 'In-App', channelIcon: Bell, audience: 'Pro Users', status: 'Pending', sentAt: 'Oct 29, 2024, 4:15 PM', readRate: null },
-  { id: 5, title: 'New Feature Announcement', type: 'Promotions', channel: 'Email, Push', channelIcon: Mail, audience: 'Free Users', status: 'Delivered', sentAt: 'Oct 28, 2024, 10:00 AM', readRate: 76 },
-  { id: 6, title: 'Security Alert', type: 'Security', channel: 'Email', channelIcon: Mail, audience: 'Admins', status: 'Failed', sentAt: 'Oct 28, 2024, 8:45 AM', readRate: null },
-  { id: 7, title: 'Memory Backup Complete', type: 'Memories', channel: 'Email', channelIcon: Mail, audience: 'All Users', status: 'Delivered', sentAt: 'Oct 27, 2024, 11:00 PM', readRate: 92 },
-  { id: 8, title: 'Task Reminder', type: 'Tasks & Events', channel: 'Push', channelIcon: Smartphone, audience: 'All Users', status: 'Delivered', sentAt: 'Oct 27, 2024, 9:00 AM', readRate: 85 },
-  { id: 9, title: 'System Update Available', type: 'System', channel: 'In-App', channelIcon: Bell, audience: 'All Users', status: 'Delivered', sentAt: 'Oct 26, 2024, 2:00 PM', readRate: 90 },
-  { id: 10, title: 'Storage Limit Warning', type: 'Documents', channel: 'Email', channelIcon: Mail, audience: 'Free Users', status: 'Pending', sentAt: 'Oct 26, 2024, 1:30 PM', readRate: null },
-];
-
-const recentNotifications = [
-  { title: 'Scheduled Maintenance', sub: 'System · All Users', time: '12 min ago', icon: Bell, color: 'text-blue-600', bg: 'bg-blue-100' },
-  { title: 'Weekly Report Ready', sub: 'Documents · All Users', time: '28 min ago', icon: FileText, color: 'text-purple-600', bg: 'bg-purple-100' },
-  { title: 'Security Alert', sub: 'Security · Admins', time: '45 min ago', icon: ShieldCheck, color: 'text-rose-600', bg: 'bg-rose-100' },
-  { title: 'Task Reminder Sent', sub: 'Tasks & Events · Team Leads', time: '1 hr ago', icon: CalendarCheck, color: 'text-amber-500', bg: 'bg-amber-100' },
-  { title: 'AI Usage Limit Warning', sub: 'AI Usage · Pro Users', time: '2 hr ago', icon: Cpu, color: 'text-teal-600', bg: 'bg-teal-100' },
-];
+const recentNotifications: { title: string; sub: string; time: string; icon: any; color: string; bg: string }[] = [];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -119,7 +71,17 @@ const StatusBadge = ({ status }: any) => {
   );
 };
 
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 
 const cycleOption = (options: string[], current: string) => {
@@ -153,6 +115,14 @@ export default function NotificationsManagementDashboard() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  const statCardsData: { title: string; value: number | string; icon: any; color: string; bg: string; trend?: string; trendUp?: boolean }[] = [
+    { title: 'Total Notifications', value: notifications.length, icon: Send, color: 'text-purple-600', bg: 'bg-purple-100' },
+    { title: 'Users Reached', value: 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { title: 'Delivery Rate', value: '0%', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    { title: 'Read Rate', value: '0%', icon: Eye, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { title: 'Click Rate', value: '0%', icon: MousePointerClick, color: 'text-rose-600', bg: 'bg-rose-100' },
+  ];
+
   const addNotification = (title: string) => {
     const nextId = notifications.reduce((max, n) => Math.max(max, n.id), 0) + 1;
     setNotifications((prev) => [
@@ -163,6 +133,10 @@ export default function NotificationsManagementDashboard() {
   };
 
   const exportNotifications = () => {
+    if (notifications.length === 0) {
+      showToast('No data to export');
+      return;
+    }
     downloadCsv('pathii-notifications.csv', [
       ['ID', 'Title', 'Type', 'Channel', 'Audience', 'Status', 'Sent At', 'Read Rate %'],
       ...notifications.map((n) => [n.id, n.title, n.type, n.channel, n.audience, n.status, n.sentAt, n.readRate ?? '—']),
@@ -219,7 +193,7 @@ export default function NotificationsManagementDashboard() {
           <SidebarItem icon={Link} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" active badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" active href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -227,7 +201,7 @@ export default function NotificationsManagementDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -265,12 +239,11 @@ export default function NotificationsManagementDashboard() {
               <CalendarDays size={15} className="text-slate-400" />
               {dateRange}
             </button>
-            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 pl-2 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-8 h-8 rounded-full object-cover shadow-sm" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm">A</div>
               <span className="text-[13px] font-bold text-slate-700">Admin</span>
               <ChevronDown size={14} className="text-slate-400" />
             </div>
@@ -310,11 +283,13 @@ export default function NotificationsManagementDashboard() {
                       <p className="text-[12px] text-slate-500 font-medium leading-none">{stat.title}</p>
                     </div>
                   </div>
+                  {stat.trend && (
                   <div className={`flex items-center gap-1 text-[12px] font-semibold ${stat.trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {stat.trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                     <span>{stat.trend}</span>
                     <span className="text-slate-400 font-medium ml-1">vs last month</span>
                   </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -338,6 +313,7 @@ export default function NotificationsManagementDashboard() {
                   <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div> Read</div>
                 </div>
                 <div className="flex-1 min-h-[220px]">
+                  {notificationActivityData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={notificationActivityData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                       <defs>
@@ -363,6 +339,9 @@ export default function NotificationsManagementDashboard() {
                       <Area type="monotone" dataKey="read" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorReadN)" />
                     </AreaChart>
                   </ResponsiveContainer>
+                  ) : (
+                    <EmptyState icon={Send} title="No notification activity yet" subtitle="Sending activity will appear here." />
+                  )}
                 </div>
               </div>
 
@@ -378,6 +357,7 @@ export default function NotificationsManagementDashboard() {
                   </button>
                 </div>
 
+                {notificationsByTypeData.length > 0 ? (
                 <div className="flex-1 flex items-center justify-between px-2 gap-2">
                   <div className="relative w-[160px] h-[160px] flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
@@ -397,7 +377,7 @@ export default function NotificationsManagementDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[20px] font-extrabold text-slate-900 leading-none">3,842</span>
+                      <span className="text-[20px] font-extrabold text-slate-900 leading-none">{notificationsByTypeData.reduce((sum, e) => sum + e.value, 0).toLocaleString('en-US')}</span>
                       <span className="text-[11px] text-slate-500 font-semibold mt-1">Total</span>
                     </div>
                   </div>
@@ -417,6 +397,9 @@ export default function NotificationsManagementDashboard() {
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={Bell} title="No type data yet" subtitle="Notification types will appear here." />
+                )}
               </div>
             </div>
 
@@ -477,9 +460,15 @@ export default function NotificationsManagementDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleNotifications.length === 0 ? (
+                    {notifications.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="py-8 text-center text-slate-400 text-[13px] font-medium">
+                        <td colSpan={9} className="py-2">
+                          <EmptyState icon={Bell} title="No notifications yet" subtitle="Notifications you send will appear here." />
+                        </td>
+                      </tr>
+                    ) : visibleNotifications.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="py-12 text-center text-slate-400 text-[13px] font-medium">
                           No notifications found matching your criteria.
                         </td>
                       </tr>
@@ -534,10 +523,6 @@ export default function NotificationsManagementDashboard() {
                   <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white font-bold">1</button>
                   <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">2</button>
                   <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">3</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">4</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">5</button>
-                  <span className="text-slate-400">...</span>
-                  <button className="w-8 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">385</button>
                   <button className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-600 hover:bg-slate-50">&gt;</button>
                 </div>
                 <button className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded bg-white text-slate-600 font-medium hover:bg-slate-50">
@@ -556,7 +541,7 @@ export default function NotificationsManagementDashboard() {
               <h3 className="text-[16px] font-bold text-slate-900 mb-1">Delivery Channels</h3>
               <p className="text-[13px] text-slate-500 font-medium mb-5">Where notifications were delivered.</p>
               <div className="space-y-4">
-                {deliveryChannelsData.map((channel, i) => (
+                {deliveryChannelsData.length > 0 ? deliveryChannelsData.map((channel, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${channel.iconBg}`}>
                       <channel.icon size={13} className={channel.iconColor} />
@@ -569,13 +554,16 @@ export default function NotificationsManagementDashboard() {
                     </div>
                     <span className="w-8 text-right text-[12px] font-medium text-slate-500">{channel.percent}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Mail} title="No delivery data yet" subtitle="Delivery channel usage will appear here." />
+                )}
               </div>
             </div>
 
             {/* Notification Status */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <h3 className="text-[16px] font-bold text-slate-900 mb-4">Notification Status</h3>
+              {notificationStatusData.length > 0 ? (
               <div className="flex items-center justify-between">
                 <div className="relative w-[140px] h-[140px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -595,7 +583,7 @@ export default function NotificationsManagementDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[18px] font-extrabold text-slate-900 leading-none">3,842</span>
+                    <span className="text-[18px] font-extrabold text-slate-900 leading-none">{notificationStatusData.reduce((sum, e) => sum + e.value, 0).toLocaleString('en-US')}</span>
                     <span className="text-[10px] text-slate-500 font-semibold mt-1">Total</span>
                   </div>
                 </div>
@@ -614,6 +602,9 @@ export default function NotificationsManagementDashboard() {
                     ))}
                   </div>
                 </div>
+              ) : (
+                <EmptyState icon={CheckCircle2} title="No status data yet" subtitle="Delivery statuses will appear here." />
+              )}
               </div>
 
               {/* Recent Notifications */}
@@ -623,7 +614,7 @@ export default function NotificationsManagementDashboard() {
                   <button onClick={() => showToast('All recent notifications are listed in the table')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                 </div>
                 <div className="space-y-4">
-                  {recentNotifications.map((act, i) => (
+                  {recentNotifications.length > 0 ? recentNotifications.map((act, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${act.bg}`}>
                         <act.icon size={12} className={act.color} />
@@ -634,7 +625,9 @@ export default function NotificationsManagementDashboard() {
                       </div>
                       <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap pt-0.5">{act.time}</span>
                     </div>
-                  ))}
+                  )) : (
+                    <EmptyState icon={Bell} title="No recent notifications yet" subtitle="Recently sent notifications will appear here." />
+                  )}
                 </div>
               </div>
 
@@ -656,7 +649,7 @@ export default function NotificationsManagementDashboard() {
                       key={i}
                       onClick={() => {
                         if (action.label === 'Send Notification') addNotification('Platform Announcement');
-                        else if (action.label === 'Manage Templates') showToast('12 notification templates available (welcome, reminder, maintenance)');
+                        else if (action.label === 'Manage Templates') showToast('Notification templates opened');
                         else if (action.label === 'Notification Settings') router.push('/admin/settings');
                         else exportNotifications();
                       }}

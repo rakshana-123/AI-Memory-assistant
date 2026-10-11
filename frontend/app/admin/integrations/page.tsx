@@ -20,34 +20,23 @@ const Github = ({ size = 24, className = '' }: any) => (
   </svg>
 );
 
-const usageTrendData = [
-  { name: 'Oct 1', calls: 5000 }, { name: 'Oct 5', calls: 11000 },
-  { name: 'Oct 10', calls: 10000 }, { name: 'Oct 15', calls: 13000 },
-  { name: 'Oct 20', calls: 11000 }, { name: 'Oct 25', calls: 16000 },
-  { name: 'Oct 31', calls: 19000 },
-];
+// Empty by default: connected integrations, their usage trend and per-app
+// usage share are runtime records. Real data arrives via the Add Integration
+// flow (or a future backend); demo rows live in git history.
+const usageTrendData: { name: string; calls: number }[] = [];
 
-const usageByIntegrationData = [
-  { name: 'Google', value: 2696, fill: '#3b82f6', percent: '32%' },
-  { name: 'Notion', value: 1516, fill: '#8b5cf6', percent: '18%' },
-  { name: 'Slack', value: 1264, fill: '#10b981', percent: '15%' },
-  { name: 'GitHub', value: 1011, fill: '#f59e0b', percent: '12%' },
-  { name: 'Outlook', value: 842, fill: '#f43f5e', percent: '10%' },
-  { name: 'Others', value: 1097, fill: '#64748b', percent: '13%' },
-];
+const usageByIntegrationData: { name: string; value: number; fill: string; percent: string }[] = [];
 
-const integrationTableData = [
-  { name: 'Google Calendar', icon: Calendar, iconBg: 'bg-white border shadow-sm text-blue-500', category: 'Calendar', catBg: 'bg-amber-100 text-amber-600', activeUsers: '2,481', apiCalls: '18,452', lastSynced: 'Oct 31, 2024 10:24 AM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'Gmail', icon: Mail, iconBg: 'bg-white border shadow-sm text-red-500', category: 'Email', catBg: 'bg-purple-100 text-purple-600', activeUsers: '2,312', apiCalls: '14,985', lastSynced: 'Oct 31, 2024 09:12 AM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'Google Drive', icon: HardDrive, iconBg: 'bg-white border shadow-sm text-emerald-500', category: 'Storage', catBg: 'bg-blue-100 text-blue-600', activeUsers: '1,986', apiCalls: '12,421', lastSynced: 'Oct 30, 2024 08:56 PM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'Notion', icon: Notebook, iconBg: 'bg-black text-white', category: 'Productivity', catBg: 'bg-amber-100 text-amber-600', activeUsers: '1,542', apiCalls: '9,864', lastSynced: 'Oct 30, 2024 06:22 PM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'Slack', icon: Hash, iconBg: 'bg-white border shadow-sm text-purple-600', category: 'Communication', catBg: 'bg-pink-100 text-pink-600', activeUsers: '1,248', apiCalls: '8,210', lastSynced: 'Oct 30, 2024 04:15 PM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'GitHub', icon: Github, iconBg: 'bg-black text-white', category: 'Development', catBg: 'bg-blue-100 text-blue-600', activeUsers: '986', apiCalls: '6,452', lastSynced: 'Oct 29, 2024 11:38 AM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'Outlook', icon: Mail, iconBg: 'bg-blue-500 text-white', category: 'Email', catBg: 'bg-blue-100 text-blue-600', activeUsers: '642', apiCalls: '4,216', lastSynced: 'Oct 29, 2024 09:45 AM', status: 'Degraded', statusBg: 'bg-amber-100 text-amber-600' },
-  { name: 'Zoom', icon: Video, iconBg: 'bg-blue-500 text-white', category: 'Meeting', catBg: 'bg-blue-100 text-blue-600', activeUsers: '428', apiCalls: '3,184', lastSynced: 'Oct 28, 2024 07:21 PM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'WhatsApp', icon: Phone, iconBg: 'bg-emerald-500 text-white', category: 'Communication', catBg: 'bg-pink-100 text-pink-600', activeUsers: '356', apiCalls: '2,842', lastSynced: 'Oct 28, 2024 05:14 PM', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600' },
-  { name: 'Trello', icon: Layout, iconBg: 'bg-blue-600 text-white', category: 'Project Management', catBg: 'bg-indigo-100 text-indigo-600', activeUsers: '204', apiCalls: '1,562', lastSynced: 'Oct 27, 2024 03:36 PM', status: 'Error', statusBg: 'bg-rose-100 text-rose-600' },
-];
+const integrationTableData: {
+  name: string; icon: any; iconBg: string; category: string; catBg: string;
+  activeUsers: string; apiCalls: string; lastSynced: string; status: string; statusBg: string;
+}[] = [];
+
+// Per-integration status feed (right column) — usage records, empty by default.
+const integrationStatusData: { name: string; calls: string; status: string; statusBg: string; icon: any; iconBg: string }[] = [];
+
+// Recent connect/disconnect activity feed — records, empty by default.
+const recentIntegrationActivity: { title: string; sub: string; time: string; icon: any; color: string; bg: string; badge: any; badgeColor: string }[] = [];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -72,15 +61,27 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp,
         <p className="text-[13px] text-slate-500 font-medium leading-none">{title}</p>
       </div>
     </div>
-    <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : (isErrorTrend ? 'text-rose-600' : 'text-rose-600')}`}>
-      {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-      <span>{trend}</span>
-      <span className="text-slate-400 font-medium ml-1">vs last month</span>
-    </div>
+    {trend && (
+      <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : (isErrorTrend ? 'text-rose-600' : 'text-rose-600')}`}>
+        {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+        <span>{trend}</span>
+        <span className="text-slate-400 font-medium ml-1">vs last month</span>
+      </div>
+    )}
   </div>
 );
 
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 
 const cycleOption = (options: string[], current: string) => {
@@ -105,6 +106,10 @@ export default function IntegrationsDashboard() {
     setActionFeedback(msg);
     setTimeout(() => setActionFeedback(null), 3500);
   };
+
+  const totalIntegrations = integrationsList.length;
+  const activeConnectionCount = integrationsList.filter((i) => i.status === 'Active').length;
+  const disconnectedCount = integrationsList.filter((i) => i.status === 'Error' || i.status === 'Degraded').length;
 
   const handleAddIntegration = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,7 +178,7 @@ export default function IntegrationsDashboard() {
           <SidebarItem icon={LinkIcon} label="Integrations" active href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -181,7 +186,7 @@ export default function IntegrationsDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -220,12 +225,11 @@ export default function IntegrationsDashboard() {
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button onClick={() => handleAction('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => handleAction('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => handleAction('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
@@ -265,11 +269,11 @@ export default function IntegrationsDashboard() {
 
             {/* Metric Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-              <StatCard icon={LinkIcon} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Integrations" value="12" trend="20%" trendUp={true} />
-              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Active Connections" value="8,426" trend="18%" trendUp={true} />
-              <StatCard icon={Plus} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="New Connections" value="2,156" trend="32%" trendUp={true} />
-              <StatCard icon={LinkIcon} iconColor="text-rose-500" iconBg="bg-rose-100" title="Disconnected" value="428" trend="6%" trendUp={false} isErrorTrend={true} />
-              <StatCard icon={ShieldCheck} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Success Rate" value="99.2%" trend="1%" trendUp={true} />
+              <StatCard icon={LinkIcon} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Integrations" value={totalIntegrations} />
+              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Active Connections" value={activeConnectionCount} />
+              <StatCard icon={Plus} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="New Connections" value={0} />
+              <StatCard icon={LinkIcon} iconColor="text-rose-500" iconBg="bg-rose-100" title="Disconnected" value={disconnectedCount} />
+              <StatCard icon={ShieldCheck} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Success Rate" value="0%" />
             </div>
 
             {/* Charts Row */}
@@ -286,6 +290,7 @@ export default function IntegrationsDashboard() {
                   </button>
                 </div>
                 <div className="flex-1 min-h-[220px]">
+                  {usageTrendData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={usageTrendData} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
                       <defs>
@@ -301,13 +306,17 @@ export default function IntegrationsDashboard() {
                       <Area type="monotone" dataKey="calls" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorCalls)" />
                     </AreaChart>
                   </ResponsiveContainer>
+                  ) : (
+                    <EmptyState icon={BarChart2} title="No usage data yet" subtitle="API call activity will appear here once integrations are used." />
+                  )}
                 </div>
               </div>
 
               {/* Usage by Integration Donut Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <h3 className="text-[16px] font-bold text-slate-900 mb-4">Usage by Integration</h3>
-                
+
+                {usageByIntegrationData.length > 0 ? (
                 <div className="flex-1 flex items-center justify-between">
                   <div className="relative w-[140px] h-[140px] -ml-2">
                     <ResponsiveContainer width="100%" height="100%">
@@ -327,7 +336,7 @@ export default function IntegrationsDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1">
-                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">8,426</span>
+                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">{usageByIntegrationData.reduce((sum, entry) => sum + entry.value, 0).toLocaleString('en-US')}</span>
                       <span className="text-[9px] text-slate-500 font-semibold mt-1 text-center leading-tight">Total<br/>Connections</span>
                     </div>
                   </div>
@@ -344,6 +353,9 @@ export default function IntegrationsDashboard() {
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={LinkIcon} title="No usage breakdown yet" subtitle="Usage share per connected app will appear here." />
+                )}
               </div>
             </div>
 
@@ -403,9 +415,15 @@ export default function IntegrationsDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleIntegrations.length === 0 ? (
+                    {integrationsList.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-8 text-center text-slate-400 text-[13px] font-medium">
+                        <td colSpan={8} className="py-2">
+                          <EmptyState icon={LinkIcon} title="No integrations yet" subtitle="Apps you connect will appear here." />
+                        </td>
+                      </tr>
+                    ) : visibleIntegrations.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-12 text-center text-slate-400 text-[13px] font-medium">
                           No integrations found matching your criteria.
                         </td>
                       </tr>
@@ -497,16 +515,7 @@ export default function IntegrationsDashboard() {
                   <button onClick={() => handleAction('All integration statuses are shown above')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
                <div className="space-y-4">
-                 {[
-                   { name: 'Google Workspace', calls: '2,864', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Calendar, iconBg: 'text-blue-500' },
-                   { name: 'Notion', calls: '1,542', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Notebook, iconBg: 'text-slate-800' },
-                   { name: 'Slack', calls: '1,248', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Hash, iconBg: 'text-purple-600' },
-                   { name: 'GitHub', calls: '986', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Github, iconBg: 'text-slate-800' },
-                   { name: 'Outlook', calls: '642', status: 'Degraded', statusBg: 'bg-amber-100 text-amber-600', icon: Mail, iconBg: 'text-blue-500' },
-                   { name: 'Zoom', calls: '428', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Video, iconBg: 'text-blue-500' },
-                   { name: 'WhatsApp', calls: '356', status: 'Active', statusBg: 'bg-emerald-100 text-emerald-600', icon: Phone, iconBg: 'text-emerald-500' },
-                   { name: 'Trello', calls: '204', status: 'Error', statusBg: 'bg-rose-100 text-rose-600', icon: Layout, iconBg: 'text-blue-600' },
-                 ].map((item, i) => (
+                 {integrationStatusData.length > 0 ? integrationStatusData.map((item, i) => (
                    <div key={i} className="flex items-center justify-between">
                      <div className="flex items-center gap-3">
                        <div className={`w-6 h-6 rounded flex items-center justify-center ${item.iconBg}`}>
@@ -519,7 +528,9 @@ export default function IntegrationsDashboard() {
                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold w-16 text-center ${item.statusBg}`}>{item.status}</span>
                      </div>
                    </div>
-                 ))}
+                 )) : (
+                   <EmptyState icon={ShieldCheck} title="No integration status yet" subtitle="Status of connected apps will appear here." />
+                 )}
                </div>
             </div>
 
@@ -531,13 +542,7 @@ export default function IntegrationsDashboard() {
               </div>
 
               <div className="space-y-4">
-                {[
-                  { title: 'Google Calendar connected', sub: 'Sarah Kumar', time: '2 min ago', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50 border shadow-sm', badge: CheckCircle2, badgeColor: 'text-emerald-500' },
-                  { title: 'Notion sync completed', sub: 'Priya Nair', time: '8 min ago', icon: Notebook, color: 'text-slate-800', bg: 'bg-slate-100 border shadow-sm', badge: CheckCircle2, badgeColor: 'text-emerald-500' },
-                  { title: 'Slack disconnected', sub: 'Vikram S', time: '15 min ago', icon: Hash, color: 'text-purple-600', bg: 'bg-purple-50 border shadow-sm', badge: XCircle, badgeColor: 'text-rose-500' },
-                  { title: 'GitHub connected', sub: 'Arun Raj', time: '28 min ago', icon: Github, color: 'text-slate-800', bg: 'bg-slate-100 border shadow-sm', badge: CheckCircle2, badgeColor: 'text-emerald-500' },
-                  { title: 'Outlook sync failed', sub: 'Meena R', time: '42 min ago', icon: Mail, color: 'text-blue-500', bg: 'bg-blue-50 border shadow-sm', badge: AlertTriangle, badgeColor: 'text-amber-500' },
-                ].map((act, i) => (
+                {recentIntegrationActivity.length > 0 ? recentIntegrationActivity.map((act, i) => (
                   <div key={i} className="flex items-start gap-3 relative">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 relative z-10 ${act.bg}`}>
                       <act.icon size={14} className={act.color} />
@@ -545,14 +550,16 @@ export default function IntegrationsDashboard() {
                          <act.badge size={12} className={act.badgeColor} />
                       </div>
                     </div>
-                    {i !== 4 && <div className="absolute left-4 top-8 w-px h-6 bg-slate-200"></div>}
+                    {i !== recentIntegrationActivity.length - 1 && <div className="absolute left-4 top-8 w-px h-6 bg-slate-200"></div>}
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-bold text-slate-900 truncate">{act.title}</p>
                       <p onClick={() => handleAction(`Opened "${act.sub}"`)} className="text-[12px] text-blue-600 font-semibold truncate hover:underline cursor-pointer">{act.sub}</p>
                     </div>
                     <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap mt-1">{act.time}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Calendar} title="No recent activity yet" subtitle="Integration activity will appear here." />
+                )}
               </div>
             </div>
 
