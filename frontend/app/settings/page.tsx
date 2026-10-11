@@ -5,7 +5,8 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   Globe, Clock, CalendarDays, Brain, AudioWaveform, Tag, ShieldCheck,
-  Lock, Cpu, Shield, User, Pencil, Crown, Moon, Sun, Monitor, ChevronDown
+  Lock, Cpu, Shield, User, Pencil, Crown, Moon, Sun, Monitor, ChevronDown,
+  CheckCircle2
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -50,8 +51,8 @@ const SettingsRow = ({ icon: Icon, title, subtitle, action, iconColor = "text-sl
   </div>
 );
 
-const DropdownSelect = ({ value }: any) => (
-  <div className="flex items-center justify-between w-64 max-lg:w-40 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-600 font-medium cursor-pointer hover:bg-slate-100 transition-colors">
+const DropdownSelect = ({ value, onClick }: any) => (
+  <div onClick={onClick} className="flex items-center justify-between w-64 max-lg:w-40 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-600 font-medium cursor-pointer hover:bg-slate-100 transition-colors">
     <span className="truncate">{value}</span>
     <ChevronDown size={14} className="text-slate-400 flex-shrink-0 ml-2" />
   </div>
@@ -68,6 +69,8 @@ const themeOptions = [
 export default function PathiiSettingsDashboard() {
   const [activeTab, setActiveTab] = useState('General');
   const [activeTheme, setActiveTheme] = useState('Light');
+  const [toast, setToast] = useState<string | null>(null);
+  const [dropdownIndexes, setDropdownIndexes] = useState({ language: 0, timezone: 0, dateFormat: 0, startWeek: 0 });
   const [toggleStates, setToggleStates] = useState({
     autoTranscribe: true,
     aiSummary: true,
@@ -76,6 +79,56 @@ export default function PathiiSettingsDashboard() {
     localProcessing: true,
     twoFactor: false,
   });
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const languageOptions = ['English', 'Hindi', 'Tamil', 'French'];
+  const timezoneOptions = ['(GMT+05:30) India Standard Time', '(GMT+00:00) UTC', '(GMT-05:00) Eastern Time'];
+  const dateFormatOptions = ['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD'];
+  const startWeekOptions = ['Monday', 'Sunday'];
+
+  const cycleDropdown = (key: keyof typeof dropdownIndexes, options: string[], label: string) => {
+    setDropdownIndexes((prev) => {
+      const next = (prev[key] + 1) % options.length;
+      return { ...prev, [key]: next };
+    });
+    const nextIdx = (dropdownIndexes[key] + 1) % options.length;
+    showToast(`${label}: ${options[nextIdx]}`);
+  };
+
+  const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+    const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleManageData = () => {
+    downloadCsv('pathii-my-data.csv', [
+      ['Setting', 'Value'],
+      ['Language', languageOptions[dropdownIndexes.language]],
+      ['Time Zone', timezoneOptions[dropdownIndexes.timezone]],
+      ['Date Format', dateFormatOptions[dropdownIndexes.dateFormat]],
+      ['Start Week On', startWeekOptions[dropdownIndexes.startWeek]],
+      ['Theme', activeTheme],
+      ['Auto-transcribe voice notes', toggleStates.autoTranscribe ? 'On' : 'Off'],
+      ['Generate AI summary', toggleStates.aiSummary ? 'On' : 'Off'],
+      ['Extract tasks, events and people', toggleStates.extractEntities ? 'On' : 'Off'],
+      ['End-to-end encryption', toggleStates.e2eEncryption ? 'On' : 'Off'],
+      ['Local data processing', toggleStates.localProcessing ? 'On' : 'Off'],
+      ['Two-factor authentication', toggleStates.twoFactor ? 'On' : 'Off'],
+      ['Storage Used', '2.4 GB of 10 GB'],
+      ['Plan', 'Free Plan'],
+    ]);
+    showToast('Exported your data');
+  };
 
   const flipToggle = (key: keyof typeof toggleStates) => {
     setToggleStates((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -146,11 +199,11 @@ export default function PathiiSettingsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened — 2 new alerts')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
           </div>
         </header>
 
@@ -200,21 +253,21 @@ export default function PathiiSettingsDashboard() {
                 </div>
               </div>
               <div className="pl-[2rem]">
-                <SettingsRow 
-                  icon={Globe} title="Language" subtitle="" 
-                  action={<DropdownSelect value="English" />} 
+                <SettingsRow
+                  icon={Globe} title="Language" subtitle=""
+                  action={<DropdownSelect value={languageOptions[dropdownIndexes.language]} onClick={() => cycleDropdown('language', languageOptions, 'Language')} />}
                 />
-                <SettingsRow 
-                  icon={Clock} title="Time Zone" subtitle="" 
-                  action={<DropdownSelect value="(GMT+05:30) India Standard Time" />} 
+                <SettingsRow
+                  icon={Clock} title="Time Zone" subtitle=""
+                  action={<DropdownSelect value={timezoneOptions[dropdownIndexes.timezone]} onClick={() => cycleDropdown('timezone', timezoneOptions, 'Time zone')} />}
                 />
-                <SettingsRow 
-                  icon={CalendarIcon} title="Date Format" subtitle="" 
-                  action={<DropdownSelect value="DD / MM / YYYY" />} 
+                <SettingsRow
+                  icon={CalendarIcon} title="Date Format" subtitle=""
+                  action={<DropdownSelect value={dateFormatOptions[dropdownIndexes.dateFormat]} onClick={() => cycleDropdown('dateFormat', dateFormatOptions, 'Date format')} />}
                 />
                 <SettingsRow
                   icon={CalendarDays} title="Start Week On" subtitle=""
-                  action={<DropdownSelect value="Monday" />}
+                  action={<DropdownSelect value={startWeekOptions[dropdownIndexes.startWeek]} onClick={() => cycleDropdown('startWeek', startWeekOptions, 'Start week on')} />}
                 />
               </div>
             </div>
@@ -280,7 +333,7 @@ export default function PathiiSettingsDashboard() {
                 />
                 <SettingsRow
                   icon={Database} title="Manage data" subtitle="Export or delete your data"
-                  action={<button className="px-4 py-1.5 bg-white border border-blue-200 text-blue-600 text-[13px] font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors">Manage Data</button>}
+                  action={<button onClick={handleManageData} className="px-4 py-1.5 bg-white border border-blue-200 text-blue-600 text-[13px] font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors">Manage Data</button>}
                 />
               </div>
             </div>
@@ -306,7 +359,7 @@ export default function PathiiSettingsDashboard() {
                     <p className="text-[13px] text-slate-500 font-medium">+91 98765 43210</p>
                   </div>
                 </div>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-100 transition-colors shadow-sm">
+                <button onClick={() => showToast('Editing your profile')} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-100 transition-colors shadow-sm">
                   <Pencil size={14} /> Edit
                 </button>
               </div>
@@ -319,7 +372,7 @@ export default function PathiiSettingsDashboard() {
                     <p className="text-[12px] text-slate-500 font-medium">Upgrade to unlock more features</p>
                   </div>
                 </div>
-                <button className="px-4 py-2 bg-blue-600 text-white text-[13px] font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                <button onClick={() => showToast('Upgrade options opened — Pro and Team plans available')} className="px-4 py-2 bg-blue-600 text-white text-[13px] font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
                   Upgrade Plan
                 </button>
               </div>
@@ -393,7 +446,7 @@ export default function PathiiSettingsDashboard() {
                    <p className="text-[12px] text-slate-500 font-medium">10 GB storage • Basic AI features</p>
                  </div>
               </div>
-              <button className="px-4 py-2 bg-white border border-blue-200 text-blue-600 text-[13px] font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors">
+              <button onClick={() => showToast('Upgrade options opened — Pro and Team plans available')} className="px-4 py-2 bg-white border border-blue-200 text-blue-600 text-[13px] font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors">
                 Upgrade Plan
               </button>
             </div>
@@ -433,19 +486,19 @@ export default function PathiiSettingsDashboard() {
                 <h4 className="text-[14px] font-bold text-slate-900 mb-3">Accent Color</h4>
                 <div className="flex items-center justify-between">
                   {/* Active Blue */}
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center border-[3px] border-blue-200 cursor-pointer">
+                  <div onClick={() => showToast('Accent color: Blue')} className="w-8 h-8 rounded-full flex items-center justify-center border-[3px] border-blue-200 cursor-pointer">
                     <div className="w-5 h-5 rounded-full bg-blue-600"></div>
                   </div>
                   {/* Purple */}
-                  <div className="w-7 h-7 rounded-full bg-purple-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                  <div onClick={() => showToast('Accent color: Purple')} className="w-7 h-7 rounded-full bg-purple-500 cursor-pointer hover:scale-110 transition-transform"></div>
                   {/* Green */}
-                  <div className="w-7 h-7 rounded-full bg-emerald-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                  <div onClick={() => showToast('Accent color: Green')} className="w-7 h-7 rounded-full bg-emerald-500 cursor-pointer hover:scale-110 transition-transform"></div>
                   {/* Yellow/Orange */}
-                  <div className="w-7 h-7 rounded-full bg-amber-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                  <div onClick={() => showToast('Accent color: Yellow/Orange')} className="w-7 h-7 rounded-full bg-amber-500 cursor-pointer hover:scale-110 transition-transform"></div>
                   {/* Red/Pink */}
-                  <div className="w-7 h-7 rounded-full bg-rose-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                  <div onClick={() => showToast('Accent color: Red/Pink')} className="w-7 h-7 rounded-full bg-rose-500 cursor-pointer hover:scale-110 transition-transform"></div>
                   {/* Gradient */}
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-amber-500 cursor-pointer hover:scale-110 transition-transform"></div>
+                  <div onClick={() => showToast('Accent color: Gradient')} className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-amber-500 cursor-pointer hover:scale-110 transition-transform"></div>
                 </div>
               </div>
             </div>
@@ -454,6 +507,14 @@ export default function PathiiSettingsDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {

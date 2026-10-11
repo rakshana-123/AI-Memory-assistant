@@ -88,14 +88,14 @@ const getTagStyles = (tag: any) => {
   return (styles as any)[tag] || 'bg-slate-100 text-slate-600';
 };
 
-const MemoryCard = ({ data, isActive }: any) => {
+const MemoryCard = ({ data, isActive, onCardClick, onPlayClick, onMoreClick }: any) => {
   const renderCardVisual = () => {
     switch(data.type) {
       case 'voice':
         return (
           <div className="h-[120px] bg-[#F4F8FF] rounded-2xl p-4 flex items-center justify-center relative border border-slate-50">
             <div className="flex items-center gap-3 w-full px-2">
-              <button className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 text-[#2563EB]">
+              <button onClick={(e) => { e.stopPropagation(); onPlayClick(); }} className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 text-[#2563EB]">
                 <Play size={16} fill="currentColor" className="ml-0.5" />
               </button>
               <div className="flex-1 flex items-center gap-[3px] justify-center h-8">
@@ -180,10 +180,10 @@ const MemoryCard = ({ data, isActive }: any) => {
   };
 
   return (
-    <div className={`bg-white rounded-[20px] p-3 shadow-sm border transition-all cursor-pointer group ${isActive ? 'border-[#2563EB] ring-1 ring-[#2563EB]' : 'border-slate-200 hover:shadow-md hover:border-slate-300'}`}>
+    <div onClick={onCardClick} className={`bg-white rounded-[20px] p-3 shadow-sm border transition-all cursor-pointer group ${isActive ? 'border-[#2563EB] ring-1 ring-[#2563EB]' : 'border-slate-200 hover:shadow-md hover:border-slate-300'}`}>
       <div className="relative mb-3">
         {renderCardVisual()}
-        <button className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-slate-100">
+        <button onClick={(e) => { e.stopPropagation(); onMoreClick(); }} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-slate-100">
           <MoreVertical size={16} />
         </button>
       </div>
@@ -206,6 +206,30 @@ export default function PathiiMemoriesDashboard() {
   const [activeTab, setActiveTab] = useState('Transcript');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [memories, setMemories] = useState(memoriesData);
+  const [sortOrder, setSortOrder] = useState('Newest first');
+  const [isPlayerPlaying, setIsPlayerPlaying] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleNewMemory = () => {
+    const nextId = memories.reduce((max, m) => Math.max(max, m.id), 0) + 1;
+    const newMemory = {
+      id: nextId,
+      type: 'note',
+      title: 'New memory',
+      date: 'Just now',
+      tags: ['Note', 'Personal'],
+      color: 'green',
+    };
+    setMemories(prev => [newMemory, ...prev]);
+    showToast('Memory created');
+  };
+
   const filterTypes: Record<string, string[]> = {
     Voice: ['voice', 'voice-simple'],
     Notes: ['note'],
@@ -215,7 +239,7 @@ export default function PathiiMemoriesDashboard() {
     Locations: ['location'],
     People: [],
   };
-  const filteredMemories = memoriesData.filter((data) => {
+  const filteredMemories = memories.filter((data) => {
     const matchesFilter =
       activeFilter === 'All' || (filterTypes[activeFilter] || []).includes(data.type);
     const matchesSearch = data.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
@@ -255,7 +279,7 @@ export default function PathiiMemoriesDashboard() {
 
         {/* User Profile */}
         <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+          <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
               <div>
@@ -288,11 +312,11 @@ export default function PathiiMemoriesDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
           </div>
         </header>
 
@@ -309,10 +333,16 @@ export default function PathiiMemoriesDashboard() {
                 <p className="text-[14.5px] text-slate-500 font-medium">All your thoughts, ideas, files, and conversations in one place.</p>
               </div>
               <div className="flex shadow-sm rounded-lg overflow-hidden">
-                <button className="bg-[#2563EB] hover:bg-blue-700 text-white px-4 py-2.5 text-[14px] font-semibold flex items-center gap-2 transition-colors border-r border-blue-600/50">
+                <button 
+                  onClick={handleNewMemory}
+                  className="bg-[#2563EB] hover:bg-blue-700 text-white px-4 py-2.5 text-[14px] font-semibold flex items-center gap-2 transition-colors border-r border-blue-600/50"
+                >
                   <Plus size={18} /> New Memory
                 </button>
-                <button className="bg-[#2563EB] hover:bg-blue-700 text-white px-3 py-2.5 transition-colors">
+                <button 
+                  onClick={() => showToast('Choose memory type: voice, note, document, image or link')}
+                  className="bg-[#2563EB] hover:bg-blue-700 text-white px-3 py-2.5 transition-colors"
+                >
                   <ChevronDown size={18} />
                 </button>
               </div>
@@ -337,14 +367,21 @@ export default function PathiiMemoriesDashboard() {
               </div>
 
               <div className="flex items-center gap-3 pl-4">
-                <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-1.5 rounded-lg text-[13px] font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">
+                <button 
+                  onClick={() => {
+                    const next = sortOrder === 'Newest first' ? 'Oldest first' : 'Newest first';
+                    setSortOrder(next);
+                    showToast(`Sorted: ${next}`);
+                  }}
+                  className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-1.5 rounded-lg text-[13px] font-semibold text-slate-700 hover:bg-slate-50 shadow-sm"
+                >
                   <ArrowDownUp size={14} className="text-slate-500" />
-                  Newest first
+                  {sortOrder}
                   <ChevronDown size={14} className="text-slate-400" />
                 </button>
                 <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-sm">
-                  <button className="p-1.5 bg-[#EBF3FF] text-[#2563EB] rounded-md"><Grid size={16} /></button>
-                  <button className="p-1.5 text-slate-400 hover:text-slate-600 rounded-md"><ListIcon size={16} /></button>
+                  <button onClick={() => showToast('Grid view active')} className="p-1.5 bg-[#EBF3FF] text-[#2563EB] rounded-md"><Grid size={16} /></button>
+                  <button onClick={() => showToast('List view active')} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-md"><ListIcon size={16} /></button>
                 </div>
               </div>
             </div>
@@ -353,7 +390,14 @@ export default function PathiiMemoriesDashboard() {
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-10">
                 {filteredMemories.map((data, idx) => (
-                  <MemoryCard key={data.id} data={data} isActive={idx === 0} />
+                  <MemoryCard 
+                    key={data.id} 
+                    data={data} 
+                    isActive={idx === 0} 
+                    onCardClick={() => showToast(`Opening '${data.title}'`)}
+                    onPlayClick={() => showToast(`Playing '${data.title}'`)}
+                    onMoreClick={() => showToast(`More options for '${data.title}'`)}
+                  />
                 ))}
               </div>
             </div>
@@ -371,7 +415,7 @@ export default function PathiiMemoriesDashboard() {
                   </span>
                   Oct 12, 2024 • 10:42 AM
                 </div>
-                <button className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
+                <button onClick={() => showToast('Details panel closed')} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
                   <X size={20} />
                 </button>
               </div>
@@ -381,7 +425,13 @@ export default function PathiiMemoriesDashboard() {
 
               {/* Audio Player Component */}
               <div className="bg-[#F8FAFC] rounded-2xl p-4 flex items-center gap-4 mb-6 border border-slate-100">
-                <button className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center flex-shrink-0 text-white shadow-md hover:bg-blue-700 transition-colors">
+                <button 
+                  onClick={() => {
+                    setIsPlayerPlaying(!isPlayerPlaying);
+                    showToast(isPlayerPlaying ? 'Paused' : "Playing 'Project idea discussion'");
+                  }}
+                  className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center flex-shrink-0 text-white shadow-md hover:bg-blue-700 transition-colors"
+                >
                   <Play size={18} fill="currentColor" className="ml-1" />
                 </button>
                 <div className="flex-1 flex items-center gap-[2.5px]">
@@ -418,7 +468,7 @@ export default function PathiiMemoriesDashboard() {
                   So I was thinking we can build a personal AI memory assistant that helps users save their notes, documents, and conversations. It should also connect with calendar and email, and give reminders. We can start with a web app and later add a mobile app and a wearable device...
                 </p>
                 <div className="flex justify-end">
-                  <button className="flex items-center gap-2 border border-slate-200 px-3 py-1.5 rounded-lg text-[13px] font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-sm">
+                  <button onClick={() => showToast('Transcript editing enabled')} className="flex items-center gap-2 border border-slate-200 px-3 py-1.5 rounded-lg text-[13px] font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-sm">
                     <Edit2 size={14} /> Edit Transcript
                   </button>
                 </div>
@@ -428,7 +478,7 @@ export default function PathiiMemoriesDashboard() {
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[16px] font-bold text-slate-900">Extracted Items</h3>
-                  <button className="flex items-center gap-1 text-[#2563EB] text-[13px] font-semibold hover:bg-blue-50 px-2 py-1 rounded-md transition-colors">
+                  <button onClick={() => showToast('New extracted item editor opened')} className="flex items-center gap-1 text-[#2563EB] text-[13px] font-semibold hover:bg-blue-50 px-2 py-1 rounded-md transition-colors">
                     <Plus size={14} /> Add
                   </button>
                 </div>
@@ -446,7 +496,7 @@ export default function PathiiMemoriesDashboard() {
                       </div>
                     </div>
                     {/* Perfect alignment checkbox */}
-                    <button className="w-5 h-5 rounded-md border-2 border-slate-200 mr-1 group-hover:border-[#10B981] transition-colors"></button>
+                    <button onClick={() => showToast('Task "Build AI memory assistant" completed')} className="w-5 h-5 rounded-md border-2 border-slate-200 mr-1 group-hover:border-[#10B981] transition-colors"></button>
                   </div>
 
                   {/* Event Item */}
@@ -460,7 +510,7 @@ export default function PathiiMemoriesDashboard() {
                         <p className="text-[12px] text-[#F43F5E] font-medium">Event</p>
                       </div>
                     </div>
-                    <button className="w-5 h-5 rounded-md border-2 border-slate-200 mr-1 group-hover:border-[#F43F5E] transition-colors"></button>
+                    <button onClick={() => showToast('Event "Discuss with team next week" added to calendar')} className="w-5 h-5 rounded-md border-2 border-slate-200 mr-1 group-hover:border-[#F43F5E] transition-colors"></button>
                   </div>
 
                   {/* Note Item */}
@@ -474,7 +524,7 @@ export default function PathiiMemoriesDashboard() {
                         <p className="text-[12px] text-[#2563EB] font-medium">Note</p>
                       </div>
                     </div>
-                    <button className="w-5 h-5 rounded-md border-2 border-slate-200 mr-1 group-hover:border-[#2563EB] transition-colors"></button>
+                    <button onClick={() => showToast('Note "Feature ideas and requirements" saved')} className="w-5 h-5 rounded-md border-2 border-slate-200 mr-1 group-hover:border-[#2563EB] transition-colors"></button>
                   </div>
                 </div>
               </div>
@@ -483,7 +533,7 @@ export default function PathiiMemoriesDashboard() {
               <div className="pb-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-[16px] font-bold text-slate-900">Tags</h3>
-                  <button className="text-[#2563EB] text-[13px] font-semibold hover:underline">
+                  <button onClick={() => showToast('Tag editor opened')} className="text-[#2563EB] text-[13px] font-semibold hover:underline">
                     Edit
                   </button>
                 </div>
@@ -493,7 +543,7 @@ export default function PathiiMemoriesDashboard() {
                       {tag}
                     </span>
                   ))}
-                  <button className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-dashed border-slate-300 text-slate-500 hover:bg-slate-50 transition-colors">
+                  <button onClick={() => showToast('Add a tag to this memory')} className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-dashed border-slate-300 text-slate-500 hover:bg-slate-50 transition-colors">
                     <Plus size={16} />
                   </button>
                 </div>
@@ -504,6 +554,14 @@ export default function PathiiMemoriesDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       {}
       <style dangerouslySetInnerHTML={{__html: `

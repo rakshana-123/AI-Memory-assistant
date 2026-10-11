@@ -95,8 +95,31 @@ const Avatar = ({ person, size = 'md' }: any) => {
 export default function PathiiPeopleDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
+  const [people, setPeople] = useState(peopleData);
+  const [sortOrder, setSortOrder] = useState('A-Z');
+  const [toast, setToast] = useState<string | null>(null);
 
-  const visiblePeople = peopleData.filter((person) => {
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleAddPerson = () => {
+    const nextId = people.reduce((max, p) => Math.max(max, p.id), 0) + 1;
+    const newPerson = {
+      id: nextId,
+      name: 'New Contact',
+      role: 'Recently added',
+      type: 'initials',
+      initials: 'NC',
+      bg: 'bg-blue-100 text-blue-600',
+      tags: [{ label: 'Friend', color: 'blue' }],
+    };
+    setPeople(prev => [newPerson, ...prev]);
+    showToast('Person added');
+  };
+
+  const visiblePeople = people.filter((person) => {
     const matchesFilter =
       activeTab === 'All' ||
       person.tags.some((tag) => tag.label === tabToTagMap[activeTab]);
@@ -133,7 +156,7 @@ export default function PathiiPeopleDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+          <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
               <div>
@@ -166,11 +189,11 @@ export default function PathiiPeopleDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
           </div>
         </header>
 
@@ -191,7 +214,7 @@ export default function PathiiPeopleDashboard() {
                   <p className="text-[14px] text-slate-500 font-medium">Your important people, conversations and relationships in one place.</p>
                 </div>
               </div>
-              <button className="bg-[#2563EB] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] transition-colors shadow-sm flex items-center gap-2">
+              <button onClick={handleAddPerson} className="bg-[#2563EB] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] transition-colors shadow-sm flex items-center gap-2">
                 <Plus size={18} />
                 Add Person
               </button>
@@ -214,8 +237,15 @@ export default function PathiiPeopleDashboard() {
                     </button>
                   ))}
                </div>
-               <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-[13px] font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-colors">
-                  <span className="flex items-center gap-1"><ArrowUpIcon size={14} className="transform rotate-180 text-slate-400" /> A-Z</span>
+               <button 
+                  onClick={() => {
+                    const next = sortOrder === 'A-Z' ? 'Z-A' : 'A-Z';
+                    setSortOrder(next);
+                    showToast(`Sorted: ${next}`);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-[13px] font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-colors"
+               >
+                  <span className="flex items-center gap-1"><ArrowUpIcon size={14} className={`transform text-slate-400 ${sortOrder === 'Z-A' ? '' : 'rotate-180'}`} /> {sortOrder}</span>
                   <ChevronDown size={14} className="text-slate-400" />
                </button>
             </div>
@@ -223,8 +253,8 @@ export default function PathiiPeopleDashboard() {
             {/* Grid of People */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                {visiblePeople.map((person) => (
-                 <div key={person.id} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative group">
-                    <button className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
+                 <div key={person.id} onClick={() => showToast(`Opening ${person.name}'s profile`)} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative group">
+                    <button onClick={(e) => { e.stopPropagation(); showToast(`More options for ${person.name}`); }} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
                       <MoreHorizontal size={18} />
                     </button>
                     <div className="flex items-center gap-4 mb-4">
@@ -253,11 +283,11 @@ export default function PathiiPeopleDashboard() {
                       <CalendarIcon size={18} className="text-[#2563EB]" />
                       <h3 className="text-[16px] font-bold text-slate-900">Upcoming with People</h3>
                     </div>
-                    <button className="text-[13px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
+                    <NextLink href="/calendar" className="text-[13px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
                       View all <ChevronRight size={14} />
-                    </button>
+                    </NextLink>
                   </div>
-                  
+
                   <div className="flex flex-col gap-4">
                     {upcomingEvents.map((ev, idx) => (
                       <div key={idx} className="flex items-center justify-between group">
@@ -275,7 +305,7 @@ export default function PathiiPeopleDashboard() {
                            <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${ev.badgeColor}`}>
                              {ev.type}
                            </span>
-                           <button className="text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button onClick={() => showToast(`More options for '${ev.name}'`)} className="text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
                              <MoreHorizontal size={16} />
                            </button>
                          </div>
@@ -293,7 +323,7 @@ export default function PathiiPeopleDashboard() {
 
                   <div className="grid grid-cols-1 gap-3">
                      
-                     <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={handleAddPerson} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
                            <UserPlus size={18} />
@@ -306,7 +336,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('New meeting scheduled with Sarah')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center flex-shrink-0">
                            <Calendar size={18} />
@@ -319,7 +349,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('New note about Sarah created')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
                            <FileText size={18} />
@@ -332,7 +362,7 @@ export default function PathiiPeopleDashboard() {
                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                      </div>
 
-                     <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
+                     <div onClick={() => showToast('Attach a file to Sarah\'s profile')} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
                            <File size={18} />
@@ -356,7 +386,7 @@ export default function PathiiPeopleDashboard() {
             
             {/* Profile Detail Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative">
-              <button className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 transition-colors border border-slate-100">
+              <button onClick={() => showToast("Editing Sarah's profile")} className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 transition-colors border border-slate-100">
                 <Edit2 size={12} /> Edit
               </button>
               
@@ -397,7 +427,7 @@ export default function PathiiPeopleDashboard() {
                   <Sparkles size={18} />
                   <h3 className="text-[15px] font-bold text-slate-900">AI Summary</h3>
                 </div>
-                <button className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-colors border border-slate-100">
+                <button onClick={() => showToast('Editing AI summary for Sarah')} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-colors border border-slate-100">
                   <Edit2 size={10} /> Edit
                 </button>
               </div>
@@ -413,7 +443,7 @@ export default function PathiiPeopleDashboard() {
                   <Clock size={16} className="text-[#2563EB]" />
                   <h3 className="text-[15px] font-bold text-slate-900">Recent Interactions</h3>
                 </div>
-                <button className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
+                <button onClick={() => showToast('Showing all interactions with Sarah')} className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
                   View all <ChevronRight size={14} />
                 </button>
               </div>
@@ -481,7 +511,7 @@ export default function PathiiPeopleDashboard() {
               </div>
 
               <div className="space-y-1">
-                <div className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+                <NextLink href="/memories" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-500 flex items-center justify-center">
                       <BrainLogo className="w-4 h-4" />
@@ -492,9 +522,9 @@ export default function PathiiPeopleDashboard() {
                     <span className="text-[13px] font-bold text-slate-900">12</span>
                     <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                   </div>
-                </div>
+                </NextLink>
 
-                <div className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+                <NextLink href="/documents" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
                       <FileText size={16} />
@@ -505,9 +535,9 @@ export default function PathiiPeopleDashboard() {
                     <span className="text-[13px] font-bold text-slate-900">5</span>
                     <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                   </div>
-                </div>
+                </NextLink>
 
-                <div className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+                <NextLink href="/tasks" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center">
                       <CheckCircle2 size={16} />
@@ -518,9 +548,9 @@ export default function PathiiPeopleDashboard() {
                     <span className="text-[13px] font-bold text-slate-900">3</span>
                     <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                   </div>
-                </div>
+                </NextLink>
 
-                <div className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+                <NextLink href="/calendar" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center">
                       <Calendar size={16} />
@@ -531,7 +561,7 @@ export default function PathiiPeopleDashboard() {
                     <span className="text-[13px] font-bold text-slate-900">4</span>
                     <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500" />
                   </div>
-                </div>
+                </NextLink>
               </div>
             </div>
 
@@ -539,6 +569,14 @@ export default function PathiiPeopleDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       {/* Global Styles for Scrollbars */}
       <style dangerouslySetInnerHTML={{__html: `

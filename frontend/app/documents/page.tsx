@@ -50,16 +50,16 @@ const StatCard = ({ icon: Icon, count, label, colorClass, iconColorClass }: any)
   </div>
 );
 
-const FileCard = ({ type, title, meta, badge, badgeColor, preview }: any) => {
+const FileCard = ({ type, title, meta, badge, badgeColor, preview, onOpen, onMore }: any) => {
   if (type === 'folder') {
     return (
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors cursor-pointer group flex flex-col h-[160px]">
+      <div onClick={onOpen} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors cursor-pointer group flex flex-col h-[160px]">
         <div className="flex justify-between items-start mb-auto">
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 12C4 8.68629 6.68629 6 10 6H17.1716C18.7628 6 20.2889 6.63214 21.4142 7.75736L24 10.3431C24.7502 11.0934 25.7676 11.5147 26.8284 11.5147H38C41.3137 11.5147 44 14.201 44 17.5147V36C44 39.3137 41.3137 42 38 42H10C6.68629 42 4 39.3137 4 36V12Z" fill="#FCD34D"/>
             <path d="M4 16C4 13.7909 5.79086 12 8 12H40C42.2091 12 44 13.7909 44 16V36C44 39.3137 41.3137 42 38 42H10C6.68629 42 4 39.3137 4 36V16Z" fill="#FBBF24"/>
           </svg>
-          <button className="text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-700 transition-opacity">
+          <button onClick={(e) => { e.stopPropagation(); onMore(); }} className="text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-700 transition-opacity">
             <MoreVertical size={16} />
           </button>
         </div>
@@ -72,7 +72,7 @@ const FileCard = ({ type, title, meta, badge, badgeColor, preview }: any) => {
   }
 
   return (
-    <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors cursor-pointer group flex flex-col h-[200px]">
+    <div onClick={onOpen} className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors cursor-pointer group flex flex-col h-[200px]">
       <div className="bg-slate-50 rounded-xl flex-1 mb-3 relative overflow-hidden flex items-center justify-center border border-slate-100">
         {/* Mock Preview Content based on type */}
         {preview === 'pdf' && (
@@ -118,7 +118,7 @@ const FileCard = ({ type, title, meta, badge, badgeColor, preview }: any) => {
            </div>
         )}
 
-        <button className="absolute top-2 right-2 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-700 transition-opacity bg-white/80 rounded-md p-0.5">
+        <button onClick={(e) => { e.stopPropagation(); onMore(); }} className="absolute top-2 right-2 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-700 transition-opacity bg-white/80 rounded-md p-0.5">
           <MoreVertical size={14} />
         </button>
         <div className={`absolute bottom-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-extrabold text-white ${badgeColor} shadow-sm uppercase`}>
@@ -133,8 +133,8 @@ const FileCard = ({ type, title, meta, badge, badgeColor, preview }: any) => {
   );
 };
 
-const ListItem = ({ name, icon: Icon, iconColorClass, iconBgClass, type, size, modified }: any) => (
-  <div className="flex items-center justify-between py-3 px-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer border-b border-slate-100 last:border-0">
+const ListItem = ({ name, icon: Icon, iconColorClass, iconBgClass, type, size, modified, onOpen, onDownload, onMore }: any) => (
+  <div onClick={onOpen} className="flex items-center justify-between py-3 px-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer border-b border-slate-100 last:border-0">
     <div className="flex items-center gap-3 w-[40%]">
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${iconBgClass} ${iconColorClass}`}>
         <Icon size={16} />
@@ -145,8 +145,8 @@ const ListItem = ({ name, icon: Icon, iconColorClass, iconBgClass, type, size, m
     <div className="w-[15%] text-[13px] font-medium text-slate-500">{size}</div>
     <div className="w-[20%] text-[13px] font-medium text-slate-500">{modified}</div>
     <div className="w-[5%] flex justify-end gap-2 text-slate-400">
-      <button className="hover:text-slate-700 transition-colors"><Download size={16}/></button>
-      <button className="hover:text-slate-700 transition-colors"><MoreVertical size={16}/></button>
+      <button onClick={(e) => { e.stopPropagation(); onDownload(); }} className="hover:text-slate-700 transition-colors"><Download size={16}/></button>
+      <button onClick={(e) => { e.stopPropagation(); onMore(); }} className="hover:text-slate-700 transition-colors"><MoreVertical size={16}/></button>
     </div>
   </div>
 );
@@ -183,6 +183,17 @@ const recentDocuments = [
   { id: 4, name: 'Whiteboard Notes.png', icon: ImageIcon, iconBgClass: 'bg-purple-100', iconColorClass: 'text-purple-500', type: 'Image', badge: 'IMG', size: '1.8 MB', modified: 'Oct 6, 2024' },
   { id: 5, name: 'Client Proposal.pdf', icon: FileText, iconBgClass: 'bg-red-100', iconColorClass: 'text-red-500', type: 'PDF', badge: 'PDF', size: '3.2 MB', modified: 'Oct 5, 2024' },
 ];
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
 export default function PathiiDocumentsDashboard() {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -259,7 +270,7 @@ export default function PathiiDocumentsDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+          <div onClick={() => handleAction('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
               <div>
@@ -291,11 +302,11 @@ export default function PathiiDocumentsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => handleAction('Notifications opened — 2 new alerts')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <img onClick={() => handleAction('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
           </div>
         </header>
 
@@ -364,6 +375,8 @@ export default function PathiiDocumentsDashboard() {
                   badge={doc.badge}
                   badgeColor={doc.badgeColor}
                   preview={doc.preview}
+                  onOpen={() => handleAction(doc.type === 'folder' ? `Opening folder '${doc.title}'` : `Opening '${doc.title}'`)}
+                  onMore={() => handleAction(`More options for '${doc.title}'`)}
                 />
               ))}
             </div>
@@ -374,7 +387,7 @@ export default function PathiiDocumentsDashboard() {
                   <Clock size={18} className="text-[#2563EB]" />
                   <h3 className="text-[16px] font-extrabold text-slate-900 tracking-tight">Recent Documents</h3>
                 </div>
-                <button className="text-[13px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
+                <button onClick={() => handleAction('Showing all documents')} className="text-[13px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
                   View all <ChevronRight size={14} />
                 </button>
               </div>
@@ -398,6 +411,15 @@ export default function PathiiDocumentsDashboard() {
                     type={doc.type}
                     size={doc.size}
                     modified={doc.modified}
+                    onOpen={() => handleAction(`Opening '${doc.name}'`)}
+                    onDownload={() => {
+                      downloadCsv(`${doc.name}.csv`, [
+                        ['Name', 'Type', 'Size', 'Modified'],
+                        [doc.name, doc.type, doc.size, doc.modified],
+                      ]);
+                      handleAction(`Downloaded '${doc.name}' info`);
+                    }}
+                    onMore={() => handleAction(`More options for '${doc.name}'`)}
                   />
                 ))}
               </div>
@@ -462,7 +484,7 @@ export default function PathiiDocumentsDashboard() {
                     <p className="text-[13px] text-slate-500 font-medium mt-0.5">2.4 MB • Oct 10, 2024</p>
                   </div>
                 </div>
-                <button className="text-slate-400 hover:text-slate-600"><MoreVertical size={18}/></button>
+                <button onClick={() => handleAction("More options for 'AI Research Paper.pdf'")} className="text-slate-400 hover:text-slate-600"><MoreVertical size={18}/></button>
               </div>
 
               <div className="flex gap-3">
@@ -572,9 +594,9 @@ export default function PathiiDocumentsDashboard() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Research</span>
-                <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">AI</span>
-                <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Paper</span>
+                <span onClick={() => handleAction("Tag 'Research' — showing related documents")} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Research</span>
+                <span onClick={() => handleAction("Tag 'AI' — showing related documents")} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">AI</span>
+                <span onClick={() => handleAction("Tag 'Paper' — showing related documents")} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Paper</span>
                 <button 
                   onClick={() => handleAction('Add tag modal opened')}
                   className="w-7 h-7 bg-white border border-slate-200 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50 hover:text-slate-600 transition-colors shadow-sm"

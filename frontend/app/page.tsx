@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar, 
   FileText, Users, Link, BarChart2, Settings, ChevronRight,
   MoreVertical, Play, MapPin, TrendingUp, TrendingDown,
-  ArrowRight, Circle
+  ArrowRight, Circle, CheckCircle2
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -45,8 +45,8 @@ const StatCard = ({ icon: Icon, iconBg, iconColor, value, label, trend, trendUp 
   </div>
 );
 
-const MemoryItem = ({ icon: Icon, iconBg, iconColor, title, subtitle, time, actionIcon: ActionIcon, isPlay }: any) => (
-  <div className="flex items-center justify-between py-3.5 border-b border-slate-100/60 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors cursor-pointer group">
+const MemoryItem = ({ icon: Icon, iconBg, iconColor, title, subtitle, time, actionIcon: ActionIcon, isPlay, onRowClick, onActionClick }: any) => (
+  <div onClick={onRowClick} className="flex items-center justify-between py-3.5 border-b border-slate-100/60 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors cursor-pointer group">
     <div className="flex items-center gap-4">
       <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0 ${iconBg}`}>
         <Icon size={22} className={iconColor} strokeWidth={2} />
@@ -58,15 +58,15 @@ const MemoryItem = ({ icon: Icon, iconBg, iconColor, title, subtitle, time, acti
     </div>
     <div className="flex items-center gap-4">
       <span className="text-[13px] text-slate-400 font-medium">{time}</span>
-      <button className={`flex items-center justify-center transition-colors ${isPlay ? 'w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
+      <button onClick={(e) => { e.stopPropagation(); onActionClick(); }} className={`flex items-center justify-center transition-colors ${isPlay ? 'w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
         <ActionIcon size={isPlay ? 14 : 18} fill={isPlay ? "currentColor" : "none"} strokeWidth={isPlay ? 0 : 2} />
       </button>
     </div>
   </div>
 );
 
-const TaskItem = ({ title, subtitle, priority, priorityColor }: any) => (
-  <div className="flex items-center justify-between py-3.5 border-b border-slate-100/60 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors cursor-pointer">
+const TaskItem = ({ title, subtitle, priority, priorityColor, onRowClick, onMoreClick }: any) => (
+  <div onClick={onRowClick} className="flex items-center justify-between py-3.5 border-b border-slate-100/60 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors cursor-pointer">
     <div className="flex items-center gap-4">
       <Circle size={22} className="text-slate-300 flex-shrink-0" strokeWidth={2} />
       <div>
@@ -78,15 +78,15 @@ const TaskItem = ({ title, subtitle, priority, priorityColor }: any) => (
       <span className={`text-[12px] font-semibold px-3 py-1 rounded-full ${priorityColor}`}>
         {priority}
       </span>
-      <button className="text-slate-400 hover:text-slate-600">
+      <button onClick={(e) => { e.stopPropagation(); onMoreClick(); }} className="text-slate-400 hover:text-slate-600">
         <MoreVertical size={18} />
       </button>
     </div>
   </div>
 );
 
-const CalendarItem = ({ date, month, title, time, dotColor }: any) => (
-  <div className="flex items-center gap-4 py-3.5 border-b border-slate-100/60 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors cursor-pointer">
+const CalendarItem = ({ date, month, title, time, dotColor, onRowClick }: any) => (
+  <div onClick={onRowClick} className="flex items-center gap-4 py-3.5 border-b border-slate-100/60 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors cursor-pointer">
     <div className="flex flex-col items-center justify-center min-w-[40px]">
       <span className="text-[18px] font-bold text-slate-900 leading-none mb-1">{date}</span>
       <span className="text-[11px] font-bold text-slate-500 uppercase">{month}</span>
@@ -150,6 +150,13 @@ const recentMemories = [
 
 export default function PathiiDashboard() {
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [toast, setToast] = React.useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const filteredMemories = recentMemories.filter((memory) =>
     memory.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
@@ -222,7 +229,7 @@ export default function PathiiDashboard() {
           </div>
 
           <div className="flex items-center gap-4 flex-shrink-0">
-            <button className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">1</span>
             </button>
@@ -321,6 +328,8 @@ export default function PathiiDashboard() {
                       time={memory.time}
                       actionIcon={memory.actionIcon}
                       isPlay={memory.isPlay}
+                      onRowClick={() => showToast(`Opening '${memory.title}'`)}
+                      onActionClick={() => showToast(memory.isPlay ? `Playing '${memory.title}'` : `More options for '${memory.title}'`)}
                     />
                   ))}
                 </div>
@@ -335,17 +344,23 @@ export default function PathiiDashboard() {
                   </NextLink>
                 </div>
                 <div className="flex flex-col">
-                  <TaskItem 
+                  <TaskItem
                     title="Prepare project presentation" subtitle="Today, 2:00 PM"
                     priority="High" priorityColor="bg-[#FFEBEF] text-[#F43F5E]"
+                    onRowClick={() => showToast('Opening task \'Prepare project presentation\'')}
+                    onMoreClick={() => showToast('More options for \'Prepare project presentation\'')}
                   />
-                  <TaskItem 
+                  <TaskItem
                     title="Follow up with Sarah" subtitle="Tomorrow, 10:00 AM"
                     priority="Medium" priorityColor="bg-[#FFF4DF] text-[#F59E0B]"
+                    onRowClick={() => showToast('Opening task \'Follow up with Sarah\'')}
+                    onMoreClick={() => showToast('More options for \'Follow up with Sarah\'')}
                   />
-                  <TaskItem 
+                  <TaskItem
                     title="Review research paper" subtitle="Oct 16, 2024"
                     priority="Low" priorityColor="bg-[#EBF3FF] text-[#2563EB]"
+                    onRowClick={() => showToast('Opening task \'Review research paper\'')}
+                    onMoreClick={() => showToast('More options for \'Review research paper\'')}
                   />
                 </div>
               </div>
@@ -405,14 +420,17 @@ export default function PathiiDashboard() {
                   <CalendarItem 
                     date="14" month="Oct" dotColor="#3B82F6"
                     title="Project Review Meeting" time="10:00 AM - 11:00 AM"
+                    onRowClick={() => showToast('Opening event \'Project Review Meeting\'')}
                   />
                   <CalendarItem 
                     date="14" month="Oct" dotColor="#10B981"
                     title="Client Call" time="2:00 PM - 2:30 PM"
+                    onRowClick={() => showToast('Opening event \'Client Call\'')}
                   />
                   <CalendarItem 
                     date="14" month="Oct" dotColor="#8B5CF6"
                     title="Team Sync" time="4:00 PM - 5:00 PM"
+                    onRowClick={() => showToast('Opening event \'Team Sync\'')}
                   />
                 </div>
               </div>
@@ -422,6 +440,14 @@ export default function PathiiDashboard() {
           
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
     </div>
   );
 }

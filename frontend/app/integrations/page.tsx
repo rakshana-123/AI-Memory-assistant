@@ -130,6 +130,12 @@ export default function PathiiIntegrationsDashboard() {
   const [availableSearch, setAvailableSearch] = useState('');
   const [connectedToggles, setConnectedToggles] = useState<{ [key: number]: boolean }>({ 1: true, 2: true, 3: true, 4: true, 5: true, 6: true });
   const [calendarSettings, setCalendarSettings] = useState({ syncEvents: true, createTasks: true, reminders: true, eventDetails: true });
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const toggleConnectedApp = (id: number) => {
     setConnectedToggles((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -176,7 +182,7 @@ export default function PathiiIntegrationsDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+          <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
               <div>
@@ -209,11 +215,11 @@ export default function PathiiIntegrationsDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
           </div>
         </header>
 
@@ -241,7 +247,7 @@ export default function PathiiIntegrationsDashboard() {
                   <h3 className="text-[18px] font-extrabold text-slate-900 leading-tight mb-0.5">Connected Apps</h3>
                   <p className="text-[13px] text-slate-500 font-medium">Manage your connected integrations and sync your data.</p>
                 </div>
-                <button className="text-[13px] font-bold text-[#2563EB] flex items-center gap-1 hover:underline">
+                <button onClick={() => showToast('Showing all connected apps')} className="text-[13px] font-bold text-[#2563EB] flex items-center gap-1 hover:underline">
                   View all <ArrowRight size={14} />
                 </button>
               </div>
@@ -264,8 +270,8 @@ export default function PathiiIntegrationsDashboard() {
                              <span className="truncate">{app.account}</span>
                            </div>
                            <div className="flex items-center gap-2 flex-shrink-0">
-                             <button className="text-[12px] font-bold text-[#2563EB] hover:underline px-1">Manage</button>
-                             <button className="text-slate-400 hover:text-slate-600">
+                             <button onClick={() => showToast(`Managing ${app.name} integration`)} className="text-[12px] font-bold text-[#2563EB] hover:underline px-1">Manage</button>
+                             <button onClick={() => showToast(`More options for ${app.name}`)} className="text-slate-400 hover:text-slate-600">
                                <MoreHorizontal size={16} />
                              </button>
                            </div>
@@ -303,7 +309,7 @@ export default function PathiiIntegrationsDashboard() {
                          <h4 className="text-[14px] font-bold text-slate-900 leading-tight">{app.name}</h4>
                        </div>
                        <p className="text-[12px] text-slate-500 font-medium mb-4 flex-1">{app.desc}</p>
-                       <button className="w-full py-2 bg-white border border-slate-200 hover:border-[#2563EB] hover:text-[#2563EB] text-slate-600 rounded-xl text-[13px] font-bold transition-colors">
+                       <button onClick={() => showToast(`Connected to ${app.name}`)} className="w-full py-2 bg-white border border-slate-200 hover:border-[#2563EB] hover:text-[#2563EB] text-slate-600 rounded-xl text-[13px] font-bold transition-colors">
                          Connect
                        </button>
                     </div>
@@ -330,7 +336,7 @@ export default function PathiiIntegrationsDashboard() {
                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
                    alex@gmail.com
                  </div>
-                 <button className="px-3 py-1.5 border border-[#2563EB] text-[#2563EB] hover:bg-blue-50 rounded-lg text-[12px] font-bold transition-colors">
+                 <button onClick={() => showToast('Managing alex@gmail.com Google account')} className="px-3 py-1.5 border border-[#2563EB] text-[#2563EB] hover:bg-blue-50 rounded-lg text-[12px] font-bold transition-colors">
                    Manage Account
                  </button>
               </div>
@@ -375,7 +381,7 @@ export default function PathiiIntegrationsDashboard() {
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[15px] font-bold text-slate-900">Recently Synced</h3>
-                <button className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
+                <button onClick={() => showToast('Showing full sync history')} className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
                   View all <ArrowRight size={14} />
                 </button>
               </div>
@@ -397,7 +403,7 @@ export default function PathiiIntegrationsDashboard() {
 
             {/* AI Suggestion Card */}
             <div className="bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF] rounded-[24px] border border-[#E0E7FF] shadow-sm p-6 relative">
-              <button className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+              <button onClick={() => showToast('Suggestion dismissed')} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
                 <X size={16} />
               </button>
               
@@ -410,7 +416,7 @@ export default function PathiiIntegrationsDashboard() {
                 I found 5 upcoming events in your calendar. Would you like me to create tasks for them?
               </p>
               
-              <button className="px-4 py-2 border border-[#2563EB] text-[#2563EB] bg-white hover:bg-blue-50 rounded-xl text-[13px] font-bold transition-colors shadow-sm">
+              <button onClick={() => showToast('Creating 5 tasks from upcoming events…')} className="px-4 py-2 border border-[#2563EB] text-[#2563EB] bg-white hover:bg-blue-50 rounded-xl text-[13px] font-bold transition-colors shadow-sm">
                 Create Tasks
               </button>
             </div>
@@ -419,6 +425,14 @@ export default function PathiiIntegrationsDashboard() {
 
         </div>
       </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-slate-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-slate-800">{toast}</span>
+        </div>
+      )}
 
       {/* Global Styles for Scrollbars */}
       <style dangerouslySetInnerHTML={{__html: `

@@ -111,7 +111,7 @@ const EventItem = ({ event }: any) => {
   return null;
 };
 
-const TimelineItem = ({ time, title, subtitle, Icon, dotColor, action }: any) => (
+const TimelineItem = ({ time, title, subtitle, Icon, dotColor, action, actionClick }: any) => (
   <div className="flex gap-4 relative">
     {/* Time Column */}
     <div className="w-16 flex-shrink-0 text-right pt-0.5">
@@ -135,7 +135,7 @@ const TimelineItem = ({ time, title, subtitle, Icon, dotColor, action }: any) =>
       
       {/* Action Button */}
       {action === 'Join' && (
-        <button className="bg-[#2563EB] hover:bg-blue-700 text-white text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm">
+        <button onClick={(e) => { e.stopPropagation(); actionClick(); }} className="bg-[#2563EB] hover:bg-blue-700 text-white text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm">
           Join
         </button>
       )}
@@ -221,7 +221,7 @@ export default function PathiiCalendarDashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+          <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
               <div>
@@ -252,11 +252,11 @@ export default function PathiiCalendarDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened — 2 new alerts')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
           </div>
         </header>
 
@@ -473,13 +473,15 @@ export default function PathiiCalendarDashboard() {
                 
                 <div className="flex flex-col z-10 relative">
                   <div onClick={() => showToast('Opening Google Meet: Team Standup...')}>
-                    <TimelineItem 
-                      time="09:00 AM" title="Team Standup" subtitle="Google Meet" Icon={Video} dotColor="bg-blue-500" action="Join" 
+                    <TimelineItem
+                      time="09:00 AM" title="Team Standup" subtitle="Google Meet" Icon={Video} dotColor="bg-blue-500" action="Join"
+                      actionClick={() => showToast('Joining Team Standup on Google Meet...')}
                     />
                   </div>
                   <div onClick={() => showToast('Opening Zoom Meeting: Client Call...')}>
-                    <TimelineItem 
-                      time="11:00 AM" title="Client Call" subtitle="Zoom Meeting" Icon={Video} dotColor="bg-purple-500" action="Join" 
+                    <TimelineItem
+                      time="11:00 AM" title="Client Call" subtitle="Zoom Meeting" Icon={Video} dotColor="bg-purple-500" action="Join"
+                      actionClick={() => showToast('Joining Client Call on Zoom...')}
                     />
                   </div>
                   <TimelineItem 
@@ -518,7 +520,7 @@ export default function PathiiCalendarDashboard() {
                       <p className="text-[12px] text-slate-500 font-medium">10:00 AM – 11:00 AM</p>
                     </div>
                   </div>
-                  <button className="text-slate-400 hover:text-slate-600"><MoreVertical size={16}/></button>
+                  <button onClick={() => showToast("More options for 'Project Review'")} className="text-slate-400 hover:text-slate-600"><MoreVertical size={16}/></button>
                 </div>
                 
                 <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium mt-3 ml-11">
