@@ -9,6 +9,13 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --animate-fade-in: fade-in 0.25s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 body {
@@ -61,11 +68,4 @@ aside::-webkit-scrollbar,
 .scrollbar-hide {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
-}
-
-/* Suppress dev overlay if present */
-nextjs-portal,
-#nextjs-dev-tools,
-[data-nextjs-dialog-overlay] {
-  display: none !important;
 }
