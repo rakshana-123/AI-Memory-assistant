@@ -117,6 +117,8 @@ export default function AdminDashboard() {
     );
   });
 
+  const isFiltered = visibleRows.length !== tableData.length;
+
   const allVisibleSelected =
     visibleRows.length > 0 && visibleRows.every((row) => selectedTitles.has(row.title));
 
@@ -483,7 +485,11 @@ export default function AdminDashboard() {
 
               {/* Pagination */}
               <div className="p-4 border-t border-slate-100 flex items-center justify-between text-[13px] font-medium text-slate-500">
-                 <span>Showing 1–8 of 5,057 items</span>
+                 <span>
+                   {isFiltered
+                     ? `Showing ${visibleRows.length === 0 ? 0 : 1}–${visibleRows.length} of ${visibleRows.length} items`
+                     : 'Showing 1–8 of 5,057 items'}
+                 </span>
                  <div className="flex items-center gap-1">
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold shadow-sm">1</button>

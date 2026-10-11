@@ -87,6 +87,8 @@ export default function MemoryManagementDashboard() {
     return matchesSearch && (typeFilter === 'All Types' || memory.type === typeFilter);
   });
 
+  const isFiltered = visibleMemories.length !== recentMemories.length;
+
   const allVisibleSelected =
     visibleMemories.length > 0 && visibleMemories.every((memory) => selectedTitles.has(memory.title));
 
@@ -405,7 +407,11 @@ export default function MemoryManagementDashboard() {
                  </div>
                  
                  <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-100">
-                    <span className="text-[12px] text-slate-500 font-medium">Showing 1–5 of 12,482 memories</span>
+                    <span className="text-[12px] text-slate-500 font-medium">
+                      {isFiltered
+                        ? `Showing ${visibleMemories.length === 0 ? 0 : 1}–${visibleMemories.length} of ${visibleMemories.length} memories`
+                        : 'Showing 1–5 of 12,482 memories'}
+                    </span>
                     <div className="flex items-center gap-1">
                       <button className="w-7 h-7 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100"><ChevronRight size={14} className="rotate-180" /></button>
                       <button className="w-7 h-7 rounded flex items-center justify-center bg-blue-600 text-white font-bold text-[12px]">1</button>

@@ -118,6 +118,8 @@ export default function AdminDashboard() {
     );
   });
 
+  const isFiltered = visibleDocuments.length !== documentsList.length;
+
   const allVisibleSelected =
     visibleDocuments.length > 0 && visibleDocuments.every((doc) => selectedNames.has(doc.name));
 
@@ -438,7 +440,11 @@ export default function AdminDashboard() {
 
               {/* Pagination */}
               <div className="p-4 border-t border-slate-100 flex items-center justify-between text-[13px] font-medium text-slate-500">
-                 <span>Showing 1–10 of 3,198 documents</span>
+                 <span>
+                   {isFiltered
+                     ? `Showing ${visibleDocuments.length === 0 ? 0 : 1}–${visibleDocuments.length} of ${visibleDocuments.length} documents`
+                     : 'Showing 1–10 of 3,198 documents'}
+                 </span>
                  <div className="flex items-center gap-1">
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>

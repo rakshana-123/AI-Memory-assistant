@@ -137,6 +137,8 @@ export default function UsersManagementDashboard() {
     );
   });
 
+  const isFiltered = visibleUsers.length !== usersData.length;
+
   const allVisibleSelected =
     visibleUsers.length > 0 && visibleUsers.every((user) => selectedIds.has(user.id));
 
@@ -363,7 +365,11 @@ export default function UsersManagementDashboard() {
               
               {/* Pagination */}
               <div className="py-3 px-5 border-t border-slate-100 flex items-center justify-between text-[13px] bg-slate-50/30">
-                <span className="text-slate-500 font-medium">Showing 1–10 of 1,248 users</span>
+                <span className="text-slate-500 font-medium">
+                  {isFiltered
+                    ? `Showing ${visibleUsers.length === 0 ? 0 : 1}–${visibleUsers.length} of ${visibleUsers.length} users`
+                    : 'Showing 1–10 of 1,248 users'}
+                </span>
                 <div className="flex items-center gap-2">
                   <button className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-400 hover:bg-slate-50">&lt;</button>
                   <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white font-bold">1</button>
