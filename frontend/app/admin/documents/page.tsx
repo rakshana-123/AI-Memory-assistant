@@ -690,6 +690,10 @@ export default function AdminDashboard() {
                      key={i}
                      onClick={() => {
                        if (action.label === 'Export Documents') {
+                         if (docsList.length === 0) {
+                           handleAction('No data to export');
+                           return;
+                         }
                          downloadCsv('pathii-documents.csv', [
                            ['Name', 'Type', 'Uploaded By', 'Category', 'Size', 'Uploaded On'],
                            ...docsList.map((d) => [d.name, d.type.toUpperCase(), d.uploader, d.category, d.size, d.date]),

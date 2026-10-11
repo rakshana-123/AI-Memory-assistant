@@ -162,6 +162,10 @@ export default function AdminDashboard() {
   };
 
   const exportRows = () => {
+    if (rows.length === 0) {
+      showToast('No data to export');
+      return;
+    }
     downloadCsv('pathii-tasks-events.csv', [
       ['Title', 'Type', 'Status', 'Assigned To', 'Due Date', 'Created By'],
       ...rows.map((r) => [r.title, r.type, r.status, r.assignedName, `${r.date} ${r.time}`, r.createdName]),

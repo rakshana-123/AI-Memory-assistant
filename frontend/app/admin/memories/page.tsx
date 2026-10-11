@@ -115,6 +115,10 @@ export default function MemoryManagementDashboard() {
   };
 
   const exportMemories = () => {
+    if (memories.length === 0) {
+      showToast('No data to export');
+      return;
+    }
     downloadCsv('pathii-memories.csv', [
       ['Type', 'Title / Content', 'User', 'Created At', 'Size'],
       ...memories.map((m) => [m.type, m.title, m.user, `${m.date} ${m.time}`, m.size]),

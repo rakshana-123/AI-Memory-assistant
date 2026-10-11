@@ -143,7 +143,6 @@ export default function RolesDashboard() {
   const [matrixSearch, setMatrixSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [matrix, setMatrix] = useState(() => permissionCatalog.map((row) => ({ ...row, states: [] as number[] })));
-  const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
   const [roleForm, setRoleForm] = useState({
     name: '',
     desc: '',
@@ -162,7 +161,7 @@ export default function RolesDashboard() {
     { title: 'Total Roles', value: roles.length, icon: Users, color: 'text-amber-500', bg: 'bg-amber-50' },
     { title: 'Admin Users', value: 0, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
     { title: 'Total Permissions', value: matrix.length, icon: Key, color: 'text-purple-500', bg: 'bg-purple-50' },
-    { title: 'Secure Access', value: '0%', icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { title: 'Secure Access', value: '—', icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50' },
     { title: 'Access Logs', value: 0, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50' },
   ];
 
@@ -393,7 +392,6 @@ export default function RolesDashboard() {
                           <tr 
                             key={i} 
                             onClick={() => {
-                              setSelectedRoleIndex(i);
                               setRoleForm({ name: role.name, desc: role.desc });
                             }}
                             className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors group cursor-pointer"
@@ -552,11 +550,11 @@ export default function RolesDashboard() {
                    </thead>
                    <tbody className="text-[12px]">
                      {roles.length === 0 ? (
-                       <tr>
-                         <td colSpan={3} className="py-2">
-                           <EmptyState icon={Lock} title="No roles yet" subtitle="Create a role to configure its permissions." />
-                         </td>
-                       </tr>
+                      <tr>
+                        <td colSpan={2} className="py-2">
+                          <EmptyState icon={Lock} title="No roles yet" subtitle="Create a role to configure its permissions." />
+                        </td>
+                      </tr>
                      ) : filteredMatrix.length === 0 ? (
                        <tr>
                          <td colSpan={2 + roles.length} className="py-12 text-center text-slate-400 font-medium">

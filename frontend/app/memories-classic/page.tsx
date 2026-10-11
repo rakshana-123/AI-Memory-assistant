@@ -6,7 +6,7 @@ import {
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreVertical, Play, ChevronDown, Plus, 
   Grid, List as ListIcon, X, CheckCircle2, MapPin, AlignLeft,
-  Edit2, ArrowDownUp
+  Edit2, ArrowDownUp, Image as ImageIcon
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -96,6 +96,16 @@ const getTagStyles = (tag: any) => {
     'Project': 'bg-[#EBF3FF] text-[#2563EB]',
   };
   return (styles as any)[tag] || 'bg-slate-100 text-slate-600';
+};
+
+const memoryTypeMeta: Record<string, { label: string; icon: any }> = {
+  voice: { label: 'Voice', icon: Mic },
+  'voice-simple': { label: 'Voice', icon: Mic },
+  note: { label: 'Note', icon: AlignLeft },
+  document: { label: 'Document', icon: FileText },
+  image: { label: 'Image', icon: ImageIcon },
+  location: { label: 'Location', icon: MapPin },
+  link: { label: 'Link', icon: LinkIcon },
 };
 
 const MemoryCard = ({ data, isActive, onCardClick, onPlayClick, onMoreClick }: any) => {
@@ -216,6 +226,7 @@ export default function PathiiMemoriesDashboard() {
   const [activeTab, setActiveTab] = useState('Transcript');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [memories, setMemories] = useState(memoriesData);
   const [sortOrder, setSortOrder] = useState('Newest first');
   const [isPlayerPlaying, setIsPlayerPlaying] = useState(false);
@@ -237,6 +248,7 @@ export default function PathiiMemoriesDashboard() {
       color: 'green',
     };
     setMemories(prev => [newMemory, ...prev]);
+    setSelectedId(nextId);
     showToast('Memory created');
   };
 
@@ -255,6 +267,13 @@ export default function PathiiMemoriesDashboard() {
     const matchesSearch = data.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  const selectedMemory = memories.find(m => m.id === selectedId) || memories[0] || null;
+  const selectedTypeMeta = selectedMemory
+    ? memoryTypeMeta[selectedMemory.type] || { label: 'Memory', icon: Database }
+    : null;
+  const TypeIcon = selectedTypeMeta?.icon;
+  const selectedIsVoice = selectedMemory?.type === 'voice' || selectedMemory?.type === 'voice-simple';
 
   return (
     <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
@@ -398,12 +417,15 @@ export default function PathiiMemoriesDashboard() {
             {/* Cards Grid */}
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-10">
-                {filteredMemories.length > 0 ? filteredMemories.map((data, idx) => (
+                {filteredMemories.length > 0 ? filteredMemories.map((data) => (
                   <MemoryCard
                     key={data.id}
                     data={data}
-                    isActive={idx === 0}
-                    onCardClick={() => showToast(`Opening '${data.title}'`)}
+                    isActive={selectedMemory?.id === data.id}
+                    onCardClick={() => {
+                      setSelectedId(data.id);
+                      showToast(`Opening '${data.title}'`);
+                    }}
                     onPlayClick={() => showToast(`Playing '${data.title}'`)}
                     onMoreClick={() => showToast(`More options for '${data.title}'`)}
                   />
@@ -419,15 +441,15 @@ export default function PathiiMemoriesDashboard() {
           {}
           <div className="w-[400px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-full overflow-hidden max-lg:w-full">
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-              {memories.length > 0 ? (
+              {selectedMemory ? (
               <>
               {/* Header Info */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3 text-[13px] font-medium text-slate-500">
                   <span className="flex items-center gap-1.5 bg-[#EBF3FF] text-[#2563EB] px-2.5 py-1 rounded-md font-bold">
-                    <Mic size={14} /> Voice
+                    {TypeIcon && <TypeIcon size={14} />} {selectedTypeMeta?.label}
                   </span>
-                  Oct 12, 2024 • 10:42 AM
+                  {selectedMemory.date}
                 </div>
                 <button onClick={() => showToast('Details panel closed')} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
                   <X size={20} />
@@ -435,14 +457,15 @@ export default function PathiiMemoriesDashboard() {
               </div>
 
               {/* Title */}
-              <h2 className="text-[22px] font-bold text-slate-900 leading-tight mb-5 tracking-tight">Project idea discussion</h2>
+              <h2 className="text-[22px] font-bold text-slate-900 leading-tight mb-5 tracking-tight">{selectedMemory.title}</h2>
 
-              {/* Audio Player Component */}
+              {/* Audio Player Component (voice memories only) */}
+              {selectedIsVoice && (
               <div className="bg-[#F8FAFC] rounded-2xl p-4 flex items-center gap-4 mb-6 border border-slate-100">
-                <button 
+                <button
                   onClick={() => {
                     setIsPlayerPlaying(!isPlayerPlaying);
-                    showToast(isPlayerPlaying ? 'Paused' : "Playing 'Project idea discussion'");
+                    showToast(isPlayerPlaying ? 'Paused' : `Playing '${selectedMemory.title}'`);
                   }}
                   className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center flex-shrink-0 text-white shadow-md hover:bg-blue-700 transition-colors"
                 >
@@ -454,10 +477,11 @@ export default function PathiiMemoriesDashboard() {
                   ))}
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-[12px] font-semibold text-slate-500">00:00 / 02:14</span>
+                  <span className="text-[12px] font-semibold text-slate-500">00:00 / {selectedMemory.duration ?? '0:00'}</span>
                   <div className="bg-slate-200 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded-md">1x</div>
                 </div>
               </div>
+              )}
 
               {/* Tabs aligned precisely with flex container and bottom border */}
               <div className="flex gap-6 border-b border-slate-200 mb-6">
@@ -552,8 +576,8 @@ export default function PathiiMemoriesDashboard() {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {['Idea', 'Project', 'AI', 'Development'].map(tag => (
-                    <span key={tag} className={`inline-flex items-center text-[12px] font-semibold px-3 py-1 rounded-full ${getTagStyles(tag)}`}>
+                  {selectedMemory.tags.map((tag, idx) => (
+                    <span key={idx} className={`inline-flex items-center text-[12px] font-semibold px-3 py-1 rounded-full ${getTagStyles(tag)}`}>
                       {tag}
                     </span>
                   ))}

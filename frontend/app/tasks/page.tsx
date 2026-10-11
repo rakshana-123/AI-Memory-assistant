@@ -546,7 +546,7 @@ export default function PathiiTasksDashboard() {
               {/* Calendar Widget */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[20px] font-bold text-slate-900">October 2024</h3>
+                  <h3 className="text-[20px] font-bold text-slate-900">October</h3>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => showToast('Previous month')}

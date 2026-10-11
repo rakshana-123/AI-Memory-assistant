@@ -683,6 +683,10 @@ export default function AdminDashboard() {
                        else if (action.label === 'Manage AI Models') showToast('AI model configuration opened');
                        else if (action.label === 'Set Usage Limits') showToast('Usage limit settings opened');
                        else {
+                         if (recentActivityData.length === 0) {
+                           showToast('No data to export');
+                           return;
+                         }
                          downloadCsv('pathii-ai-activity.csv', [
                            ['Prompt / Input', 'Feature', 'User', 'Tokens', 'Response Time', 'Status'],
                            ...recentActivityData.map((r) => [r.prompt, r.feature, r.user, r.tokens, r.time, r.status]),

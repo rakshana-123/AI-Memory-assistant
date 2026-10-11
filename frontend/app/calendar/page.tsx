@@ -172,7 +172,7 @@ export default function PathiiCalendarDashboard() {
   const [newEvent, setNewEvent] = useState({ title: '', time: '10:00 AM', day: 10, color: 'blue', type: 'dot' });
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
 
-  const months = ['October 2024', 'November 2024', 'December 2024'];
+  const months = ['October', 'November', 'December'];
   const days = generateDays();
 
   const totalEvents = Object.values(events).reduce((sum: number, dayEvents: any) => sum + dayEvents.length, 0);
@@ -364,7 +364,7 @@ export default function PathiiCalendarDashboard() {
                   <button 
                     onClick={() => {
                       setCurrentMonthIndex(0);
-                      showToast('Jumped to Today (October 10, 2024)');
+                      showToast('Jumped to today');
                     }}
                     className="px-4 py-1.5 bg-white border border-slate-200 text-slate-700 text-[13px] font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
                   >
@@ -439,7 +439,7 @@ export default function PathiiCalendarDashboard() {
                     <span className="text-[24px] font-extrabold text-slate-900 leading-none">{totalEvents}</span>
                     {totalEvents > 0 && <span className="text-[12px] font-bold text-emerald-500 flex items-center gap-0.5"><ArrowUpIcon size={12} /> this month</span>}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1 font-medium">vs last month</p>
+                  {totalEvents > 0 && <p className="text-[11px] text-slate-400 mt-1 font-medium">vs last month</p>}
                 </div>
               </div>
 
@@ -451,7 +451,7 @@ export default function PathiiCalendarDashboard() {
                 <div>
                   <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Upcoming</p>
                   <span className="text-[24px] font-extrabold text-slate-900 leading-none block">{upcomingCount}</span>
-                  <p className="text-[11px] text-slate-400 mt-1 font-medium">in next 7 days</p>
+                  {upcomingCount > 0 && <p className="text-[11px] text-slate-400 mt-1 font-medium">in next 7 days</p>}
                 </div>
               </div>
 
@@ -463,7 +463,7 @@ export default function PathiiCalendarDashboard() {
                 <div>
                   <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Completed</p>
                   <span className="text-[24px] font-extrabold text-slate-900 leading-none block">{completedCount}</span>
-                  <p className="text-[11px] text-slate-400 mt-1 font-medium">this month</p>
+                  {completedCount > 0 && <p className="text-[11px] text-slate-400 mt-1 font-medium">this month</p>}
                 </div>
               </div>
             </div>
@@ -477,7 +477,7 @@ export default function PathiiCalendarDashboard() {
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-[16px] font-extrabold text-slate-900 tracking-tight">Today's Schedule</h3>
-                <span className="text-[13px] font-semibold text-slate-500">Oct 10, 2024</span>
+                <span className="text-[13px] font-semibold text-slate-500">Today</span>
               </div>
 
               {scheduleData.length > 0 ? (
