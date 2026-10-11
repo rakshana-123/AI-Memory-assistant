@@ -17,11 +17,55 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Hide scrollbars everywhere while keeping scroll functionality */
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* Force hide all scrollbars everywhere while preserving full scrolling ability */
+html,
+body,
+*,
+*::before,
+*::after {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
-*::-webkit-scrollbar {
-  display: none;
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+div::-webkit-scrollbar,
+nav::-webkit-scrollbar,
+main::-webkit-scrollbar,
+aside::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  display: none !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  display: none !important;
+  background: transparent !important;
+}
+
+.custom-scrollbar,
+.scrollbar-hide {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Suppress dev overlay if present */
+nextjs-portal,
+#nextjs-dev-tools,
+[data-nextjs-dialog-overlay] {
+  display: none !important;
 }

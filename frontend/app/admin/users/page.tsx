@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, Users, Database, FileText, CalendarCheck, 
   Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
-  Settings, Search, ChevronDown, MoreVertical, Plus, 
+  Settings, Search, ChevronDown, MoreVertical, Plus, ChevronRight,
   Brain, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight,
   Filter, UserPlus, LogIn, Upload, Layers
 } from 'lucide-react';
@@ -113,10 +113,14 @@ export default function UsersManagementDashboard() {
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [teamFilter, setTeamFilter] = useState('All Teams');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [usersList, setUsersList] = useState(usersData);
+  const [newUser, setNewUser] = useState({ name: '', email: '', plan: 'Pro', team: 'Development' });
 
   const tabMatch = userTabs.find((tab) => tab.label === activeTab) ?? userTabs[0];
 
-  const visibleUsers = usersData.filter((user) => {
+  const visibleUsers = usersList.filter((user) => {
     const header = headerQuery.trim().toLowerCase();
     const table = tableQuery.trim().toLowerCase();
     const matchesSearch =
@@ -137,7 +141,7 @@ export default function UsersManagementDashboard() {
     );
   });
 
-  const isFiltered = visibleUsers.length !== usersData.length;
+  const isFiltered = visibleUsers.length !== usersList.length;
 
   const allVisibleSelected =
     visibleUsers.length > 0 && visibleUsers.every((user) => selectedIds.has(user.id));
@@ -167,11 +171,31 @@ export default function UsersManagementDashboard() {
     });
   };
 
+  const handleCreateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUser.name.trim() || !newUser.email.trim()) return;
+    const created = {
+      id: Date.now(),
+      name: newUser.name.trim(),
+      email: newUser.email.trim(),
+      plan: newUser.plan,
+      status: 'Active',
+      team: newUser.team,
+      joined: 'Just now',
+      lastActive: 'Just now',
+      initials: newUser.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2),
+      bg: 'bg-blue-100 text-blue-600',
+    };
+    setUsersList([created, ...usersList]);
+    setNewUser({ name: '', email: '', plan: 'Pro', team: 'Development' });
+    setIsAddModalOpen(false);
+  };
+
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
-      {}
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      {/* Sidebar */}
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -196,13 +220,32 @@ export default function UsersManagementDashboard() {
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
+
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
+          <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+            <div className="flex items-center gap-3">
+              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div>
+                <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
+                <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-slate-400" />
+          </NextLink>
+          <NextLink 
+            href="/"
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 text-[12px] font-bold transition-all border border-slate-200"
+          >
+            <span>← Back to User View</span>
+          </NextLink>
+        </div>
       </aside>
 
-      {}
+      {/* Main Column */}
       <main className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-white/50 backdrop-blur-sm">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-white/70 backdrop-blur-sm sticky top-0 z-20">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -220,7 +263,7 @@ export default function UsersManagementDashboard() {
           <div className="flex items-center gap-4 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute 1 top-1.5 right-1.5 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 pl-2 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-8 h-8 rounded-full object-cover shadow-sm" />
@@ -230,9 +273,9 @@ export default function UsersManagementDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar flex gap-6 max-lg:flex-col">
+        <div className="flex-1 px-4 lg:px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
           
-          {}
+          {/* Main Left Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title Section */}
@@ -246,7 +289,10 @@ export default function UsersManagementDashboard() {
                    <p className="text-[14px] text-slate-500 font-medium">Manage users, roles, plans and access across Pathii.</p>
                  </div>
                </div>
-               <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-semibold transition-colors shadow-sm">
+               <button 
+                 onClick={() => setIsAddModalOpen(true)}
+                 className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-semibold transition-colors shadow-sm"
+               >
                  <Plus size={18} /> Add User
                </button>
             </div>
@@ -320,8 +366,8 @@ export default function UsersManagementDashboard() {
             </div>
 
             {/* Data Table */}
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm flex flex-col flex-1 overflow-hidden">
-              <div className="overflow-x-auto flex-1">
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm flex flex-col">
+              <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-[12px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
@@ -337,49 +383,80 @@ export default function UsersManagementDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleUsers.map((user) => (
-                      <tr key={user.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4"><input type="checkbox" checked={selectedIds.has(user.id)} onChange={() => toggleUser(user.id)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
-                        <td className="py-3 px-2 flex items-center gap-3 font-bold text-slate-900">
-                          {user.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
-                          ) : (
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
-                          )}
-                          {user.name}
-                        </td>
-                        <td className="py-3 px-2 text-slate-500 font-medium">{user.email}</td>
-                        <td className="py-3 px-2"><PlanBadge plan={user.plan} /></td>
-                        <td className="py-3 px-2"><StatusBadge status={user.status} /></td>
-                        <td className="py-3 px-2 text-slate-500 font-medium">{user.team}</td>
-                        <td className="py-3 px-2 text-slate-500 font-medium">{user.joined}</td>
-                        <td className="py-3 px-2 text-slate-500 font-medium">{user.lastActive}</td>
-                        <td className="py-3 px-4 text-right">
-                          <button className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><MoreVertical size={16} /></button>
+                    {visibleUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="py-12 text-center text-slate-400 font-medium">
+                          No users found matching your filters.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      visibleUsers.map((user) => (
+                        <tr key={user.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                          <td className="py-3 px-4"><input type="checkbox" checked={selectedIds.has(user.id)} onChange={() => toggleUser(user.id)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
+                          <td className="py-3 px-2 flex items-center gap-3 font-bold text-slate-900">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
+                            ) : (
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
+                            )}
+                            {user.name}
+                          </td>
+                          <td className="py-3 px-2 text-slate-500 font-medium">{user.email}</td>
+                          <td className="py-3 px-2"><PlanBadge plan={user.plan} /></td>
+                          <td className="py-3 px-2"><StatusBadge status={user.status} /></td>
+                          <td className="py-3 px-2 text-slate-500 font-medium">{user.team}</td>
+                          <td className="py-3 px-2 text-slate-500 font-medium">{user.joined}</td>
+                          <td className="py-3 px-2 text-slate-500 font-medium">{user.lastActive}</td>
+                          <td className="py-3 px-4 text-right">
+                            <button className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><MoreVertical size={16} /></button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
               
               {/* Pagination */}
-              <div className="py-3 px-5 border-t border-slate-100 flex items-center justify-between text-[13px] bg-slate-50/30">
+              <div className="py-3 px-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px] bg-slate-50/30">
                 <span className="text-slate-500 font-medium">
                   {isFiltered
                     ? `Showing ${visibleUsers.length === 0 ? 0 : 1}–${visibleUsers.length} of ${visibleUsers.length} users`
                     : 'Showing 1–10 of 1,248 users'}
                 </span>
-                <div className="flex items-center gap-2">
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-400 hover:bg-slate-50">&lt;</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white font-bold">1</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">2</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">3</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">4</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">5</button>
-                  <span className="text-slate-400">...</span>
-                  <button className="w-8 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">125</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-600 hover:bg-slate-50">&gt;</button>
+                <div className="flex items-center gap-1.5">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-400 hover:bg-slate-50"
+                  >
+                    &lt;
+                  </button>
+                  {[1, 2, 3, 4, 5].map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-7 h-7 flex items-center justify-center rounded font-bold transition-colors ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'border border-transparent text-slate-600 hover:bg-slate-100 font-medium'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+                  <span className="text-slate-400 px-1">...</span>
+                  <button 
+                    onClick={() => setCurrentPage(125)}
+                    className="w-8 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-100 font-medium"
+                  >
+                    125
+                  </button>
+                  <button 
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  >
+                    &gt;
+                  </button>
                 </div>
                 <button className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded bg-white text-slate-600 font-medium hover:bg-slate-50">
                   10 per page <ChevronDown size={14} />
@@ -389,8 +466,8 @@ export default function UsersManagementDashboard() {
 
           </div>
 
-          {}
-          <div className="w-[340px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
+          {/* Right Sidebar */}
+          <div className="w-full xl:w-[340px] flex-shrink-0 flex flex-col gap-6">
             
             {/* User Plan Distribution */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
@@ -532,20 +609,109 @@ export default function UsersManagementDashboard() {
         </div>
       </main>
 
+      {/* Add User Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[18px] font-bold text-slate-900">Add New User</h3>
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div>
+                <label className="block text-[12px] font-bold text-slate-700 mb-1">Full Name</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. Rahul Sharma"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-bold text-slate-700 mb-1">Email Address</label>
+                <input 
+                  type="email" 
+                  required
+                  placeholder="e.g. rahul@example.com"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-700 mb-1">Plan</label>
+                  <select 
+                    value={newUser.plan}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, plan: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                  >
+                    <option value="Free">Free</option>
+                    <option value="Pro">Pro</option>
+                    <option value="Team">Team</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-700 mb-1">Team</label>
+                  <select 
+                    value={newUser.team}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, team: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                  >
+                    <option value="Development">Development</option>
+                    <option value="Design">Design</option>
+                    <option value="Product">Product</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Research">Research</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-[13px] font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[13px] font-bold transition-colors shadow-sm"
+                >
+                  Create User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

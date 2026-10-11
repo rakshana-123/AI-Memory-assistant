@@ -120,10 +120,10 @@ const getIntensityColor = (intensity: any) => {
 
 export default function PathiiInsightsDashboard() {
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 sticky top-0 h-screen z-20">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
             <BrainLogo className="w-8 h-8" />
@@ -161,11 +161,11 @@ export default function PathiiInsightsDashboard() {
         </div>
       </aside>
 
-      {}
+      {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -188,10 +188,10 @@ export default function PathiiInsightsDashboard() {
         </header>
 
         {/* Scrollable Layout Container */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
           
-          {}
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2 pb-2">
+          {/* Main Left Column */}
+          <div className="flex-1 flex flex-col min-w-0">
             
             {/* Header & Date Picker */}
             <div className="flex items-center justify-between mb-6 flex-shrink-0">
@@ -213,7 +213,7 @@ export default function PathiiInsightsDashboard() {
             </div>
 
             {}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 flex-shrink-0">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 flex-shrink-0">
               {/* Stat 1 */}
               <div className="bg-white p-5 rounded-[20px] border border-slate-200 shadow-sm flex items-start gap-4">
                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
@@ -222,7 +222,7 @@ export default function PathiiInsightsDashboard() {
                  <div>
                    <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">128</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">Total Memories</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1">↑ 24% <span className="font-medium text-slate-400">vs last month</span></p>
+                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 24% <span className="font-medium text-slate-400">vs last month</span></p>
                  </div>
               </div>
 
@@ -234,7 +234,7 @@ export default function PathiiInsightsDashboard() {
                  <div>
                    <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">32</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">Tasks Created</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1">↑ 18% <span className="font-medium text-slate-400">vs last month</span></p>
+                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 18% <span className="font-medium text-slate-400">vs last month</span></p>
                  </div>
               </div>
 
@@ -246,7 +246,7 @@ export default function PathiiInsightsDashboard() {
                  <div>
                    <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">18</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">People Interacted</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1">↑ 40% <span className="font-medium text-slate-400">vs last month</span></p>
+                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 40% <span className="font-medium text-slate-400">vs last month</span></p>
                  </div>
               </div>
 
@@ -258,7 +258,7 @@ export default function PathiiInsightsDashboard() {
                  <div>
                    <h3 className="text-[22px] font-extrabold text-slate-900 leading-none mb-1">12</h3>
                    <p className="text-[13px] text-slate-500 font-medium mb-2">Events Scheduled</p>
-                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1">↑ 33% <span className="font-medium text-slate-400">vs last month</span></p>
+                   <p className="text-[12px] font-bold text-emerald-600 flex items-center gap-1 whitespace-nowrap">↑ 33% <span className="font-medium text-slate-400">vs last month</span></p>
                  </div>
               </div>
             </div>
@@ -421,8 +421,8 @@ export default function PathiiInsightsDashboard() {
 
           </div>
 
-          {}
-          <div className="w-[360px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
+          {/* Right Sidebar Column */}
+          <div className="w-full xl:w-[360px] flex flex-col gap-6 flex-shrink-0 h-fit">
             
             {/* AI Insights Card */}
             <div className="bg-gradient-to-br from-[#F8FAFC] to-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative overflow-hidden">
@@ -624,17 +624,18 @@ export default function PathiiInsightsDashboard() {
             scrollbar-width: none;
         }
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

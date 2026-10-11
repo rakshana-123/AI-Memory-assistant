@@ -430,17 +430,18 @@ export default function PathiiIntegrationsDashboard() {
             scrollbar-width: none;
         }
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

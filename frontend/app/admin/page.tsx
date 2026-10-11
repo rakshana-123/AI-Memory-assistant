@@ -92,9 +92,10 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      {/* Sidebar */}
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -120,8 +121,8 @@ export default function AdminDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-100 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
+          <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
               <div>
@@ -130,14 +131,20 @@ export default function AdminDashboard() {
               </div>
             </div>
             <ChevronRight size={18} className="text-slate-400" />
-          </div>
+          </NextLink>
+          <NextLink 
+            href="/"
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 text-[12px] font-bold transition-all border border-slate-200"
+          >
+            <span>← Back to User View</span>
+          </NextLink>
         </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -161,7 +168,7 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 max-lg:flex-col">
+        <div className="flex-1 px-4 lg:px-8 py-6 pb-20 flex gap-6 flex-col xl:flex-row">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -178,7 +185,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
               <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Users" value="1,248" trend="12%" trendUp={true} />
               <StatCard icon={Database} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Memories" value="8,932" trend="28%" trendUp={true} />
               <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-50" title="Documents" value="2,461" trend="34%" trendUp={true} />
@@ -187,7 +194,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-4">
               {/* User Growth Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <div className="flex items-center justify-between mb-4">
@@ -361,7 +368,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-4">
               {/* Recent Users Table */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                  <div className="flex items-center justify-between mb-4">
@@ -369,7 +376,9 @@ export default function AdminDashboard() {
                      <Users size={18} className="text-blue-600" />
                      <h3 className="text-[16px] font-bold text-slate-900">Recent Users</h3>
                    </div>
-                   <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                   <NextLink href="/admin/users" className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">
+                     View all <ArrowUpRight size={14} />
+                   </NextLink>
                  </div>
 
                  <div className="overflow-x-auto">
@@ -385,29 +394,37 @@ export default function AdminDashboard() {
                        </tr>
                      </thead>
                      <tbody className="text-[13px]">
-                       {visibleUsers.map((user) => (
-                         <tr key={user.email} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                           <td className="py-3 flex items-center gap-3 font-bold text-slate-900">
-                             {user.avatar ? (
-                               <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
-                             ) : (
-                               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
-                             )}
-                             {user.name}
-                           </td>
-                           <td className="py-3 text-slate-500 font-medium">{user.email}</td>
-                           <td className="py-3">
-                             <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${user.planColor}`}>{user.plan}</span>
-                           </td>
-                           <td className="py-3 text-slate-500 font-medium">{user.joined}</td>
-                           <td className="py-3">
-                             <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${user.statusColor}`}>{user.status}</span>
-                           </td>
-                           <td className="py-3 text-right">
-                             <button className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
+                       {visibleUsers.length === 0 ? (
+                         <tr>
+                           <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                             No users found matching "{searchQuery}"
                            </td>
                          </tr>
-                       ))}
+                       ) : (
+                         visibleUsers.map((user) => (
+                           <tr key={user.email} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                             <td className="py-3 flex items-center gap-3 font-bold text-slate-900 whitespace-nowrap">
+                               {user.avatar ? (
+                                 <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
+                               ) : (
+                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
+                               )}
+                               {user.name}
+                             </td>
+                             <td className="py-3 text-slate-500 font-medium whitespace-nowrap">{user.email}</td>
+                             <td className="py-3 whitespace-nowrap">
+                               <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${user.planColor}`}>{user.plan}</span>
+                             </td>
+                             <td className="py-3 text-slate-500 font-medium whitespace-nowrap">{user.joined}</td>
+                             <td className="py-3 whitespace-nowrap">
+                               <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${user.statusColor}`}>{user.status}</span>
+                             </td>
+                             <td className="py-3 text-right">
+                               <NextLink href="/admin/users" className="text-slate-400 hover:text-slate-600 p-1 inline-block"><MoreVertical size={16} /></NextLink>
+                             </td>
+                           </tr>
+                         ))
+                       )}
                      </tbody>
                    </table>
                  </div>
@@ -453,7 +470,7 @@ export default function AdminDashboard() {
 
           </div>
 
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6">
             
             {/* Date Picker Button */}
             <button className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
@@ -468,7 +485,9 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent Activities</h3>
-                <button className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <NextLink href="/admin/analytics" className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">
+                  View all <ArrowUpRight size={14} />
+                </NextLink>
               </div>
 
               <div className="space-y-4">
@@ -575,17 +594,18 @@ export default function AdminDashboard() {
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

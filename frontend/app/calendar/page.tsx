@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreVertical, Plus, ChevronDown, ChevronLeft, MapPin, CheckCircle2,
-  Video, Clock, RefreshCw, Sparkles
+  Video, Clock, RefreshCw, Sparkles, X, Check
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -155,13 +155,48 @@ const TimelineItem = ({ time, title, subtitle, Icon, dotColor, action }: any) =>
 
 
 export default function PathiiCalendarDashboard() {
+  const [viewMode, setViewMode] = useState<'Month' | 'Week' | 'Day'>('Month');
+  const [events, setEvents] = useState<any>(calendarEvents);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+  const [newEvent, setNewEvent] = useState({ title: '', time: '10:00 AM', day: 10, color: 'blue', type: 'dot' });
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+
+  const months = ['October 2024', 'November 2024', 'December 2024'];
   const days = generateDays();
 
+  const showToast = (msg: string) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 3500);
+  };
+
+  const handleAddEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEvent.title.trim()) return;
+
+    setEvents((prev: any) => {
+      const existing = prev[newEvent.day] || [];
+      return {
+        ...prev,
+        [newEvent.day]: [...existing, {
+          title: newEvent.title.trim(),
+          time: newEvent.time,
+          color: newEvent.color,
+          type: newEvent.type
+        }]
+      };
+    });
+
+    setIsAddEventModalOpen(false);
+    setNewEvent({ title: '', time: '10:00 AM', day: 10, color: 'blue', type: 'dot' });
+    showToast(`Event "${newEvent.title}" added to Oct ${newEvent.day}!`);
+  };
+
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 sticky top-0 h-screen z-20">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
             <BrainLogo className="w-8 h-8" />
@@ -199,11 +234,11 @@ export default function PathiiCalendarDashboard() {
         </div>
       </aside>
 
-      { }
+      {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -225,11 +260,21 @@ export default function PathiiCalendarDashboard() {
           </div>
         </header>
 
-        {/* Two Column Layout Container */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        {/* Feedback Alert Toast */}
+        {feedback && (
+          <div className="mx-8 mt-4 p-3 bg-blue-50 border border-blue-200 text-[#2563EB] rounded-xl text-[14px] font-semibold flex items-center justify-between animate-fade-in shadow-sm">
+            <span>{feedback}</span>
+            <button onClick={() => setFeedback(null)} className="p-1 hover:bg-blue-100 rounded-md">
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* Responsive Two Column Layout Container */}
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
           
-          {}
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+          {/* Main Left Column */}
+          <div className="flex-1 flex flex-col min-w-0">
             
             {/* Header Hero */}
             <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-200 flex items-center justify-between mb-6 flex-shrink-0 max-lg:flex-col max-lg:items-start max-lg:gap-4">
@@ -241,34 +286,80 @@ export default function PathiiCalendarDashboard() {
                 <h2 className="text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight mb-1">Your Schedule</h2>
                 <p className="text-[15px] text-slate-500 font-medium">Stay on top of your meetings, tasks and important events.</p>
               </div>
-              <div className="bg-slate-100 p-1 rounded-full flex items-center">
-                 <button className="px-5 py-2 rounded-full bg-[#2563EB] text-white text-[13px] font-bold shadow-sm">Month</button>
-                 <button className="px-5 py-2 rounded-full text-slate-600 hover:text-slate-900 text-[13px] font-semibold transition-colors">Week</button>
-                 <button className="px-5 py-2 rounded-full text-slate-600 hover:text-slate-900 text-[13px] font-semibold transition-colors">Day</button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsAddEventModalOpen(true)}
+                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-[13px] font-bold rounded-full shadow-sm flex items-center gap-1.5 transition-colors"
+                >
+                  <Plus size={16} /> Add Event
+                </button>
+                <div className="bg-slate-100 p-1 rounded-full flex items-center">
+                   <button 
+                     onClick={() => { setViewMode('Month'); showToast('Switched to Month view'); }} 
+                     className={`px-5 py-2 rounded-full text-[13px] font-bold transition-colors ${viewMode === 'Month' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                   >
+                     Month
+                   </button>
+                   <button 
+                     onClick={() => { setViewMode('Week'); showToast('Switched to Week view'); }} 
+                     className={`px-5 py-2 rounded-full text-[13px] font-bold transition-colors ${viewMode === 'Week' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                   >
+                     Week
+                   </button>
+                   <button 
+                     onClick={() => { setViewMode('Day'); showToast('Switched to Day view'); }} 
+                     className={`px-5 py-2 rounded-full text-[13px] font-bold transition-colors ${viewMode === 'Day' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                   >
+                     Day
+                   </button>
+                </div>
               </div>
             </div>
 
             {/* Calendar Main Component */}
-            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-1 overflow-hidden">
+            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col overflow-hidden">
               
               {/* Calendar Controls */}
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between max-lg:flex-wrap max-lg:gap-2">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
-                    <button className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors">
+                    <button 
+                      onClick={() => {
+                        const newIdx = Math.max(0, currentMonthIndex - 1);
+                        setCurrentMonthIndex(newIdx);
+                        showToast(`Viewing ${months[newIdx]}`);
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors"
+                    >
                       <ChevronLeft size={20} />
                     </button>
-                    <button className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors">
+                    <button 
+                      onClick={() => {
+                        const newIdx = Math.min(months.length - 1, currentMonthIndex + 1);
+                        setCurrentMonthIndex(newIdx);
+                        showToast(`Viewing ${months[newIdx]}`);
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors"
+                    >
                       <ChevronRight size={20} />
                     </button>
                   </div>
-                  <h3 className="text-[18px] font-bold text-slate-900">October 2024</h3>
+                  <h3 className="text-[18px] font-bold text-slate-900">{months[currentMonthIndex]}</h3>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button className="px-4 py-1.5 bg-white border border-slate-200 text-slate-700 text-[13px] font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors">
+                  <button 
+                    onClick={() => {
+                      setCurrentMonthIndex(0);
+                      showToast('Jumped to Today (October 10, 2024)');
+                    }}
+                    className="px-4 py-1.5 bg-white border border-slate-200 text-slate-700 text-[13px] font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
+                  >
                     Today
                   </button>
-                  <button className="p-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 transition-colors">
+                  <button 
+                    onClick={() => showToast('Calendar view synced')}
+                    className="p-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
+                  >
                     <CalendarIcon size={18} />
                   </button>
                 </div>
@@ -284,25 +375,33 @@ export default function PathiiCalendarDashboard() {
               </div>
 
               {/* Grid Body */}
-              <div className="flex-1 grid grid-cols-7 grid-rows-5 bg-slate-50 gap-px border-l border-slate-100 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-7 bg-slate-50 gap-px border-l border-slate-100">
                 {days.map((d, index) => {
-                  const events = (calendarEvents as any)[d.day] || [];
-                  // Only show events if it's the current month (or adjust logic if you want prev month events shown)
-                  const displayEvents = d.isCurrentMonth ? events : [];
+                  const dayEvents = (events as any)[d.day] || [];
+                  const displayEvents = d.isCurrentMonth ? dayEvents : [];
 
                   return (
                     <div 
                       key={index} 
-                      className={`bg-white p-1.5 min-h-[90px] flex flex-col relative group ${!d.isCurrentMonth ? 'text-slate-400 bg-slate-50/50' : 'text-slate-700'}`}
+                      onClick={() => {
+                        if (d.isCurrentMonth) {
+                          setNewEvent(prev => ({ ...prev, day: d.day }));
+                          setIsAddEventModalOpen(true);
+                        }
+                      }}
+                      className={`bg-white p-2 min-h-[95px] flex flex-col relative group cursor-pointer hover:bg-blue-50/20 transition-colors ${!d.isCurrentMonth ? 'text-slate-400 bg-slate-50/50' : 'text-slate-700'}`}
                     >
-                      <div className="flex justify-start mb-1 px-1">
+                      <div className="flex justify-between items-center mb-1 px-1">
                         <span className={`text-[13px] font-bold w-7 h-7 flex items-center justify-center rounded-full ${
                           d.isToday ? 'bg-[#2563EB] text-white shadow-sm' : ''
                         }`}>
                           {d.day}
                         </span>
+                        <span className="opacity-0 group-hover:opacity-100 text-blue-500 transition-opacity">
+                          <Plus size={14} />
+                        </span>
                       </div>
-                      <div className="flex-1 flex flex-col gap-[2px] overflow-hidden">
+                      <div className="flex-1 flex flex-col gap-[2px]">
                         {displayEvents.map((event: any, i: any) => (
                           <EventItem key={i} event={event} />
                         ))}
@@ -313,10 +412,10 @@ export default function PathiiCalendarDashboard() {
               </div>
             </div>
 
-            {}
-            <div className="flex gap-4 mt-6 flex-shrink-0 max-lg:flex-col">
+            {/* Bottom Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
               {/* Total Events */}
-              <div className="flex-1 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
                   <CalendarIcon size={24} />
                 </div>
@@ -331,7 +430,7 @@ export default function PathiiCalendarDashboard() {
               </div>
 
               {/* Upcoming */}
-              <div className="flex-1 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center flex-shrink-0">
                   <Clock size={24} />
                 </div>
@@ -343,7 +442,7 @@ export default function PathiiCalendarDashboard() {
               </div>
 
               {/* Completed */}
-              <div className="flex-1 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0">
                   <CheckCircle2 size={24} />
                 </div>
@@ -357,8 +456,8 @@ export default function PathiiCalendarDashboard() {
 
           </div>
 
-          {}
-          <div className="w-[340px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
+          {/* Right Sidebar Column */}
+          <div className="w-full xl:w-[340px] flex flex-col gap-6 flex-shrink-0 h-fit">
             
             {/* Today's Schedule Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative">
@@ -373,12 +472,16 @@ export default function PathiiCalendarDashboard() {
                 <div className="absolute left-[70px] top-2 bottom-6 w-px bg-slate-200 z-0"></div>
                 
                 <div className="flex flex-col z-10 relative">
-                  <TimelineItem 
-                    time="09:00 AM" title="Team Standup" subtitle="Google Meet" Icon={Video} dotColor="bg-blue-500" action="Join" 
-                  />
-                  <TimelineItem 
-                    time="11:00 AM" title="Client Call" subtitle="Zoom Meeting" Icon={Video} dotColor="bg-purple-500" action="Join" 
-                  />
+                  <div onClick={() => showToast('Opening Google Meet: Team Standup...')}>
+                    <TimelineItem 
+                      time="09:00 AM" title="Team Standup" subtitle="Google Meet" Icon={Video} dotColor="bg-blue-500" action="Join" 
+                    />
+                  </div>
+                  <div onClick={() => showToast('Opening Zoom Meeting: Client Call...')}>
+                    <TimelineItem 
+                      time="11:00 AM" title="Client Call" subtitle="Zoom Meeting" Icon={Video} dotColor="bg-purple-500" action="Join" 
+                    />
+                  </div>
                   <TimelineItem 
                     time="02:00 PM" title="Project Review" subtitle="Meeting Room A" Icon={MapPin} dotColor="bg-emerald-500" action="In 1h" 
                   />
@@ -396,7 +499,10 @@ export default function PathiiCalendarDashboard() {
                   <CalendarIcon size={16} className="text-[#2563EB]" />
                   <h3 className="text-[14px] font-bold text-slate-900">Next Event</h3>
                 </div>
-                <button className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline">
+                <button 
+                  onClick={() => showToast('Viewing all upcoming events')}
+                  className="text-[12px] font-semibold text-[#2563EB] flex items-center gap-1 hover:underline"
+                >
                   View all <ChevronRight size={14} />
                 </button>
               </div>
@@ -420,7 +526,10 @@ export default function PathiiCalendarDashboard() {
                   <span>Meeting Room A</span>
                 </div>
 
-                <button className="mt-4 w-full bg-white border border-blue-200 text-[#2563EB] hover:bg-blue-50 font-bold text-[13px] py-2 rounded-lg transition-colors shadow-sm">
+                <button 
+                  onClick={() => showToast('Event opened: Project Review')}
+                  className="mt-4 w-full bg-white border border-blue-200 text-[#2563EB] hover:bg-blue-50 font-bold text-[13px] py-2 rounded-lg transition-colors shadow-sm"
+                >
                   Open in Calendar
                 </button>
               </div>
@@ -430,29 +539,41 @@ export default function PathiiCalendarDashboard() {
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
               <h3 className="text-[16px] font-extrabold text-slate-900 tracking-tight mb-5">Quick Actions</h3>
               <div className="grid grid-cols-4 gap-2">
-                <div className="flex flex-col items-center gap-2 cursor-pointer group">
+                <div 
+                  onClick={() => setIsAddEventModalOpen(true)}
+                  className="flex flex-col items-center gap-2 cursor-pointer group"
+                >
                   <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-100 transition-colors border border-blue-100/50">
                     <CalendarIcon size={20} />
                   </div>
-                  <span className="text-[11px] font-semibold text-slate-600">Add Event</span>
+                  <span className="text-[11px] font-semibold text-slate-600 text-center">Add Event</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 cursor-pointer group">
+                <NextLink 
+                  href="/tasks"
+                  className="flex flex-col items-center gap-2 cursor-pointer group"
+                >
                   <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-100 transition-colors border border-emerald-100/50">
                     <CheckSquare size={20} />
                   </div>
-                  <span className="text-[11px] font-semibold text-slate-600">Add Task</span>
-                </div>
-                <div className="flex flex-col items-center gap-2 cursor-pointer group">
+                  <span className="text-[11px] font-semibold text-slate-600 text-center">Add Task</span>
+                </NextLink>
+                <div 
+                  onClick={() => showToast('Press ⌘K to search anywhere in Pathii')}
+                  className="flex flex-col items-center gap-2 cursor-pointer group"
+                >
                   <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-100 transition-colors border border-purple-100/50">
                     <Search size={20} />
                   </div>
-                  <span className="text-[11px] font-semibold text-slate-600">Search</span>
+                  <span className="text-[11px] font-semibold text-slate-600 text-center">Search</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 cursor-pointer group">
+                <div 
+                  onClick={() => showToast('Calendar synced with Google Calendar and Outlook')}
+                  className="flex flex-col items-center gap-2 cursor-pointer group"
+                >
                   <div className="w-12 h-12 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center group-hover:bg-sky-100 transition-colors border border-sky-100/50">
                     <RefreshCw size={20} />
                   </div>
-                  <span className="text-[11px] font-semibold text-slate-600">Sync</span>
+                  <span className="text-[11px] font-semibold text-slate-600 text-center">Sync</span>
                 </div>
               </div>
             </div>
@@ -460,7 +581,7 @@ export default function PathiiCalendarDashboard() {
             {/* Promo Card */}
             <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[24px] border border-blue-100/50 p-6 relative overflow-hidden flex flex-col justify-center">
               <div className="absolute right-0 bottom-0 opacity-20 transform translate-x-1/4 translate-y-1/4">
-                <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width={120} height={120} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="50" cy="50" r="50" fill="url(#paint0_linear)" />
                   <defs>
                     <linearGradient id="paint0_linear" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
@@ -482,6 +603,92 @@ export default function PathiiCalendarDashboard() {
           </div>
 
         </div>
+
+        {/* Add Event Modal */}
+        {isAddEventModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 animate-fade-in">
+              <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-[18px]">
+                  <CalendarIcon className="text-[#2563EB]" size={20} />
+                  <span>Add New Event</span>
+                </div>
+                <button 
+                  onClick={() => setIsAddEventModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleAddEvent} className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">Event Title</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="e.g. Design Strategy Sync"
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1">Date (Oct 1-31)</label>
+                    <input 
+                      type="number"
+                      min={1}
+                      max={31}
+                      required
+                      value={newEvent.day}
+                      onChange={(e) => setNewEvent({ ...newEvent, day: parseInt(e.target.value) || 1 })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1">Time</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 10:00 AM"
+                      value={newEvent.time}
+                      onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">Color Theme</label>
+                  <select 
+                    value={newEvent.color}
+                    onChange={(e) => setNewEvent({ ...newEvent, color: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                  >
+                    <option value="blue">Blue (Primary)</option>
+                    <option value="purple">Purple (Meeting)</option>
+                    <option value="emerald">Emerald (Sync)</option>
+                    <option value="amber">Amber (Important)</option>
+                    <option value="rose">Rose (Personal)</option>
+                  </select>
+                </div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsAddEventModalOpen(false)}
+                    className="px-4 py-2 text-slate-600 hover:bg-slate-100 font-semibold text-[13px] rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-5 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-[13px] rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
+                  >
+                    <Check size={16} /> Save Event
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
 
       {}
@@ -494,17 +701,18 @@ export default function PathiiCalendarDashboard() {
             scrollbar-width: none;
         }
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

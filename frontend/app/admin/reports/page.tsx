@@ -6,7 +6,7 @@ import {
   Cpu, Link, BarChart2, Bell, ShieldCheck, 
   Settings, Search, ChevronDown, MoreVertical, Plus, ChevronRight, 
   Brain, ArrowUpRight, Clock, Download, FileSpreadsheet, 
-  FileBox, FileClock, Filter, Settings2, FileBarChart
+  FileBox, FileClock, Filter, Settings2, FileBarChart, CheckCircle2
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
@@ -112,11 +112,46 @@ const StatusPill = ({ status }: any) => {
 };
 
 export default function App() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+
+  const handleAction = (msg: string) => {
+    setActionFeedback(msg);
+    setTimeout(() => setActionFeedback(null), 3500);
+  };
+
+  const visibleReports = tableData.filter(row => {
+    const matchesSearch = row.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+                          row.creator.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+                          row.type.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    const matchesType = typeFilter === 'All' || row.type.toLowerCase() === typeFilter.toLowerCase();
+    const matchesStatus = statusFilter === 'All' || row.status.toLowerCase() === statusFilter.toLowerCase();
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === visibleReports.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(visibleReports.map((_, i) => i));
+    }
+  };
+
+  const toggleSelectRow = (idx: number) => {
+    setSelectedIds(prev =>
+      prev.includes(idx) ? prev.filter(id => id !== idx) : [...prev, idx]
+    );
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[240px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[240px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -143,8 +178,8 @@ export default function App() {
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-100 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
+          <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=68" alt="Admin" className="w-9 h-9 rounded-full object-cover shadow-sm" />
               <div>
@@ -153,18 +188,24 @@ export default function App() {
               </div>
             </div>
             <ChevronRight size={18} className="text-slate-400" />
-          </div>
+          </NextLink>
+          <NextLink href="/" className="text-[11.5px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            ← Back to User View
+          </NextLink>
         </div>
       </aside>
 
       {/* Main Content Wrapper */}
       <main className="flex-1 flex flex-col min-w-0">
         
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-[#F4F7F9]">
-          <div className="relative w-[480px]">
+        {/* Header */}
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50">
+          <div className="relative w-full max-w-[480px] lg:w-[480px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search reports, users, documents, or generate custom report..." 
               className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
@@ -191,13 +232,23 @@ export default function App() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6">
+        {actionFeedback && (
+          <div className="mx-8 mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-emerald-600" />
+              <span>{actionFeedback}</span>
+            </div>
+            <button onClick={() => setActionFeedback(null)} className="text-emerald-600 hover:text-emerald-900 text-xs font-semibold">✕</button>
+          </div>
+        )}
+
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
           
           {/* Central Main Area */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title Block */}
-            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm max-lg:flex-wrap max-lg:gap-3">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-200">
                     <FileBarChart size={24} strokeWidth={2.5} />
@@ -207,13 +258,16 @@ export default function App() {
                    <p className="text-[14px] text-slate-500 font-medium">Generate, schedule and manage detailed reports across Pathii platform.</p>
                  </div>
                </div>
-               <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm shadow-blue-200 transition-colors flex items-center gap-2">
+               <button 
+                 onClick={() => handleAction('Generating new system report...')}
+                 className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm shadow-blue-200 transition-all flex items-center gap-2"
+               >
                  <Plus size={18} /> Generate Report
                </button>
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
               <StatCard icon={FileBarChart} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Reports" value="24" trend="33%" />
               <StatCard icon={Clock} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Scheduled Reports" value="18" trend="28%" />
               <StatCard icon={Users} iconColor="text-purple-600" iconBg="bg-purple-100" title="Users in Reports" value="8,426" trend="18%" />
@@ -222,10 +276,10 @@ export default function App() {
             </div>
 
             {/* Charts Row 1 */}
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Trend Chart (Span 2) */}
-              <div className="col-span-2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[280px]">
+              <div className="col-span-1 lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[280px]">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-[16px] font-bold text-slate-900">Report Generation Trend</h3>
@@ -300,12 +354,12 @@ export default function App() {
             </div>
 
             {/* Charts Row 2 */}
-            <div className="grid grid-cols-3 gap-6 h-[260px]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[260px]">
               
               {/* Top Reports by Usage */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                  <h3 className="text-[16px] font-bold text-slate-900 mb-5">Top Reports by Usage</h3>
-                 <div className="flex flex-col justify-between flex-1">
+                 <div className="flex flex-col justify-between flex-1 gap-2">
                    {topReportsList.map((item, i) => (
                      <div key={i} className="flex items-center gap-3">
                        <span className="w-4 text-[11px] font-bold text-slate-400">{item.rank}</span>
@@ -323,16 +377,16 @@ export default function App() {
               </div>
 
               {/* Report Success Rate */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative">
-                 <h3 className="text-[16px] font-bold text-slate-900 absolute top-5 left-5">Report Success Rate</h3>
-                 <div className="flex items-center gap-6 w-full px-4 mt-6">
-                   <div className="relative w-[140px] h-[140px] flex-shrink-0">
+              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative p-5">
+                 <h3 className="text-[16px] font-bold text-slate-900 self-start mb-4">Report Success Rate</h3>
+                 <div className="flex items-center gap-6 w-full px-2">
+                   <div className="relative w-[130px] h-[130px] flex-shrink-0">
                      <ResponsiveContainer width="100%" height="100%">
                        <PieChart>
                          <Pie
                            data={successRateData}
-                           innerRadius={50}
-                           outerRadius={70}
+                           innerRadius={45}
+                           outerRadius={65}
                            paddingAngle={2}
                            dataKey="value"
                            stroke="none"
@@ -344,12 +398,12 @@ export default function App() {
                        </PieChart>
                      </ResponsiveContainer>
                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                       <span className="text-[24px] font-extrabold text-slate-900 leading-none">98.2%</span>
-                       <span className="text-[11px] text-slate-500 font-semibold mt-1">Success Rate</span>
+                       <span className="text-[20px] font-extrabold text-slate-900 leading-none">98.2%</span>
+                       <span className="text-[10px] text-slate-500 font-semibold mt-1">Success Rate</span>
                      </div>
                    </div>
                    
-                   <div className="flex flex-col gap-3">
+                   <div className="flex flex-col gap-2">
                       {successRateData.map((item, i) => (
                         <div key={i} className="flex flex-col">
                           <div className="flex items-center gap-2 text-[12px] font-bold text-slate-700 mb-0.5">
@@ -404,27 +458,38 @@ export default function App() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
               
               {/* Filter Bar */}
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
                 <h3 className="text-[16px] font-bold text-slate-900 mr-4">All Reports</h3>
-                <div className="flex items-center gap-3">
-                  <div className="relative w-[240px]">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="relative min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input 
                       type="text" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search reports..." 
                       className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all font-medium text-slate-700"
                     />
                   </div>
                   
-                  {['All Types', 'All Status', 'All Users'].map((filter, i) => (
-                    <button key={i} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
-                      {filter} <ChevronDown size={14} className="text-slate-400" />
+                  {['All', 'Completed', 'Processing', 'Failed'].map((status, i) => (
+                    <button 
+                      key={i} 
+                      onClick={() => setStatusFilter(status)}
+                      className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${statusFilter === status ? 'bg-blue-50 border border-blue-200 text-blue-600' : 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-600'}`}
+                    >
+                      {status}
                     </button>
                   ))}
                   
-                  <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
-                    <Filter size={14} className="text-slate-400" /> Filter
-                  </button>
+                  {statusFilter !== 'All' && (
+                    <button 
+                      onClick={() => setStatusFilter('All')}
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-semibold text-slate-600 transition-colors"
+                    >
+                      Reset
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -433,7 +498,14 @@ export default function App() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                      <th className="py-3 px-4 w-10"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></th>
+                      <th className="py-3 px-4 w-10">
+                        <input 
+                          type="checkbox" 
+                          checked={visibleReports.length > 0 && selectedIds.length === visibleReports.length}
+                          onChange={toggleSelectAll}
+                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" 
+                        />
+                      </th>
                       <th className="py-3 px-4 font-semibold">Report Name</th>
                       <th className="py-3 px-4 font-semibold">Type</th>
                       <th className="py-3 px-4 font-semibold">Generated By</th>
@@ -444,51 +516,85 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {tableData.map((row, index) => (
-                      <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
-                        <td className="py-3 px-4 flex items-center gap-2 font-bold text-blue-700 cursor-pointer hover:underline">
-                          <div className="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                            <FileText size={14} />
-                          </div>
-                          {row.name}
-                        </td>
-                        <td className="py-3 px-4 text-slate-500 font-medium text-[12px]">{row.type}</td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2 font-semibold text-slate-700 text-[12px]">
-                             <img src={row.avatar} alt={row.creator} className="w-6 h-6 rounded-full object-cover shadow-sm" />
-                             {row.creator}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                           <div className="flex flex-col">
-                              <span className="text-slate-700 font-medium text-[12px]">{row.created}</span>
-                              <span className="text-[11px] text-slate-400">{row.time}</span>
-                           </div>
-                        </td>
-                        <td className="py-3 px-4 text-slate-500 font-medium text-[12px]">{row.range}</td>
-                        <td className="py-3 px-4">
-                           <StatusPill status={row.status} />
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
+                    {visibleReports.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-400 text-[13px] font-medium">
+                          No reports found matching your criteria.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      visibleReports.map((row, index) => (
+                        <tr key={index} className={`border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors ${selectedIds.includes(index) ? 'bg-blue-50/40' : ''}`}>
+                          <td className="py-3 px-4">
+                            <input 
+                              type="checkbox" 
+                              checked={selectedIds.includes(index)}
+                              onChange={() => toggleSelectRow(index)}
+                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" 
+                            />
+                          </td>
+                          <td className="py-3 px-4 flex items-center gap-2 font-bold text-blue-700 cursor-pointer hover:underline">
+                            <div className="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                              <FileText size={14} />
+                            </div>
+                            {row.name}
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 font-medium text-[12px]">{row.type}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2 font-semibold text-slate-700 text-[12px]">
+                               <img src={row.avatar} alt={row.creator} className="w-6 h-6 rounded-full object-cover shadow-sm" />
+                               {row.creator}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                             <div className="flex flex-col">
+                                <span className="text-slate-700 font-medium text-[12px]">{row.created}</span>
+                                <span className="text-[11px] text-slate-400">{row.time}</span>
+                             </div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 font-medium text-[12px]">{row.range}</td>
+                          <td className="py-3 px-4">
+                             <StatusPill status={row.status} />
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
 
               {/* Pagination */}
-              <div className="p-4 border-t border-slate-100 flex items-center justify-between text-[13px] font-medium text-slate-500">
-                 <span>Showing 1–8 of 24 reports</span>
+              <div className="p-4 border-t border-slate-100 flex items-center justify-between text-[13px] font-medium text-slate-500 flex-wrap gap-3">
+                 <span>Showing {visibleReports.length === 0 ? 0 : 1}–{visibleReports.length} of {tableData.length} reports</span>
                  <div className="flex items-center gap-1">
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold shadow-sm">1</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">2</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">3</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">4</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="-rotate-90" /></button>
+                   <button 
+                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                     className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30"
+                     disabled={currentPage === 1}
+                   >
+                     <ChevronDown size={14} className="rotate-90" />
+                   </button>
+                   {[1, 2, 3, 4].map(page => (
+                     <button
+                       key={page}
+                       onClick={() => setCurrentPage(page)}
+                       className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold transition-all ${
+                         currentPage === page ? 'bg-blue-600 text-white shadow-sm' : 'hover:bg-slate-100 text-slate-700'
+                       }`}
+                     >
+                       {page}
+                     </button>
+                   ))}
+                   <button 
+                     onClick={() => setCurrentPage(prev => Math.min(4, prev + 1))}
+                     className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30"
+                     disabled={currentPage === 4}
+                   >
+                     <ChevronDown size={14} className="-rotate-90" />
+                   </button>
                  </div>
                  <div className="flex items-center gap-2">
                    <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
@@ -501,7 +607,7 @@ export default function App() {
           </div>
 
           {/* Right Fixed Sidebar */}
-          <div className="w-[340px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-full xl:w-[340px] flex-shrink-0 flex flex-col gap-6">
             
             {/* Popular Report Templates */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
@@ -528,7 +634,10 @@ export default function App() {
                          <span className="text-[11px] text-slate-500 font-medium truncate">{tmpl.sub}</span>
                        </div>
                      </div>
-                     <button className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-bold hover:bg-blue-100 transition-colors shrink-0">
+                     <button 
+                       onClick={() => handleAction(`Generating ${tmpl.name}...`)}
+                       className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-bold hover:bg-blue-600 hover:text-white transition-all shrink-0 active:scale-95 shadow-sm"
+                     >
                        Generate
                      </button>
                    </div>
@@ -576,7 +685,11 @@ export default function App() {
                    { icon: Download, label: 'Export Reports' },
                    { icon: Settings2, label: 'Manage Templates' },
                  ].map((action, i) => (
-                   <button key={i} className="flex items-center gap-2 px-3 py-3.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-700 text-slate-700 rounded-xl transition-all group">
+                   <button 
+                     key={i} 
+                     onClick={() => handleAction(`${action.label} initiated successfully!`)}
+                     className="flex items-center gap-2 px-3 py-3.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-700 text-slate-700 rounded-xl transition-all group active:scale-95 shadow-sm"
+                   >
                      <action.icon size={18} className="text-blue-600 flex-shrink-0" />
                      <span className="text-[12px] font-bold leading-tight text-left">{action.label}</span>
                    </button>
@@ -592,17 +705,18 @@ export default function App() {
       {/* Global Styles for Custom Scrollbar */}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #cbd5e1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94a3b8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

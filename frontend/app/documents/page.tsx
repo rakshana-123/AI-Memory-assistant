@@ -1,12 +1,12 @@
 "use client";
 import NextLink from "next/link";
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreVertical, Plus, ChevronDown, Download, Maximize2, Minus, RotateCcw, 
   Sparkles, Folder, File, Image as ImageIcon, FileSpreadsheet, Tag, Clock,
-  CheckCircle2, FileType2, Maximize, PlaySquare
+  CheckCircle2, FileType2, Maximize, PlaySquare, CloudUpload
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -188,7 +188,37 @@ export default function PathiiDocumentsDashboard() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeFilter, setActiveFilter] = React.useState('All');
 
-  const visibleDocuments = documentsData.filter((doc) => {
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [newDocTitle, setNewDocTitle] = useState('');
+  const [newDocType, setNewDocType] = useState('pdf');
+  const [docsList, setDocsList] = useState(documentsData);
+
+  const handleAction = (msg: string) => {
+    setActionFeedback(msg);
+    setTimeout(() => setActionFeedback(null), 3500);
+  };
+
+  const handleAddDoc = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDocTitle.trim()) return;
+    const badgeType = newDocType.toUpperCase();
+    const newEntry = {
+      id: Date.now(),
+      title: newDocTitle.trim(),
+      type: 'file',
+      preview: newDocType,
+      meta: '1.2 MB • Today',
+      badge: badgeType,
+      badgeColor: badgeType === 'PDF' ? 'bg-red-500' : badgeType === 'DOC' ? 'bg-blue-500' : 'bg-emerald-500'
+    };
+    setDocsList([newEntry, ...docsList]);
+    setNewDocTitle('');
+    setIsUploadModalOpen(false);
+    handleAction(`Uploaded "${newEntry.title}" successfully!`);
+  };
+
+  const visibleDocuments = docsList.filter((doc) => {
     const matchesFilter = activeFilter === 'All' || doc.badge === filterBadgeMap[activeFilter];
     const matchesSearch = doc.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
     return matchesFilter && matchesSearch;
@@ -201,10 +231,10 @@ export default function PathiiDocumentsDashboard() {
   });
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
             <BrainLogo className="w-8 h-8" />
@@ -245,7 +275,7 @@ export default function PathiiDocumentsDashboard() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
         
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -269,10 +299,20 @@ export default function PathiiDocumentsDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        {actionFeedback && (
+          <div className="mx-8 mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-emerald-600" />
+              <span>{actionFeedback}</span>
+            </div>
+            <button onClick={() => setActionFeedback(null)} className="text-emerald-600 hover:text-emerald-900 text-xs font-semibold">✕</button>
+          </div>
+        )}
+
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
 
           {/* Left Column (Documents Center) */}
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2 pb-4">
+          <div className="flex-1 flex flex-col min-w-0 pr-2 pb-4">
 
             {/* Header Area */}
             <div className="flex items-start justify-between mb-6 max-lg:flex-wrap max-lg:gap-4">
@@ -285,7 +325,10 @@ export default function PathiiDocumentsDashboard() {
                 </div>
                 <p className="text-[15px] text-slate-500 font-medium ml-10">Store, organize and find all your files with AI.</p>
               </div>
-              <button className="flex items-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] transition-colors shadow-sm">
+              <button 
+                onClick={() => setIsUploadModalOpen(true)}
+                className="flex items-center gap-2 bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] transition-all shadow-sm"
+              >
                 <Plus size={18} />
                 Upload
                 <span className="w-px h-4 bg-blue-400 mx-1"></span>
@@ -293,7 +336,7 @@ export default function PathiiDocumentsDashboard() {
               </button>
             </div>
 
-            <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide py-1 max-lg:flex-wrap">
+            <div className="flex gap-2 mb-6 flex-wrap py-1">
               {documentFilters.map((filter) => (
                 <FilterPill
                   key={filter}
@@ -304,7 +347,7 @@ export default function PathiiDocumentsDashboard() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
               <StatCard icon={FileText} count="12" label="PDF Files" colorClass="bg-red-50" iconColorClass="text-red-500" />
               <StatCard icon={File} count="18" label="Documents" colorClass="bg-blue-50" iconColorClass="text-blue-500" />
               <StatCard icon={ImageIcon} count="9" label="Images" colorClass="bg-emerald-50" iconColorClass="text-emerald-500" />
@@ -362,11 +405,14 @@ export default function PathiiDocumentsDashboard() {
 
           </div>
 
-          <div className="w-[380px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 overflow-y-auto custom-scrollbar h-full max-lg:w-full">
+          <div className="w-full xl:w-[380px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-fit">
             
             {/* File Preview Area */}
             <div className="bg-slate-100 h-[240px] m-2 rounded-2xl relative flex items-center justify-center overflow-hidden border border-slate-200 group">
-              <button className="absolute top-3 right-3 w-8 h-8 bg-slate-900/40 hover:bg-slate-900/60 text-white rounded-lg flex items-center justify-center transition-colors backdrop-blur-sm z-10 opacity-0 group-hover:opacity-100">
+              <button 
+                onClick={() => handleAction('Full-screen preview toggled')}
+                className="absolute top-3 right-3 w-8 h-8 bg-slate-900/40 hover:bg-slate-900/60 text-white rounded-lg flex items-center justify-center transition-colors backdrop-blur-sm z-10 opacity-0 group-hover:opacity-100"
+              >
                 <Maximize2 size={16} />
               </button>
               
@@ -393,14 +439,14 @@ export default function PathiiDocumentsDashboard() {
                 <div className="text-[11px] font-semibold opacity-90">1 <span className="opacity-50">/ 12</span> <ChevronDown size={10} className="inline ml-1" /></div>
                 <div className="w-px h-3 bg-white/20"></div>
                 <div className="flex items-center gap-3 opacity-80">
-                  <button className="hover:opacity-100 transition-opacity"><Minus size={14}/></button>
+                  <button onClick={() => handleAction('Zoom decreased')} className="hover:opacity-100 transition-opacity"><Minus size={14}/></button>
                   <span className="text-[11px] font-semibold">80%</span>
-                  <button className="hover:opacity-100 transition-opacity"><Plus size={14}/></button>
+                  <button onClick={() => handleAction('Zoom increased')} className="hover:opacity-100 transition-opacity"><Plus size={14}/></button>
                 </div>
                 <div className="w-px h-3 bg-white/20"></div>
                 <div className="flex items-center gap-3 opacity-80">
-                  <button className="hover:opacity-100 transition-opacity"><Maximize size={14}/></button>
-                  <button className="hover:opacity-100 transition-opacity"><RotateCcw size={14}/></button>
+                  <button onClick={() => handleAction('Maximized preview')} className="hover:opacity-100 transition-opacity"><Maximize size={14}/></button>
+                  <button onClick={() => handleAction('Reset view')} className="hover:opacity-100 transition-opacity"><RotateCcw size={14}/></button>
                 </div>
               </div>
             </div>
@@ -420,10 +466,16 @@ export default function PathiiDocumentsDashboard() {
               </div>
 
               <div className="flex gap-3">
-                <button className="flex-1 bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-[13px] py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => handleAction('Opening AI Research Paper.pdf...')}
+                  className="flex-1 bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white font-bold text-[13px] py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                >
                   <Maximize2 size={16} /> Open
                 </button>
-                <button className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-[13px] py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => handleAction('Downloading AI Research Paper.pdf...')}
+                  className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-700 font-bold text-[13px] py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                >
                   <Download size={16} /> Download
                 </button>
               </div>
@@ -466,7 +518,10 @@ export default function PathiiDocumentsDashboard() {
                        <p className="text-[11px] text-slate-500 font-medium">Task</p>
                      </div>
                   </div>
-                  <button className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => handleAction('Task "Create research summary" added!')}
+                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
                     <Plus size={12} /> Add
                   </button>
                 </div>
@@ -481,7 +536,10 @@ export default function PathiiDocumentsDashboard() {
                        <p className="text-[11px] text-slate-500 font-medium">Event</p>
                      </div>
                   </div>
-                  <button className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => handleAction('Event "Follow up with team" added to calendar!')}
+                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
                     <Plus size={12} /> Add
                   </button>
                 </div>
@@ -496,7 +554,10 @@ export default function PathiiDocumentsDashboard() {
                        <p className="text-[11px] text-slate-500 font-medium">Note</p>
                      </div>
                   </div>
-                  <button className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => handleAction('Note "Key findings" saved to memories!')}
+                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
                     <Plus size={12} /> Add
                   </button>
                 </div>
@@ -514,7 +575,10 @@ export default function PathiiDocumentsDashboard() {
                 <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Research</span>
                 <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">AI</span>
                 <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[12px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">Paper</span>
-                <button className="w-7 h-7 bg-white border border-slate-200 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50 hover:text-slate-600 transition-colors shadow-sm">
+                <button 
+                  onClick={() => handleAction('Add tag modal opened')}
+                  className="w-7 h-7 bg-white border border-slate-200 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50 hover:text-slate-600 transition-colors shadow-sm"
+                >
                   <Plus size={14} />
                 </button>
               </div>
@@ -523,6 +587,82 @@ export default function PathiiDocumentsDashboard() {
           </div>
 
         </div>
+
+        {/* Upload Document Modal */}
+        {isUploadModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6">
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <CloudUpload size={20} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-[18px] font-bold text-slate-900">Upload Document</h3>
+                    <p className="text-[12px] text-slate-500 font-medium">Add a new file to your Pathii library</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsUploadModalOpen(false)}
+                  className="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleAddDoc} className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Document Title</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Q3 Financial Report.pdf"
+                    value={newDocTitle}
+                    onChange={(e) => setNewDocTitle(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">File Type</label>
+                  <select
+                    value={newDocType}
+                    onChange={(e) => setNewDocType(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  >
+                    <option value="pdf">PDF Document</option>
+                    <option value="doc">Word Document</option>
+                    <option value="xls">Spreadsheet / Excel</option>
+                    <option value="ppt">Presentation</option>
+                    <option value="txt">Text File</option>
+                  </select>
+                </div>
+
+                <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer bg-slate-50/50">
+                  <FileText className="mx-auto text-blue-500 mb-2" size={32} />
+                  <p className="text-[13px] font-semibold text-slate-700">Drag and drop file here or click to browse</p>
+                  <p className="text-[11px] text-slate-400 mt-1">PDF, DOC, XLS up to 25MB</p>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsUploadModalOpen(false)}
+                    className="px-4 py-2 text-[13px] font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-[13px] font-bold rounded-xl shadow-sm shadow-blue-200 transition-all"
+                  >
+                    Upload File
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Global Styles */}
@@ -535,17 +675,18 @@ export default function PathiiDocumentsDashboard() {
             scrollbar-width: none;
         }
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

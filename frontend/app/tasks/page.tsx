@@ -5,7 +5,7 @@ import {
   Search, Bell, Home, Mic, Database, CheckSquare, Calendar as CalendarIcon, 
   FileText, Users, Link as LinkIcon, BarChart2, Settings, ChevronRight,
   MoreVertical, Plus, ChevronDown, Clock, ArrowUp, ArrowDown,
-  CheckCircle2, Video, MapPin, Check, Sparkles, Bell as BellIcon
+  CheckCircle2, Video, MapPin, Check, Sparkles, Bell as BellIcon, X
 } from 'lucide-react';
 
 const BrainLogo = ({ className = "w-6 h-6", color = "currentColor" }) => (
@@ -150,11 +150,60 @@ export default function PathiiTasksDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [tasks, setTasks] = useState(tasksData);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    date: 'Today, 5:00 PM',
+    category: 'Work',
+    priority: 'Medium',
+  });
+
+  const showToast = (msg: string) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 3500);
+  };
 
   const toggleTask = (id: number) => {
     setTasks((prev) =>
       prev.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task))
     );
+  };
+
+  const handleAddTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTask.title.trim()) return;
+
+    const catColorMap: Record<string, string> = {
+      Work: 'blue',
+      Meeting: 'purple',
+      Research: 'green',
+      Personal: 'red',
+      College: 'blue',
+    };
+    const priColorMap: Record<string, string> = {
+      High: 'red',
+      Medium: 'orange',
+      Low: 'blue',
+    };
+
+    const taskObj = {
+      id: Date.now(),
+      title: newTask.title.trim(),
+      date: newTask.date,
+      category: newTask.category,
+      categoryColor: catColorMap[newTask.category] || 'blue',
+      priority: newTask.priority,
+      priorityColor: priColorMap[newTask.priority] || 'orange',
+      icon: 'document',
+      iconColor: 'purple',
+      completed: false,
+    };
+
+    setTasks(prev => [taskObj, ...prev]);
+    setIsAddTaskModalOpen(false);
+    setNewTask({ title: '', date: 'Today, 5:00 PM', category: 'Work', priority: 'Medium' });
+    showToast(`Task "${taskObj.title}" created successfully!`);
   };
 
   const visibleTasks = tasks.filter((task) => {
@@ -168,10 +217,10 @@ export default function PathiiTasksDashboard() {
   });
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 sticky top-0 h-screen z-20">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
             <BrainLogo className="w-8 h-8" />
@@ -213,7 +262,7 @@ export default function PathiiTasksDashboard() {
       <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-20 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[480px] lg:w-[480px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -237,11 +286,21 @@ export default function PathiiTasksDashboard() {
           </div>
         </header>
 
+        {/* Feedback Alert Toast */}
+        {feedback && (
+          <div className="mx-8 mt-4 p-3 bg-blue-50 border border-blue-200 text-[#2563EB] rounded-xl text-[14px] font-semibold flex items-center justify-between animate-fade-in shadow-sm">
+            <span>{feedback}</span>
+            <button onClick={() => setFeedback(null)} className="p-1 hover:bg-blue-100 rounded-md">
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         {/* Content Body */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
           
           {/* Left Column (Main) */}
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2">
+          <div className="flex-1 flex flex-col min-w-0">
             
             {/* Page Title & Button */}
             <div className="flex items-center justify-between mb-6 mt-2 max-lg:flex-col max-lg:items-start max-lg:gap-4">
@@ -250,17 +309,23 @@ export default function PathiiTasksDashboard() {
                 <p className="text-[15px] text-slate-500 font-medium">Turn your thoughts into actions. Stay organized.</p>
               </div>
               <div className="flex shadow-sm rounded-lg overflow-hidden">
-                <button className="bg-[#2563EB] hover:bg-blue-700 text-white px-4 py-2.5 text-[14px] font-semibold flex items-center gap-2 transition-colors border-r border-blue-600/50">
+                <button 
+                  onClick={() => setIsAddTaskModalOpen(true)}
+                  className="bg-[#2563EB] hover:bg-blue-700 text-white px-4 py-2.5 text-[14px] font-semibold flex items-center gap-2 transition-colors border-r border-blue-600/50"
+                >
                   <Plus size={18} /> Add Task
                 </button>
-                <button className="bg-[#2563EB] hover:bg-blue-700 text-white px-3 py-2.5 transition-colors">
+                <button 
+                  onClick={() => setIsAddTaskModalOpen(true)}
+                  className="bg-[#2563EB] hover:bg-blue-700 text-white px-3 py-2.5 transition-colors"
+                >
                   <ChevronDown size={18} />
                 </button>
               </div>
             </div>
 
             {/* Stat Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
               {/* Total Tasks */}
               <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-[#2563EB]">
@@ -271,7 +336,7 @@ export default function PathiiTasksDashboard() {
                 <div>
                   <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">8</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Total Tasks</p>
-                  <p className="text-[12px] font-bold text-green-600 flex items-center gap-1">
+                  <p className="text-[12px] font-bold text-green-600 flex items-center gap-1 whitespace-nowrap">
                     <ArrowUp size={12} strokeWidth={3} /> 2 new
                   </p>
                 </div>
@@ -285,7 +350,7 @@ export default function PathiiTasksDashboard() {
                 <div>
                   <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">3</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Upcoming Events</p>
-                  <p className="text-[12px] font-bold text-rose-500 flex items-center gap-1">
+                  <p className="text-[12px] font-bold text-rose-500 flex items-center gap-1 whitespace-nowrap">
                     <ArrowDown size={12} strokeWidth={3} /> Today
                   </p>
                 </div>
@@ -299,7 +364,7 @@ export default function PathiiTasksDashboard() {
                 <div>
                   <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">5</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Pending Tasks</p>
-                  <p className="text-[12px] font-bold text-orange-500">Need attention</p>
+                  <p className="text-[12px] font-bold text-orange-500 whitespace-nowrap">Need attention</p>
                 </div>
               </div>
 
@@ -311,7 +376,7 @@ export default function PathiiTasksDashboard() {
                 <div>
                   <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">3</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Completed</p>
-                  <p className="text-[12px] font-bold text-green-500">This week</p>
+                  <p className="text-[12px] font-bold text-green-500 whitespace-nowrap">This week</p>
                 </div>
               </div>
             </div>
@@ -333,7 +398,10 @@ export default function PathiiTasksDashboard() {
                   </button>
                 ))}
               </div>
-              <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-lg text-[13px] font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">
+              <button 
+                onClick={() => showToast('Sorted by due date')}
+                className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-lg text-[13px] font-semibold text-slate-700 hover:bg-slate-50 shadow-sm"
+              >
                 <Clock size={14} className="text-slate-500" />
                 Due Date
                 <ChevronDown size={14} className="text-slate-400" />
@@ -358,7 +426,7 @@ export default function PathiiTasksDashboard() {
 
                     {/* Title & Date */}
                     <div className="max-lg:min-w-0">
-                      <h4 className="text-[15px] font-bold text-slate-900 mb-0.5">{task.title}</h4>
+                      <h4 className={`text-[15px] font-bold mb-0.5 transition-colors ${task.completed ? 'line-through text-slate-400' : 'text-slate-900'}`}>{task.title}</h4>
                       <p className="text-[13px] text-slate-500 font-medium flex items-center gap-1.5">
                         <Clock size={12} /> {task.date}
                       </p>
@@ -370,7 +438,10 @@ export default function PathiiTasksDashboard() {
                     <div className="w-[80px] flex justify-end">
                       <PriorityBadge text={task.priority} color={task.priorityColor} />
                     </div>
-                    <button className="text-slate-400 hover:text-slate-600 p-1">
+                    <button 
+                      onClick={() => showToast(`Options for "${task.title}"`)}
+                      className="text-slate-400 hover:text-slate-600 p-1"
+                    >
                       <MoreVertical size={18} />
                     </button>
                   </div>
@@ -383,7 +454,10 @@ export default function PathiiTasksDashboard() {
               <div>
                 <h3 className="text-[18px] font-bold text-slate-900 mb-4">Quick Add</h3>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group">
+                  <button 
+                    onClick={() => setIsAddTaskModalOpen(true)}
+                    className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group"
+                  >
                     <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-[#2563EB] group-hover:scale-110 transition-transform">
                       <div className="w-6 h-6 rounded-full border-[2.5px] border-current flex items-center justify-center">
                          <Check size={14} strokeWidth={3} />
@@ -392,26 +466,35 @@ export default function PathiiTasksDashboard() {
                     <span className="text-[13px] font-bold text-slate-700">Task</span>
                   </button>
                   
-                  <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group">
+                  <NextLink 
+                    href="/calendar"
+                    className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group"
+                  >
                     <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
                       <CalendarIcon size={22} />
                     </div>
                     <span className="text-[13px] font-bold text-slate-700">Event</span>
-                  </button>
+                  </NextLink>
 
-                  <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group">
+                  <button 
+                    onClick={() => showToast('Quick reminder created for tomorrow 9 AM')}
+                    className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group"
+                  >
                     <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
                       <BellIcon size={22} fill="currentColor" />
                     </div>
                     <span className="text-[13px] font-bold text-slate-700">Reminder</span>
                   </button>
 
-                  <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group">
+                  <NextLink 
+                    href="/documents"
+                    className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all group"
+                  >
                     <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
                       <FileText size={22} />
                     </div>
                     <span className="text-[13px] font-bold text-slate-700">Note</span>
-                  </button>
+                  </NextLink>
                 </div>
               </div>
 
@@ -421,12 +504,33 @@ export default function PathiiTasksDashboard() {
                   <h3 className="text-[18px] font-bold text-slate-900 flex items-center gap-2">
                     <Sparkles size={20} className="text-[#8B5CF6]" /> AI Suggestions
                   </h3>
-                  <button className="text-[#2563EB] text-[13px] font-bold flex items-center gap-1 hover:underline">
+                  <button 
+                    onClick={() => showToast('Loaded all 6 AI task recommendations')}
+                    className="text-[#2563EB] text-[13px] font-bold flex items-center gap-1 hover:underline"
+                  >
                     See all <ChevronRight size={14} strokeWidth={3} />
                   </button>
                 </div>
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 flex flex-col gap-1">
-                  <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
+                  <div 
+                    onClick={() => {
+                      const newTaskObj = {
+                        id: Date.now(),
+                        title: 'Prepare meeting agenda',
+                        date: 'Tomorrow, 9:00 AM',
+                        category: 'Meeting',
+                        categoryColor: 'purple',
+                        priority: 'High',
+                        priorityColor: 'red',
+                        icon: 'document',
+                        iconColor: 'pink',
+                        completed: false
+                      };
+                      setTasks(prev => [newTaskObj, ...prev]);
+                      showToast('Task added from voice note: "Prepare meeting agenda"');
+                    }}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-white flex-shrink-0">
                         <Check size={18} strokeWidth={3} />
@@ -441,7 +545,10 @@ export default function PathiiTasksDashboard() {
                   
                   <div className="w-full h-px bg-slate-100 my-1"></div>
 
-                  <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
+                  <NextLink 
+                    href="/calendar"
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 flex-shrink-0">
                         <CalendarIcon size={20} />
@@ -452,23 +559,33 @@ export default function PathiiTasksDashboard() {
                       </div>
                     </div>
                     <ChevronRight size={18} className="text-slate-400 group-hover:text-slate-600" />
-                  </div>
+                  </NextLink>
                 </div>
               </div>
             </div>
 
           </div>
 
-          <div className="w-[420px] bg-white rounded-[32px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-full overflow-y-auto custom-scrollbar max-lg:w-full">
-            <div className="p-8">
+          <div className="w-full xl:w-[380px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-fit">
+            <div className="p-6">
               
               {/* Calendar Widget */}
-              <div className="mb-10">
+              <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-[20px] font-bold text-slate-900">October 2024</h3>
                   <div className="flex items-center gap-2">
-                    <button className="p-1 hover:bg-slate-100 rounded-md transition-colors text-slate-600"><ChevronRight size={20} className="rotate-180" /></button>
-                    <button className="p-1 hover:bg-slate-100 rounded-md transition-colors text-slate-600"><ChevronRight size={20} /></button>
+                    <button 
+                      onClick={() => showToast('Previous month')}
+                      className="p-1 hover:bg-slate-100 rounded-md transition-colors text-slate-600"
+                    >
+                      <ChevronRight size={20} className="rotate-180" />
+                    </button>
+                    <button 
+                      onClick={() => showToast('Next month')}
+                      className="p-1 hover:bg-slate-100 rounded-md transition-colors text-slate-600"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
                   </div>
                 </div>
 
@@ -606,12 +723,18 @@ export default function PathiiTasksDashboard() {
                           {/* Dynamic Status Button */}
                           <div>
                             {item.statusType === 'primary' && (
-                              <button className="bg-[#2563EB] hover:bg-blue-700 text-white px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors">
+                              <button 
+                                onClick={() => showToast(`Joining meeting: ${item.title}...`)}
+                                className="bg-[#2563EB] hover:bg-blue-700 text-white px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors shadow-sm"
+                              >
                                 {item.status}
                               </button>
                             )}
                             {item.statusType === 'secondary' && (
-                              <button className="bg-blue-50 text-[#2563EB] hover:bg-blue-100 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors">
+                              <button 
+                                onClick={() => showToast(`Opening meeting: ${item.title}...`)}
+                                className="bg-blue-50 text-[#2563EB] hover:bg-blue-100 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors"
+                              >
                                 {item.status}
                               </button>
                             )}
@@ -642,6 +765,92 @@ export default function PathiiTasksDashboard() {
           </div>
 
         </div>
+
+        {/* Add Task Modal */}
+        {isAddTaskModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 animate-fade-in">
+              <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-[18px]">
+                  <CheckSquare className="text-[#2563EB]" size={20} />
+                  <span>Create New Task</span>
+                </div>
+                <button 
+                  onClick={() => setIsAddTaskModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleAddTask} className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">Task Title</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="e.g. Finalize Q4 strategic roadmap"
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">Due Date & Time</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Tomorrow, 3:00 PM"
+                    value={newTask.date}
+                    onChange={(e) => setNewTask({ ...newTask, date: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1">Category</label>
+                    <select 
+                      value={newTask.category}
+                      onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                    >
+                      <option value="Work">Work</option>
+                      <option value="Meeting">Meeting</option>
+                      <option value="Research">Research</option>
+                      <option value="Personal">Personal</option>
+                      <option value="College">College</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1">Priority</label>
+                    <select 
+                      value={newTask.priority}
+                      onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                    >
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsAddTaskModalOpen(false)}
+                    className="px-4 py-2 text-slate-600 hover:bg-slate-100 font-semibold text-[13px] rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-5 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-[13px] rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
+                  >
+                    <Check size={16} /> Save Task
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Global Styles */}
@@ -654,17 +863,18 @@ export default function PathiiTasksDashboard() {
             scrollbar-width: none;
         }
         .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

@@ -212,6 +212,9 @@ const memoriesData = [
 export default function PathiiMemoriesDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedId, setSelectedId] = useState(1);
+  const [activeTab, setActiveTab] = useState('Transcript');
+  const [isPlaying, setIsPlaying] = useState(false);
   const filterTypes: Record<string, string[]> = {
     Voice: ['voice'],
     Notes: ['note'],
@@ -227,6 +230,8 @@ export default function PathiiMemoriesDashboard() {
     const matchesSearch = card.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  const selectedMemory = memoriesData.find(m => m.id === selectedId) || memoriesData[0];
 
   return (
     <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
@@ -256,8 +261,8 @@ export default function PathiiMemoriesDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-200/60 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
+        <div className="p-4 border-t border-slate-200/60 mt-auto flex flex-col gap-2">
+          <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
               <div>
@@ -266,7 +271,10 @@ export default function PathiiMemoriesDashboard() {
               </div>
             </div>
             <ChevronRight size={18} className="text-slate-400" />
-          </div>
+          </NextLink>
+          <NextLink href="/admin" className="text-[11.5px] font-bold text-[#2563EB] bg-[#EBF3FF] hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            Switch to Admin Panel →
+          </NextLink>
         </div>
       </aside>
 
@@ -348,7 +356,8 @@ export default function PathiiMemoriesDashboard() {
                 {filteredMemories.map((card) => (
                   <div 
                     key={card.id} 
-                    className={`bg-white rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all ${card.active ? 'border-[#2563EB] ring-1 ring-[#2563EB] shadow-md' : 'border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md'}`}
+                    onClick={() => setSelectedId(card.id)}
+                    className={`bg-white rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all ${selectedId === card.id ? 'border-[#2563EB] ring-2 ring-[#2563EB]/40 shadow-md' : 'border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md'}`}
                   >
                     {/* Top Image for specific cards */}
                     {card.type === 'image' && (
@@ -427,30 +436,33 @@ export default function PathiiMemoriesDashboard() {
               {/* Header Info */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2 text-[13px] text-slate-500 font-medium">
-                  <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center text-blue-500">
-                    <Mic size={14} />
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center ${selectedMemory.iconBg || 'bg-blue-50'} ${selectedMemory.iconColor || 'text-blue-500'}`}>
+                    <selectedMemory.icon size={14} />
                   </div>
-                  <span>Voice</span>
+                  <span className="capitalize">{selectedMemory.type}</span>
                   <span className="text-slate-300">•</span>
-                  <span>Oct 12, 2024 • 10:42 AM</span>
+                  <span>{selectedMemory.meta}</span>
                 </div>
                 <button className="text-slate-400 hover:text-slate-600">
                   <X size={20} />
                 </button>
               </div>
 
-              <h2 className="text-[22px] font-bold text-slate-900 leading-tight mb-5">Project idea discussion</h2>
+              <h2 className="text-[22px] font-bold text-slate-900 leading-tight mb-5">{selectedMemory.title}</h2>
 
               {/* Large Waveform Player */}
               <div className="w-full relative mb-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <button className="w-10 h-10 rounded-full bg-[#2563EB] hover:bg-blue-700 transition-colors flex items-center justify-center text-white shadow-md flex-shrink-0">
-                    <Play size={18} fill="currentColor" className="ml-1" />
+                  <button 
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="w-10 h-10 rounded-full bg-[#2563EB] hover:bg-blue-700 transition-colors flex items-center justify-center text-white shadow-md flex-shrink-0"
+                  >
+                    {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
                   </button>
                   <WaveformLarge />
                 </div>
                 <div className="flex items-center justify-between pl-14">
-                  <span className="text-[13px] font-bold text-slate-500">0:00 / 2:14</span>
+                  <span className="text-[13px] font-bold text-slate-500">{isPlaying ? "0:42 / 2:14" : "0:00 / 2:14"}</span>
                   <button className="flex items-center gap-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors px-3 py-1 rounded-full text-[12px] font-bold text-slate-700">
                     1x <ChevronDown size={14} />
                   </button>
@@ -459,13 +471,14 @@ export default function PathiiMemoriesDashboard() {
 
               {/* Tabs */}
               <div className="flex items-center gap-6 border-b border-slate-200 mb-6">
-                {['Transcript', 'Summary', 'AI Insights', 'Related'].map((tab, i) => (
+                {['Transcript', 'Summary', 'AI Insights', 'Related'].map((tab) => (
                   <button 
                     key={tab} 
-                    className={`pb-3 text-[14px] font-semibold transition-colors relative ${i === 0 ? 'text-[#2563EB]' : 'text-slate-500 hover:text-slate-700'}`}
+                    onClick={() => setActiveTab(tab)}
+                    className={`pb-3 text-[14px] font-semibold transition-colors relative ${activeTab === tab ? 'text-[#2563EB]' : 'text-slate-500 hover:text-slate-700'}`}
                   >
                     {tab}
-                    {i === 0 && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#2563EB] rounded-t-full"></div>}
+                    {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#2563EB] rounded-t-full"></div>}
                   </button>
                 ))}
               </div>
@@ -595,17 +608,18 @@ export default function PathiiMemoriesDashboard() {
             scrollbar-width: none;
         }
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

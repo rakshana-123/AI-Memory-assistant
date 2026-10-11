@@ -155,10 +155,10 @@ export default function PathiiDashboard() {
   );
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#F4F7F9] flex flex-col z-10 flex-shrink-0 py-6 px-4">
+      <aside className="w-[260px] bg-[#F4F7F9] flex flex-col z-20 flex-shrink-0 py-6 px-4 sticky top-0 h-screen border-r border-slate-200/60">
         {/* Logo Area */}
         <div className="flex items-center gap-3 mb-8 px-2">
           <div className="text-[#2563EB]">
@@ -185,15 +185,20 @@ export default function PathiiDashboard() {
         </nav>
 
         {/* User Profile */}
-        <div className="mt-4 flex items-center justify-between cursor-pointer hover:bg-slate-200/50 p-2 rounded-2xl transition-colors">
-          <div className="flex items-center gap-3">
-            <img src="https://i.pravatar.cc/150?img=32" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
-            <div>
-              <p className="text-[14px] font-bold text-slate-900">Alex</p>
-              <p className="text-[12px] text-slate-500 font-medium">Free Plan</p>
+        <div className="mt-4 flex flex-col gap-2">
+          <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-200/50 p-2 rounded-2xl transition-colors">
+            <div className="flex items-center gap-3">
+              <img src="https://i.pravatar.cc/150?img=32" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div>
+                <p className="text-[14px] font-bold text-slate-900">Alex</p>
+                <p className="text-[12px] text-slate-500 font-medium">Free Plan</p>
+              </div>
             </div>
-          </div>
-          <ChevronRight size={18} className="text-slate-400" />
+            <ChevronRight size={18} className="text-slate-400" />
+          </NextLink>
+          <NextLink href="/admin" className="text-[11.5px] font-bold text-[#2563EB] bg-[#EBF3FF] hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            Switch to Admin Panel →
+          </NextLink>
         </div>
       </aside>
 
@@ -201,7 +206,7 @@ export default function PathiiDashboard() {
       <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9] relative rounded-tl-[40px] border-l border-slate-200/50 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
         
         {/* Header */}
-        <header className="h-[90px] px-8 flex items-center justify-between z-20">
+        <header className="h-[90px] px-8 flex items-center justify-between z-20 sticky top-0 bg-[#F4F7F9]/95 backdrop-blur-sm border-b border-slate-200/40">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -221,12 +226,14 @@ export default function PathiiDashboard() {
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">1</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar" className="w-[42px] h-[42px] rounded-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer" />
+            <NextLink href="/settings">
+              <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar" className="w-[42px] h-[42px] rounded-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer" />
+            </NextLink>
           </div>
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-8 pt-2 pb-12">
+        <div className="flex-1 p-8 pt-6 pb-20">
           
           {/* Hero Banner */}
           <div className="relative w-full rounded-[24px] bg-gradient-to-br from-[#FAFCFF] to-[#F1F6FF] mb-6 overflow-hidden flex flex-col lg:flex-row items-center justify-between p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-white">
@@ -237,11 +244,11 @@ export default function PathiiDashboard() {
                 {/* Sun */}
                 <circle cx="85%" cy="80" r="45" fill="#FDE68A" fillOpacity="0.8" filter="blur(2px)" />
                 {/* Back Mountains */}
-                <path d="M400,200 L1000,200 L1000,100 C850,50 750,150 600,120 C450,90 450,180 400,200 Z" fill="#D3E4FF" fillOpacity="0.6"/>
+                <path d="M400,200 L1000,200 L1000,100 C850,50 750,150 600,120 C450,90 450,180 400,200 Z" fill="#D3E4FF" fillOpacity="0.4"/>
                 {/* Middle Mountains */}
-                <path d="M500,200 L1000,200 L1000,130 C800,100 700,180 550,150 C400,120 400,200 500,200 Z" fill="#ADC8FF" fillOpacity="0.7"/>
+                <path d="M500,200 L1000,200 L1000,130 C800,100 700,180 550,150 C400,120 400,200 500,200 Z" fill="#ADC8FF" fillOpacity="0.5"/>
                 {/* Front Mountains */}
-                <path d="M600,200 L1000,200 L1000,160 C850,130 750,190 650,170 C550,150 500,200 600,200 Z" fill="#84A9FF" fillOpacity="0.9"/>
+                <path d="M600,200 L1000,200 L1000,160 C850,130 750,190 650,170 C550,150 500,200 600,200 Z" fill="#84A9FF" fillOpacity="0.4"/>
               </svg>
             </div>
 
@@ -262,26 +269,34 @@ export default function PathiiDashboard() {
 
           {/* Stat Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-            <StatCard 
-              icon={BrainLogo} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
-              value="128" label="Total Memories" trend="↑ +12%" trendUp={true}
-            />
-            <StatCard 
-              icon={CheckSquare} iconBg="bg-[#E6F8F0]" iconColor="text-[#10B981]"
-              value="8" label="Active Tasks" trend="↓ -2%" trendUp={false}
-            />
-            <StatCard 
-              icon={Calendar} iconBg="bg-[#FFEBEF]" iconColor="text-[#F43F5E]"
-              value="3" label="Upcoming Events" trend="↑ +3 this week" trendUp={true}
-            />
-            <StatCard 
-              icon={Users} iconBg="bg-[#F3E8FF]" iconColor="text-[#8B5CF6]"
-              value="12" label="Important People" trend="↑ +2 new" trendUp={true}
-            />
+            <NextLink href="/memories" className="transition-transform hover:-translate-y-0.5">
+              <StatCard 
+                icon={BrainLogo} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
+                value="128" label="Total Memories" trend="↑ +12%" trendUp={true}
+              />
+            </NextLink>
+            <NextLink href="/tasks" className="transition-transform hover:-translate-y-0.5">
+              <StatCard 
+                icon={CheckSquare} iconBg="bg-[#E6F8F0]" iconColor="text-[#10B981]"
+                value="8" label="Active Tasks" trend="↓ -2%" trendUp={false}
+              />
+            </NextLink>
+            <NextLink href="/calendar" className="transition-transform hover:-translate-y-0.5">
+              <StatCard 
+                icon={Calendar} iconBg="bg-[#FFEBEF]" iconColor="text-[#F43F5E]"
+                value="3" label="Upcoming Events" trend="↑ +3 this week" trendUp={true}
+              />
+            </NextLink>
+            <NextLink href="/people" className="transition-transform hover:-translate-y-0.5">
+              <StatCard 
+                icon={Users} iconBg="bg-[#F3E8FF]" iconColor="text-[#8B5CF6]"
+                value="12" label="Important People" trend="↑ +2 new" trendUp={true}
+              />
+            </NextLink>
           </div>
 
           {/* Main Content Layout Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
             
             {/* Left Column */}
             <div className="flex flex-col gap-6">
@@ -290,9 +305,9 @@ export default function PathiiDashboard() {
               <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)]">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-[17px] font-bold text-slate-900 tracking-tight">Recent Memories</h3>
-                  <button className="text-[#2563EB] text-[13px] font-semibold hover:text-blue-700 flex items-center gap-1 group">
+                  <NextLink href="/memories" className="text-[#2563EB] text-[13px] font-semibold hover:text-blue-700 flex items-center gap-1 group">
                     View all <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+                  </NextLink>
                 </div>
                 <div className="flex flex-col">
                   {filteredMemories.map((memory) => (
@@ -315,9 +330,9 @@ export default function PathiiDashboard() {
               <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)]">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-[17px] font-bold text-slate-900 tracking-tight">Upcoming Tasks</h3>
-                  <button className="text-[#2563EB] text-[13px] font-semibold hover:text-blue-700 flex items-center gap-1 group">
+                  <NextLink href="/tasks" className="text-[#2563EB] text-[13px] font-semibold hover:text-blue-700 flex items-center gap-1 group">
                     View all <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+                  </NextLink>
                 </div>
                 <div className="flex flex-col">
                   <TaskItem 
@@ -356,25 +371,25 @@ export default function PathiiDashboard() {
                     <div className="absolute w-[180px] h-[180px] bg-[#F1F6FF] rounded-full"></div>
                     <div className="absolute w-[130px] h-[130px] bg-[#E1EDFF] rounded-full"></div>
                     {/* Core Mic Button - Claymorphism Style */}
-                    <button className="relative z-10 w-[85px] h-[85px] bg-[#598CFF] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 shadow-[8px_10px_20px_rgba(37,99,235,0.25),inset_6px_6px_12px_rgba(255,255,255,0.6),inset_-6px_-6px_12px_rgba(29,78,216,0.5)] active:shadow-[inset_8px_8px_16px_rgba(29,78,216,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.4)] border-none outline-none">
+                    <NextLink href="/voice-capture" className="relative z-10 w-[85px] h-[85px] bg-[#598CFF] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 shadow-[8px_10px_20px_rgba(37,99,235,0.25),inset_6px_6px_12px_rgba(255,255,255,0.6),inset_-6px_-6px_12px_rgba(29,78,216,0.5)] active:shadow-[inset_8px_8px_16px_rgba(29,78,216,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.4)] border-none outline-none">
                       <Mic size={34} className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]" strokeWidth={2} />
-                    </button>
+                    </NextLink>
                   </div>
-                  <h4 className="text-slate-900 font-bold text-[16px] mb-1.5">Tap to start recording</h4>
+                  <h4 className="text-slate-900 font-bold text-[16px] mb-1.5 whitespace-nowrap text-center">Tap to start recording</h4>
                   <p className="text-slate-500 text-[13px] font-medium text-center">Capture your thoughts, ideas, or tasks</p>
                 </div>
 
                 {/* Quick Action Buttons */}
                 <div className="grid grid-cols-3 gap-3 mt-6">
-                  <button className="flex items-center justify-center gap-2 py-3 bg-white rounded-2xl border border-slate-100 hover:border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all text-[13px] font-semibold text-slate-700">
+                  <NextLink href="/documents" className="flex items-center justify-center gap-2 py-3 bg-white rounded-2xl border border-slate-100 hover:border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all text-[13px] font-semibold text-slate-700">
                     <FileText size={16} className="text-[#3B82F6]" /> Note
-                  </button>
-                  <button className="flex items-center justify-center gap-2 py-3 bg-white rounded-2xl border border-slate-100 hover:border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all text-[13px] font-semibold text-slate-700">
+                  </NextLink>
+                  <NextLink href="/tasks" className="flex items-center justify-center gap-2 py-3 bg-white rounded-2xl border border-slate-100 hover:border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all text-[13px] font-semibold text-slate-700">
                     <CheckSquare size={16} className="text-[#10B981]" /> Task
-                  </button>
-                  <button className="flex items-center justify-center gap-2 py-3 bg-white rounded-2xl border border-slate-100 hover:border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all text-[13px] font-semibold text-slate-700">
+                  </NextLink>
+                  <NextLink href="/calendar" className="flex items-center justify-center gap-2 py-3 bg-white rounded-2xl border border-slate-100 hover:border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all text-[13px] font-semibold text-slate-700">
                     <Calendar size={16} className="text-[#F43F5E]" /> Event
-                  </button>
+                  </NextLink>
                 </div>
               </div>
 
@@ -382,9 +397,9 @@ export default function PathiiDashboard() {
               <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[17px] font-bold text-slate-900 tracking-tight">Calendar</h3>
-                  <button className="text-[#2563EB] text-[13px] font-semibold hover:text-blue-700 flex items-center gap-1 group">
+                  <NextLink href="/calendar" className="text-[#2563EB] text-[13px] font-semibold hover:text-blue-700 flex items-center gap-1 group">
                     View all <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+                  </NextLink>
                 </div>
                 <div className="flex flex-col">
                   <CalendarItem 

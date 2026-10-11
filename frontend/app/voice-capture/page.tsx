@@ -81,7 +81,53 @@ const recentCaptures = [
 
 export default function PathiiDashboard() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  const filteredCaptures = recentCaptures.filter((capture) =>
+  const [isRecording, setIsRecording] = React.useState(false);
+  const [seconds, setSeconds] = React.useState(0);
+  const [captures, setCaptures] = React.useState(recentCaptures);
+
+  React.useEffect(() => {
+    let interval: any = null;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isRecording]);
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      const durationStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      const newCap = {
+        id: captures.length + 1,
+        title: "Voice capture thought",
+        time: `Just now • ${durationStr}`,
+        tag: "Voice",
+        tagColor: "bg-[#EBF3FF] text-[#2563EB]"
+      };
+      setCaptures(prev => [newCap, ...prev]);
+      setIsRecording(false);
+      setSeconds(0);
+    } else {
+      setIsRecording(true);
+      setSeconds(0);
+    }
+  };
+
+  const cancelRecording = () => {
+    setIsRecording(false);
+    setSeconds(0);
+  };
+
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  const timeDisplay = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+  const filteredCaptures = captures.filter((capture) =>
     capture.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
 
@@ -122,15 +168,20 @@ export default function PathiiDashboard() {
         </nav>
 
         {/* User Profile */}
-        <div className="mt-4 flex items-center justify-between cursor-pointer hover:bg-slate-200/50 p-2 rounded-2xl transition-colors">
-          <div className="flex items-center gap-3">
-            <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
-            <div>
-              <p className="text-[14px] font-bold text-slate-900">Alex</p>
-              <p className="text-[12px] text-slate-500 font-medium">Free Plan</p>
+        <div className="mt-4 flex flex-col gap-2">
+          <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-200/50 p-2 rounded-2xl transition-colors">
+            <div className="flex items-center gap-3">
+              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div>
+                <p className="text-[14px] font-bold text-slate-900">Alex</p>
+                <p className="text-[12px] text-slate-500 font-medium">Free Plan</p>
+              </div>
             </div>
-          </div>
-          <ChevronRight size={18} className="text-slate-400" />
+            <ChevronRight size={18} className="text-slate-400" />
+          </NextLink>
+          <NextLink href="/admin" className="text-[11.5px] font-bold text-[#2563EB] bg-[#EBF3FF] hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            Switch to Admin Panel →
+          </NextLink>
         </div>
       </aside>
 
@@ -158,7 +209,9 @@ export default function PathiiDashboard() {
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">1</span>
             </button>
-            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-[42px] h-[42px] rounded-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer" />
+            <NextLink href="/settings">
+              <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-[42px] h-[42px] rounded-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer" />
+            </NextLink>
           </div>
         </header>
 
@@ -169,8 +222,10 @@ export default function PathiiDashboard() {
           <div className="flex flex-col lg:flex-row items-center max-lg:items-start justify-between mb-6 pl-2 max-lg:gap-4">
             <div>
               <div className="flex items-center gap-2 text-slate-500 mb-2">
-                <ArrowLeft size={16} className="cursor-pointer hover:text-slate-800" />
-                <span className="text-[14px] font-medium">Voice Capture</span>
+                <NextLink href="/" className="hover:text-slate-800 flex items-center gap-1.5">
+                  <ArrowLeft size={16} />
+                  <span className="text-[14px] font-medium">Dashboard</span>
+                </NextLink>
               </div>
               <h2 className="text-[32px] font-bold text-slate-900 tracking-tight">Capture a thought</h2>
               <p className="text-slate-500 mt-1 text-[15px]">Speak naturally. Let AI organize the details.</p>
@@ -195,9 +250,9 @@ export default function PathiiDashboard() {
               
               {/* Top Controls */}
               <div className="w-full flex items-center justify-between mb-8 max-lg:flex-wrap max-lg:gap-2">
-                <div className="bg-[#E6F8F0] text-[#10B981] px-3 py-1.5 rounded-full flex items-center gap-2 text-[13px] font-semibold">
-                  <div className="w-2 h-2 rounded-full bg-[#10B981]"></div>
-                  Ready to record
+                <div className={`px-3 py-1.5 rounded-full flex items-center gap-2 text-[13px] font-semibold transition-colors ${isRecording ? 'bg-rose-50 text-rose-600' : 'bg-[#E6F8F0] text-[#10B981]'}`}>
+                  <div className={`w-2 h-2 rounded-full ${isRecording ? 'bg-rose-500 animate-ping' : 'bg-[#10B981]'}`}></div>
+                  {isRecording ? 'Recording live...' : 'Ready to record'}
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -217,28 +272,38 @@ export default function PathiiDashboard() {
                 
                 <div className="relative flex items-center justify-center w-64 h-64 mb-6">
                   {/* Concentric rings to simulate sound waves/glow */}
-                  <div className="absolute w-[300px] h-[300px] rounded-full border border-[#EBF3FF] opacity-60"></div>
-                  <div className="absolute w-[240px] h-[240px] rounded-full border-[1.5px] border-[#D4E4FF] opacity-80"></div>
-                  <div className="absolute w-[180px] h-[180px] rounded-full bg-[#EBF3FF] opacity-50"></div>
+                  <div className={`absolute w-[300px] h-[300px] rounded-full border transition-all duration-500 ${isRecording ? 'border-blue-300 scale-110 opacity-70 animate-pulse' : 'border-[#EBF3FF] opacity-60'}`}></div>
+                  <div className={`absolute w-[240px] h-[240px] rounded-full border-[1.5px] transition-all duration-500 ${isRecording ? 'border-blue-400 scale-105 opacity-90' : 'border-[#D4E4FF] opacity-80'}`}></div>
+                  <div className={`absolute w-[180px] h-[180px] rounded-full transition-all duration-500 ${isRecording ? 'bg-blue-100 opacity-80' : 'bg-[#EBF3FF] opacity-50'}`}></div>
                   
                   {/* Main Blue Button */}
-                  <button className="relative z-10 w-[120px] h-[120px] rounded-full bg-gradient-to-br from-[#5C94FF] to-[#2563EB] flex items-center justify-center shadow-[0_12px_32px_-8px_rgba(37,99,235,0.5)] hover:scale-105 transition-transform duration-300">
+                  <button 
+                    onClick={toggleRecording}
+                    className={`relative z-10 w-[120px] h-[120px] rounded-full flex items-center justify-center shadow-[0_12px_32px_-8px_rgba(37,99,235,0.5)] hover:scale-105 transition-all duration-300 ${
+                      isRecording ? 'bg-gradient-to-br from-rose-500 to-rose-600 ring-4 ring-rose-200' : 'bg-gradient-to-br from-[#5C94FF] to-[#2563EB]'
+                    }`}
+                  >
                     <Mic size={48} className="text-white" strokeWidth={2} />
                   </button>
                 </div>
 
                 <div className="text-center mb-10">
-                  <h3 className="text-[42px] font-bold text-slate-900 leading-none tracking-tight">00:00</h3>
-                  <p className="text-slate-500 text-[14px] mt-2 font-medium">Tap the microphone to start recording</p>
+                  <h3 className={`text-[42px] font-bold leading-none tracking-tight ${isRecording ? 'text-blue-600' : 'text-slate-900'}`}>{timeDisplay}</h3>
+                  <p className="text-slate-500 text-[14px] mt-2 font-medium">
+                    {isRecording ? 'Listening... Tap mic or Stop when finished' : 'Tap the microphone to start recording'}
+                  </p>
                 </div>
 
-                {/* Waveform Visualization (Inactive state) */}
+                {/* Waveform Visualization */}
                 <div className="w-full flex items-center justify-center gap-[3px] h-16">
                   {waveformHeights.map((height, i) => (
                     <div 
                       key={i} 
-                      className="w-[3px] rounded-full bg-slate-200"
-                      style={{ height: `${height}px`, opacity: height > 20 ? 0.7 : 0.4 }}
+                      className={`w-[3px] rounded-full transition-all duration-300 ${isRecording ? 'bg-[#2563EB]' : 'bg-slate-200'}`}
+                      style={{ 
+                        height: isRecording ? `${Math.min(60, height * (1 + (i % 3) * 0.4))}px` : `${height}px`, 
+                        opacity: isRecording ? 0.9 : (height > 20 ? 0.7 : 0.4) 
+                      }}
                     ></div>
                   ))}
                 </div>
@@ -247,23 +312,34 @@ export default function PathiiDashboard() {
               {/* Bottom Actions */}
               <div className="flex items-end justify-center gap-12 mt-8 w-full">
                 <div className="flex flex-col items-center gap-2">
-                  <button className="w-14 h-14 rounded-full border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors shadow-sm">
+                  <button 
+                    onClick={cancelRecording}
+                    className="w-14 h-14 rounded-full border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors shadow-sm"
+                  >
                     <X size={24} />
                   </button>
                   <span className="text-[12px] font-semibold text-slate-600">Cancel</span>
                 </div>
 
                 <div className="flex flex-col items-center gap-2 mb-2">
-                  <button className="w-16 h-16 rounded-full bg-[#2563EB] hover:bg-blue-700 flex items-center justify-center text-white transition-colors shadow-md">
+                  <button 
+                    onClick={toggleRecording}
+                    className={`w-16 h-16 rounded-full flex items-center justify-center text-white transition-colors shadow-md ${
+                      isRecording ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#2563EB] hover:bg-blue-700'
+                    }`}
+                  >
                     <Mic size={24} fill="currentColor" />
                   </button>
-                  <span className="text-[13px] font-bold text-slate-900">Start Recording</span>
+                  <span className="text-[13px] font-bold text-slate-900">{isRecording ? 'Stop Recording' : 'Start Recording'}</span>
                 </div>
 
                 <div className="flex flex-col items-center gap-2">
-                  <button className="w-14 h-14 rounded-full border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors shadow-sm">
+                  <NextLink 
+                    href="/documents"
+                    className="w-14 h-14 rounded-full border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors shadow-sm"
+                  >
                     <Bookmark size={22} />
-                  </button>
+                  </NextLink>
                   <span className="text-[12px] font-semibold text-slate-600">Quick Note</span>
                 </div>
               </div>
@@ -280,14 +356,18 @@ export default function PathiiDashboard() {
                     <FileText size={20} className="text-[#2563EB]" />
                     <h3 className="text-[16px] font-bold text-slate-900">Live Transcript</h3>
                   </div>
-                  <div className="bg-[#EBF3FF] text-[#2563EB] px-3 py-1 rounded-full flex items-center gap-2 text-[12px] font-semibold">
-                    <div className="w-2 h-2 rounded-full bg-[#2563EB]"></div>
-                    Processing with AI
+                  <div className={`px-3 py-1 rounded-full flex items-center gap-2 text-[12px] font-semibold ${isRecording ? 'bg-blue-50 text-blue-600' : 'bg-[#EBF3FF] text-[#2563EB]'}`}>
+                    <div className={`w-2 h-2 rounded-full ${isRecording ? 'bg-blue-600 animate-pulse' : 'bg-[#2563EB]'}`}></div>
+                    {isRecording ? 'Live Streaming...' : 'Processing with AI'}
                   </div>
                 </div>
                 <div className="bg-[#F8FAFC] rounded-[16px] p-5 min-h-[140px] border border-slate-100 flex items-start">
                   <div className="w-0.5 h-5 bg-[#2563EB] rounded-full mr-2 animate-pulse"></div>
-                  <p className="text-slate-400 text-[14.5px] font-medium italic mt-0.5">Your speech will appear here...</p>
+                  <p className={`text-[14.5px] font-medium leading-relaxed ${isRecording ? 'text-slate-800' : 'text-slate-400 italic'}`}>
+                    {isRecording
+                      ? "Discussing project ideas for AI memory assistant. We should enable multi-modal capture across voice, notes, and calendar events, with automatic entity extraction and reminders."
+                      : "Your speech will appear here..."}
+                  </p>
                 </div>
               </div>
 
@@ -298,28 +378,28 @@ export default function PathiiDashboard() {
                     <Sparkles size={20} className="text-[#8B5CF6]" fill="#8B5CF6" fillOpacity="0.2" />
                     <h3 className="text-[16px] font-bold text-slate-900">AI Analysis</h3>
                   </div>
-                  <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full flex items-center gap-2 text-[12px] font-semibold">
-                    <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                    Waiting for audio...
+                  <div className={`px-3 py-1 rounded-full flex items-center gap-2 text-[12px] font-semibold ${isRecording ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                    <div className={`w-2 h-2 rounded-full ${isRecording ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
+                    {isRecording ? 'Analyzing Audio...' : 'Waiting for audio...'}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <AnalysisCard 
                     icon={List} theme="blue"
-                    title="Key Points" desc="Important information extracted from your speech"
+                    title="Key Points" desc={isRecording ? "AI memory assistant project scope and features" : "Important information extracted from your speech"}
                   />
                   <AnalysisCard 
                     icon={CheckCircle2} theme="green"
-                    title="Tasks" desc="Action items and deadlines"
+                    title="Tasks" desc={isRecording ? "Draft feature list & research calendar API" : "Action items and deadlines"}
                   />
                   <AnalysisCard 
                     icon={User} theme="purple"
-                    title="People" desc="Names and relationships mentioned"
+                    title="People" desc={isRecording ? "Sarah (Designer), Alex (Product Lead)" : "Names and relationships mentioned"}
                   />
                   <AnalysisCard 
                     icon={Calendar} theme="red"
-                    title="Events" desc="Dates, meetings and commitments"
+                    title="Events" desc={isRecording ? "Follow up sprint planning tomorrow" : "Dates, meetings and commitments"}
                   />
                 </div>
               </div>

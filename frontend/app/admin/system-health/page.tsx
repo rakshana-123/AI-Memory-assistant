@@ -158,11 +158,45 @@ const getStatusBadge = (status: any) => {
 };
 
 export default function AdminDashboard() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [levelFilter, setLevelFilter] = useState('All');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+
+  const handleQuickAction = (actionName: string) => {
+    setActionFeedback(`Executing ${actionName}... Success!`);
+    setTimeout(() => {
+      setActionFeedback(null);
+    }, 3500);
+  };
+
+  const visibleLogs = systemLogs.filter(log => {
+    const matchesSearch = log.msg.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+                          log.service.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    const matchesLevel = levelFilter === 'All' || log.level.toLowerCase() === levelFilter.toLowerCase();
+    return matchesSearch && matchesLevel;
+  });
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === visibleLogs.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(visibleLogs.map((_, i) => i));
+    }
+  };
+
+  const toggleSelectRow = (idx: number) => {
+    setSelectedIds(prev =>
+      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+    );
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[240px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[240px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -188,8 +222,8 @@ export default function AdminDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-100 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
+          <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
               <div>
@@ -198,7 +232,10 @@ export default function AdminDashboard() {
               </div>
             </div>
             <ChevronRight size={18} className="text-slate-400" />
-          </div>
+          </NextLink>
+          <NextLink href="/" className="text-[11.5px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            ← Back to User View
+          </NextLink>
         </div>
       </aside>
 
@@ -206,11 +243,13 @@ export default function AdminDashboard() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-[#F4F7F9]">
-          <div className="relative w-[450px]">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50">
+          <div className="relative w-full max-w-[450px] lg:w-[450px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search logs, services, errors, or system metrics..." 
               className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
@@ -238,13 +277,23 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6">
+        {actionFeedback && (
+          <div className="mx-8 mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-emerald-600" />
+              <span>{actionFeedback}</span>
+            </div>
+            <button onClick={() => setActionFeedback(null)} className="text-emerald-600 hover:text-emerald-900 text-xs font-semibold">✕</button>
+          </div>
+        )}
+
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
           
           {/* Main Left Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title Block */}
-            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm max-lg:flex-wrap max-lg:gap-3">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                     <ShieldCheck size={24} strokeWidth={2.5} />
@@ -263,7 +312,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               <MetricCard icon={Monitor} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Uptime" value="99.98%" trend="0.02%" trendUp={true} trendColor="text-emerald-500" />
               <MetricCard icon={Clock} iconColor="text-blue-500" iconBg="bg-blue-50" title="Avg Response Time" value="284 ms" trend="32%" trendUp={false} trendColor="text-emerald-500" />
               <MetricCard icon={Activity} iconColor="text-emerald-500" iconBg="bg-emerald-50" title="Requests/min" value="12.4K" trend="18%" trendUp={true} trendColor="text-emerald-500" />
@@ -273,7 +322,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Charts Row 1 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* System Performance Area Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[280px]">
                 <div className="flex items-center justify-between mb-4">
@@ -348,7 +397,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Charts Row 2 */}
-            <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-[1.5fr_1fr_1fr] gap-4">
               
               {/* Uptime History (Heatmap) */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[240px]">
@@ -446,24 +495,36 @@ export default function AdminDashboard() {
             {/* Recent System Logs Table */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
               
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent System Logs</h3>
                 
-                <div className="flex items-center gap-3">
-                  <div className="relative w-[200px]">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative w-full sm:w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                     <input 
                       type="text" 
                       placeholder="Search logs..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700"
                     />
                   </div>
                   
-                  {['All Services', 'All Levels', 'Last 24 Hours'].map((filter, i) => (
-                    <button key={i} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
-                      {filter} <ChevronDown size={14} className="text-slate-400" />
-                    </button>
-                  ))}
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                    {['All', 'INFO', 'WARN', 'ERROR'].map((lvl) => (
+                      <button
+                        key={lvl}
+                        onClick={() => setLevelFilter(lvl)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                          levelFilter === lvl
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-900'
+                        }`}
+                      >
+                        {lvl}
+                      </button>
+                    ))}
+                  </div>
                   
                   <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
                     <Filter size={14} className="text-slate-400" /> Filter
@@ -475,7 +536,14 @@ export default function AdminDashboard() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/50">
-                      <th className="py-2.5 px-4 w-10"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer" /></th>
+                      <th className="py-2.5 px-4 w-10">
+                        <input
+                          type="checkbox"
+                          checked={visibleLogs.length > 0 && selectedIds.length === visibleLogs.length}
+                          onChange={toggleSelectAll}
+                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
+                        />
+                      </th>
                       <th className="py-2.5 px-4">Time</th>
                       <th className="py-2.5 px-4">Level</th>
                       <th className="py-2.5 px-4">Service</th>
@@ -484,33 +552,73 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[12px]">
-                    {systemLogs.map((log, index) => (
-                      <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-2.5 px-4"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer" /></td>
-                        <td className="py-2.5 px-4 text-slate-500 font-medium">{log.time}</td>
-                        <td className="py-2.5 px-4">{getLevelBadge(log.level)}</td>
-                        <td className="py-2.5 px-4 font-semibold text-slate-700">{log.service}</td>
-                        <td className="py-2.5 px-4 text-slate-600 font-medium">{log.msg}</td>
-                        <td className="py-2.5 px-4 flex justify-end">{getStatusBadge(log.status)}</td>
+                    {visibleLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                          No logs found matching "{searchQuery}"
+                        </td>
                       </tr>
-                    ))}
+                    ) : (
+                      visibleLogs.map((log, index) => (
+                        <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                          <td className="py-2.5 px-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(index)}
+                              onChange={() => toggleSelectRow(index)}
+                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
+                            />
+                          </td>
+                          <td className="py-2.5 px-4 text-slate-500 font-medium whitespace-nowrap">{log.time}</td>
+                          <td className="py-2.5 px-4">{getLevelBadge(log.level)}</td>
+                          <td className="py-2.5 px-4 font-semibold text-slate-700 whitespace-nowrap">{log.service}</td>
+                          <td className="py-2.5 px-4 text-slate-600 font-medium">{log.msg}</td>
+                          <td className="py-2.5 px-4 flex justify-end">{getStatusBadge(log.status)}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
 
               {/* Pagination */}
-              <div className="p-3 border-t border-slate-100 flex items-center justify-between text-[12px] font-medium text-slate-500">
-                 <span>Showing 1–10 of 1,248 logs</span>
+              <div className="p-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] font-medium text-slate-500">
+                 <span>Showing {visibleLogs.length === 0 ? 0 : 1}–{visibleLogs.length} of {systemLogs.length} logs</span>
                  <div className="flex items-center gap-1">
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">2</button>
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">3</button>
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">4</button>
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">5</button>
+                   <button 
+                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                     className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30"
+                     disabled={currentPage === 1}
+                   >
+                     <ChevronDown size={14} className="rotate-90" />
+                   </button>
+                   {[1, 2, 3].map(page => (
+                     <button
+                       key={page}
+                       onClick={() => setCurrentPage(page)}
+                       className={`w-7 h-7 flex items-center justify-center rounded-lg font-bold transition-all ${
+                         currentPage === page ? 'bg-blue-600 text-white shadow-sm' : 'hover:bg-slate-100 text-slate-700'
+                       }`}
+                     >
+                       {page}
+                     </button>
+                   ))}
                    <span className="px-1 text-slate-400">...</span>
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">125</button>
-                   <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="-rotate-90" /></button>
+                   <button 
+                     onClick={() => setCurrentPage(12)}
+                     className={`w-7 h-7 flex items-center justify-center rounded-lg font-semibold transition-all ${
+                       currentPage === 12 ? 'bg-blue-600 text-white shadow-sm' : 'hover:bg-slate-100 text-slate-700'
+                     }`}
+                   >
+                     12
+                   </button>
+                   <button 
+                     onClick={() => setCurrentPage(prev => Math.min(12, prev + 1))}
+                     className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30"
+                     disabled={currentPage === 12}
+                   >
+                     <ChevronDown size={14} className="-rotate-90" />
+                   </button>
                  </div>
                  <div className="flex items-center gap-2">
                    <button className="px-2.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
@@ -523,7 +631,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-[300px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6">
             
             {/* Service Status */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
@@ -597,7 +705,11 @@ export default function AdminDashboard() {
                    { icon: PulseIcon, label: 'Run Health Check' },
                    { icon: BellRing, label: 'Configure Alerts' },
                  ].map((action, i) => (
-                   <button key={i} className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 rounded-xl transition-all group shadow-sm">
+                   <button 
+                     key={i} 
+                     onClick={() => handleQuickAction(action.label)}
+                     className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 rounded-xl transition-all group shadow-sm active:scale-95"
+                   >
                      <action.icon size={16} className="text-blue-600 flex-shrink-0" />
                      <span className="text-[11px] font-bold leading-tight text-left">{action.label}</span>
                    </button>
@@ -612,17 +724,18 @@ export default function AdminDashboard() {
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

@@ -66,12 +66,12 @@ const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
 const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp }: any) => (
   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col justify-between">
     <div className="flex items-center gap-3 mb-3">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
         <Icon size={20} className={iconColor} />
       </div>
-      <div>
+      <div className="min-w-0 flex-1">
         <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1">{value}</h3>
-        <p className="text-[13px] text-slate-500 font-medium leading-none">{title}</p>
+        <p className="text-[13px] text-slate-500 font-medium leading-none whitespace-nowrap">{title}</p>
       </div>
     </div>
     <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -147,11 +147,18 @@ export default function AdminDashboard() {
     });
   };
 
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+
+  const handleAction = (msg: string) => {
+    setActionFeedback(msg);
+    setTimeout(() => setActionFeedback(null), 3500);
+  };
+
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
       {/* Left Sidebar */}
-      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
+      <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-20 sticky top-0 h-screen">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
           <div className="text-[#2563EB]">
              <Brain size={32} strokeWidth={2.5} />
@@ -195,7 +202,7 @@ export default function AdminDashboard() {
       <main className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 max-lg:h-auto max-lg:flex-wrap max-lg:py-3 max-lg:gap-3">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -229,8 +236,17 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 max-lg:flex-col">
+        {actionFeedback && (
+          <div className="mx-8 mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-emerald-600" />
+              <span>{actionFeedback}</span>
+            </div>
+            <button onClick={() => setActionFeedback(null)} className="text-emerald-600 hover:text-emerald-900 text-xs font-semibold">✕</button>
+          </div>
+        )}
+
+        <div className="flex-1 px-8 py-6 flex gap-6 flex-col xl:flex-row pb-20">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -246,13 +262,15 @@ export default function AdminDashboard() {
                    <p className="text-[14px] text-slate-500 font-medium">View, organize and manage all user documents across Pathii.</p>
                  </div>
                </div>
-               <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm shadow-blue-200 transition-colors flex items-center gap-2">
+               <button 
+                 onClick={() => handleAction('Upload dialog opened: select PDF, Word or Spreadsheet files')}
+                 className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm shadow-blue-200 transition-all flex items-center gap-2"
+               >
                  <CloudUpload size={18} /> Upload Document
                </button>
             </div>
 
-            {}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
               <StatCard icon={FileText} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Documents" value="3,198" trend="16%" trendUp={true} />
               <StatCard icon={FileText} iconColor="text-red-500" iconBg="bg-red-100" title="PDF Files" value="1,124" trend="20%" trendUp={true} />
               <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-100" title="Word Documents" value="856" trend="12%" trendUp={true} />
@@ -261,8 +279,7 @@ export default function AdminDashboard() {
               <StatCard icon={File} iconColor="text-purple-500" iconBg="bg-purple-100" title="Others" value="228" trend="10%" trendUp={true} />
             </div>
 
-            {}
-            <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_1fr] gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-[2.5fr_1fr] gap-4">
               {/* Document Trends Area Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <div className="flex items-center justify-between mb-4">
@@ -466,8 +483,8 @@ export default function AdminDashboard() {
 
           </div>
 
-          {}
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
+          {/* Right Column */}
+          <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-6">
             
             {/* Storage Usage */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
@@ -576,7 +593,11 @@ export default function AdminDashboard() {
                    { icon: FolderKanban, label: 'Manage Categories' },
                    { icon: Trash2, label: 'Cleanup Storage' },
                  ].map((action, i) => (
-                   <button key={i} className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 text-slate-600 rounded-xl transition-all group">
+                   <button 
+                     key={i} 
+                     onClick={() => handleAction(`${action.label} completed!`)}
+                     className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 text-slate-600 rounded-xl transition-all group active:scale-95 shadow-sm"
+                   >
                      <action.icon size={16} className="text-slate-400 group-hover:text-blue-500 flex-shrink-0" />
                      <span className="text-[12px] font-semibold leading-tight text-left">{action.label}</span>
                    </button>
@@ -592,17 +613,18 @@ export default function AdminDashboard() {
       {}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

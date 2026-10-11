@@ -34,14 +34,13 @@ const FormGroup = ({ label, description, children, layout = 'vertical' }: any) =
   </div>
 );
 
-const Input = ({ type = "text", value, placeholder, suffix, className = "" }: any) => (
+const Input = ({ type = "text", value, placeholder, suffix, className = "", defaultValue }: any) => (
   <div className={`relative flex items-center w-full bg-white border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all ${className}`}>
     <input 
       type={type} 
-      value={value}
+      defaultValue={defaultValue ?? value}
       placeholder={placeholder}
       className="w-full px-3 py-1.5 text-[13px] font-semibold text-slate-700 focus:outline-none placeholder:text-slate-400 placeholder:font-medium"
-      readOnly
     />
     {suffix && (
       <span className="px-3 py-1.5 text-[12px] font-bold text-slate-400 border-l border-slate-200 bg-slate-50/50 flex-shrink-0">
@@ -74,7 +73,7 @@ const SectionCard = ({ title, description, children, className = "" }: any) => (
 );
 
 export default function AdminSettingsDashboard() {
-  const [toggles, setToggles] = useState({
+  const initialToggles = {
     tfa: true,
     pwdPolicy: true,
     loginNotif: true,
@@ -94,14 +93,30 @@ export default function AdminSettingsDashboard() {
     maintenance: false,
     debug: false,
     autoBackup: true
-  });
+  };
+
+  const [toggles, setToggles] = useState(initialToggles);
+  const [activeTab, setActiveTab] = useState('general');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [savedToast, setSavedToast] = useState<string | null>(null);
 
   const handleToggle = (key: any) => {
     setToggles(prev => ({ ...prev, [key]: !(prev as any)[key] }));
   };
 
+  const handleSave = () => {
+    setSavedToast('All settings saved successfully!');
+    setTimeout(() => setSavedToast(null), 3000);
+  };
+
+  const handleReset = () => {
+    setToggles(initialToggles);
+    setSavedToast('Settings restored to system defaults.');
+    setTimeout(() => setSavedToast(null), 3000);
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
       {/* Left Sidebar */}
       <aside className="w-[240px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -144,7 +159,7 @@ export default function AdminSettingsDashboard() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 mt-auto">
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
@@ -155,19 +170,27 @@ export default function AdminSettingsDashboard() {
             </div>
             <ChevronRight size={18} className="text-slate-400" />
           </div>
+          <NextLink 
+            href="/"
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 text-[12px] font-bold transition-all border border-slate-200"
+          >
+            <span>← Back to User View</span>
+          </NextLink>
         </div>
       </aside>
 
       {/* Main Content Area Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         
-        {}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-[#F4F7F9]">
-          <div className="relative w-[450px]">
+        {/* Header */}
+        <header className="h-auto py-4 lg:h-[72px] px-4 lg:px-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-shrink-0 bg-[#F4F7F9]">
+          <div className="relative w-full max-w-[450px] lg:w-[450px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
               placeholder="Search settings, users, integrations..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-500 border border-slate-200">
@@ -175,8 +198,8 @@ export default function AdminSettingsDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
-            <button className="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+          <div className="flex items-center gap-3 lg:gap-5 justify-end">
+            <button className="hidden sm:flex bg-white border border-slate-200 rounded-lg px-3 py-2 items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-blue-600" />
               Oct 1, 2024 - Oct 31, 2024
               <ChevronDown size={14} className="text-slate-400 ml-1" />
@@ -186,31 +209,30 @@ export default function AdminSettingsDashboard() {
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
+            <div className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4 lg:pl-5">
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
         </header>
 
-        {}
-        <div className="flex-1 overflow-y-auto px-8 pb-24 custom-scrollbar flex flex-col">
+        <div className="flex-1 overflow-y-auto px-4 lg:px-8 pb-36 custom-scrollbar flex flex-col">
           
           {/* Header Section */}
-          <div className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Settings size={24} strokeWidth={2.5} />
              </div>
              <div>
-               <h2 className="text-[22px] font-extrabold text-slate-900 leading-tight">Settings</h2>
-               <p className="text-[14px] text-slate-500 font-medium">Manage platform settings, security, integrations, and preferences for Pathii.</p>
+               <h2 className="text-[20px] sm:text-[22px] font-extrabold text-slate-900 leading-tight">Settings</h2>
+               <p className="text-[13px] sm:text-[14px] text-slate-500 font-medium">Manage platform settings, security, integrations, and preferences for Pathii.</p>
              </div>
           </div>
 
           {/* Navigation Tabs */}
           <div className="flex items-center border-b border-slate-200 mb-6 space-x-8 overflow-x-auto custom-scrollbar pb-px">
             {[
-              { id: 'general', icon: SettingsIcon, label: 'General', active: true },
+              { id: 'general', icon: SettingsIcon, label: 'General' },
               { id: 'security', icon: Shield, label: 'Security' },
               { id: 'users', icon: UsersIcon, label: 'Users & Permissions' },
               { id: 'ai', icon: Brain, label: 'AI & Models' },
@@ -222,8 +244,9 @@ export default function AdminSettingsDashboard() {
             ].map(tab => (
               <button 
                 key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 pb-3 pt-1 px-1 border-b-2 font-bold text-[13.5px] whitespace-nowrap transition-colors ${
-                  tab.active 
+                  activeTab === tab.id 
                   ? 'border-blue-600 text-blue-600' 
                   : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
@@ -234,8 +257,7 @@ export default function AdminSettingsDashboard() {
             ))}
           </div>
 
-          {}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             
             {/* ROW 1 */}
             {/* Platform Information */}
@@ -576,32 +598,47 @@ export default function AdminSettingsDashboard() {
           </div>
         </div>
         
-        {}
-        <div className="absolute bottom-0 left-[240px] right-0 bg-white border-t border-slate-200 px-8 py-4 flex items-center justify-end gap-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-          <button className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-[13px] font-bold hover:bg-slate-50 transition-colors flex items-center gap-2">
-            <RefreshCw size={14} /> Reset to Default
-          </button>
-          <button className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-[13px] font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
-            <Save size={14} /> Save All Settings
-          </button>
+        {/* Bottom Bar: Sticky/absolute within container, non-overlapping with pb-36 */}
+        <div className="fixed lg:absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 lg:px-8 py-3.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+          <div className="flex items-center gap-2">
+            {savedToast && (
+              <span className="text-[12px] font-bold text-emerald-600 flex items-center gap-1.5 animate-pulse">
+                <Check size={14} className="text-emerald-500" /> {savedToast}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-3">
+            <button 
+              onClick={handleReset}
+              className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl border border-slate-200 text-slate-600 text-[13px] font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw size={14} /> Reset to Default
+            </button>
+            <button 
+              onClick={handleSave}
+              className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-blue-600 text-white text-[13px] font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2"
+            >
+              <Save size={14} /> Save All Settings
+            </button>
+          </div>
         </div>
 
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>

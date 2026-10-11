@@ -110,8 +110,37 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, subValue, trend
 );
 
 export default function AdminDashboard() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [featureFilter, setFeatureFilter] = useState('All Features');
+  const [period, setPeriod] = useState('Last 30 days');
+
+  const visibleActivity = recentActivityData.filter((row) => {
+    const matchesSearch =
+      row.prompt.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+      row.user.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+      row.feature.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    const matchesFeature =
+      featureFilter === 'All Features' || row.feature === featureFilter;
+    return matchesSearch && matchesFeature;
+  });
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === visibleActivity.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(visibleActivity.map((_, i) => i));
+    }
+  };
+
+  const toggleSelectRow = (idx: number) => {
+    setSelectedIds(prev =>
+      prev.includes(idx) ? prev.filter(id => id !== idx) : [...prev, idx]
+    );
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
       {/* Left Sidebar */}
       <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -140,8 +169,8 @@ export default function AdminDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-100 mt-auto">
-          <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+        <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
+          <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
               <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
               <div>
@@ -150,7 +179,10 @@ export default function AdminDashboard() {
               </div>
             </div>
             <ChevronRight size={18} className="text-slate-400" />
-          </div>
+          </NextLink>
+          <NextLink href="/" className="text-[11.5px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-xl text-center transition-colors">
+            ← Back to User View
+          </NextLink>
         </div>
       </aside>
 
@@ -159,10 +191,12 @@ export default function AdminDashboard() {
         
         {/* Header */}
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[400px]">
+          <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search users, prompts, features, or anything..." 
               className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
@@ -174,7 +208,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-5">
             <button className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
-              Oct 1, 2024 - Oct 31, 2024
+              {period}
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
@@ -190,13 +224,13 @@ export default function AdminDashboard() {
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6">
+        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 flex-col lg:flex-row">
           
           {}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title Block */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between max-lg:flex-wrap max-lg:gap-3">
                <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex-1">
                  <div className="w-12 h-12 bg-blue-500 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm shadow-blue-200">
                     <Bot size={28} />
@@ -206,15 +240,21 @@ export default function AdminDashboard() {
                    <p className="text-[13px] text-slate-500 font-medium mt-0.5">Monitor and analyze AI feature usage, model performance and costs across Pathii.</p>
                  </div>
                </div>
-               <div className="ml-4">
-                  <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
-                    Last 30 days <ChevronDown size={16} className="text-slate-400" />
-                  </button>
+               <div className="ml-4 max-lg:ml-0 flex items-center gap-2">
+                  {['Today', '7 days', 'Last 30 days'].map((p) => (
+                    <button 
+                      key={p}
+                      onClick={() => setPeriod(p)}
+                      className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-colors ${period === p ? 'bg-blue-600 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    >
+                      {p}
+                    </button>
+                  ))}
                </div>
             </div>
 
             {/* Stat Cards Row */}
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard icon={MessageSquare} iconColor="text-purple-500" iconBg="bg-purple-100" title="Total AI Requests" value="12,845" trend="28%" trendUp={true} />
               <StatCard icon={Users} iconColor="text-blue-500" iconBg="bg-blue-100" title="Active Users" value="1,248" trend="18%" trendUp={true} />
               <StatCard icon={Clock} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Avg Response Time" value="2.4s" trend="32%" trendUp={true} />
@@ -222,8 +262,8 @@ export default function AdminDashboard() {
               <StatCard icon={Star} iconColor="text-pink-500" iconBg="bg-pink-100" title="Success Rate" value="98.2%" trend="2%" trendUp={true} />
             </div>
 
-            {}
-            <div className="grid grid-cols-[1.5fr_1fr] gap-4">
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
               {/* AI Usage Trend Area Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <div className="flex items-center justify-between mb-4">
@@ -299,8 +339,8 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {}
-            <div className="grid grid-cols-[1fr_1.2fr] gap-4">
+            {/* Top Users & Feature Performance */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
                {/* Top Users */}
                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                  <h3 className="text-[16px] font-bold text-slate-900 mb-5">Top Users by AI Usage</h3>
@@ -363,25 +403,36 @@ export default function AdminDashboard() {
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-[16px] font-bold text-slate-900">Recent AI Activity</h3>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                     <input 
                       type="text" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search prompts, users or content..." 
                       className="w-[240px] pl-8 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700"
                     />
                   </div>
                   
-                  {['All Features', 'All Users', 'Success / Error'].map((filter, i) => (
-                    <button key={i} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
-                      {filter} <ChevronDown size={14} className="text-slate-400" />
+                  {['All Features', 'Voice Processing', 'AI Chat Assistant', 'Summarization'].map((filter, i) => (
+                    <button 
+                      key={i} 
+                      onClick={() => setFeatureFilter(filter)}
+                      className={`px-3 py-1.5 border rounded-lg text-[12px] font-semibold flex items-center gap-2 transition-colors ${featureFilter === filter ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'}`}
+                    >
+                      {filter}
                     </button>
                   ))}
                   
-                  <button className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-1.5 transition-colors">
-                    <Filter size={14} className="text-slate-400" /> Filter
-                  </button>
+                  {featureFilter !== 'All Features' && (
+                    <button 
+                      onClick={() => setFeatureFilter('All Features')}
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-semibold text-slate-600 transition-colors"
+                    >
+                      Reset
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -389,7 +440,14 @@ export default function AdminDashboard() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-[12px] font-bold text-slate-400 tracking-wider bg-slate-50/50">
-                      <th className="py-3 px-4 w-10"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></th>
+                      <th className="py-3 px-4 w-10">
+                        <input 
+                          type="checkbox" 
+                          checked={visibleActivity.length > 0 && selectedIds.length === visibleActivity.length}
+                          onChange={toggleSelectAll}
+                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" 
+                        />
+                      </th>
                       <th className="py-3 px-4 font-semibold">Type</th>
                       <th className="py-3 px-4 font-semibold">Prompt / Input</th>
                       <th className="py-3 px-4 font-semibold">Feature</th>
@@ -401,42 +459,57 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {recentActivityData.map((row, index) => (
-                      <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
-                        <td className="py-3 px-4">
-                           <div className="flex items-center gap-2 text-slate-400 font-semibold text-[12px]">
-                             {row.num}
-                             <div className={`w-6 h-6 rounded flex items-center justify-center ${row.bg}`}>
-                               <row.icon size={13} className={row.color} />
-                             </div>
-                           </div>
+                    {visibleActivity.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="py-8 text-center text-slate-400 text-[13px] font-medium">
+                          No AI activity matching your search criteria.
                         </td>
-                        <td className="py-3 px-4 font-semibold text-slate-800">{row.prompt}</td>
-                        <td className="py-3 px-4 text-slate-500 font-medium">{row.feature}</td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2 font-semibold text-slate-700">
-                             <img src={row.avatar} alt={row.user} className="w-6 h-6 rounded-full object-cover" />
-                             {row.user}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-slate-500 font-medium">{row.tokens}</td>
-                        <td className="py-3 px-4 text-slate-500 font-medium">{row.time}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 rounded-md text-[11px] font-bold inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-100`}>
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 font-medium text-[12px]">{row.timeAgo}</td>
                       </tr>
-                    ))}
+                    ) : (
+                      visibleActivity.map((row, index) => (
+                        <tr key={index} className={`border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors ${selectedIds.includes(index) ? 'bg-blue-50/40' : ''}`}>
+                          <td className="py-3 px-4">
+                            <input 
+                              type="checkbox" 
+                              checked={selectedIds.includes(index)}
+                              onChange={() => toggleSelectRow(index)}
+                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" 
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                             <div className="flex items-center gap-2 text-slate-400 font-semibold text-[12px]">
+                               {row.num}
+                               <div className={`w-6 h-6 rounded flex items-center justify-center ${row.bg}`}>
+                                 <row.icon size={13} className={row.color} />
+                               </div>
+                             </div>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-800">{row.prompt}</td>
+                          <td className="py-3 px-4 text-slate-500 font-medium">{row.feature}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2 font-semibold text-slate-700">
+                               <img src={row.avatar} alt={row.user} className="w-6 h-6 rounded-full object-cover" />
+                               {row.user}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 font-medium">{row.tokens}</td>
+                          <td className="py-3 px-4 text-slate-500 font-medium">{row.time}</td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-1 rounded-md text-[11px] font-bold inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-100">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              {row.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-slate-400 font-medium text-[12px]">{row.timeAgo}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
 
-              <div className="p-4 flex items-center justify-between text-[13px] font-medium text-slate-500">
-                 <span>Showing 1–5 of 12,845 requests</span>
+              <div className="p-4 flex items-center justify-between text-[13px] font-medium text-slate-500 flex-wrap gap-3">
+                 <span>Showing {visibleActivity.length === 0 ? 0 : 1}–{visibleActivity.length} of {recentActivityData.length} requests</span>
                  <div className="flex items-center gap-1">
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>
@@ -458,8 +531,8 @@ export default function AdminDashboard() {
 
           </div>
 
-          {}
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6">
+          {/* Right Column */}
+          <div className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-6">
             
             {/* Model Usage */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
@@ -585,17 +658,18 @@ export default function AdminDashboard() {
       {/* CSS for custom scrollbar */}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #CBD5E1;
-          border-radius: 10px;
+          display: none !important;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #94A3B8;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          display: none !important;
         }
       `}} />
     </div>
