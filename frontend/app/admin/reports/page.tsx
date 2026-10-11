@@ -209,7 +209,7 @@ export default function App() {
       <main className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50 max-lg:h-auto max-lg:py-3">
           <div className="relative w-full max-w-[480px] lg:w-[480px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -224,7 +224,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-wrap">
             <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
               {dateRange}
@@ -321,7 +321,7 @@ export default function App() {
               {/* Reports by Type Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[280px]">
                 <h3 className="text-[16px] font-bold text-slate-900 mb-4">Reports by Type</h3>
-                <div className="flex flex-1 items-center gap-4">
+                <div className="flex flex-1 items-center gap-4 max-lg:overflow-x-auto">
                   <div className="relative w-[130px] h-[130px] flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>

@@ -350,7 +350,7 @@ export default function PathiiMemoriesDashboard() {
 
             {/* Filters Row */}
             <div className="flex items-center justify-between mb-6 max-lg:flex-col max-lg:items-start max-lg:gap-4">
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-lg:flex-wrap">
                 {['All', 'Notes', 'Voice', 'Images', 'Documents', 'Links', 'Locations', 'People'].map((filter) => (
                   <button
                     key={filter}

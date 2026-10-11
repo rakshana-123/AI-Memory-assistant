@@ -235,7 +235,7 @@ export default function PathiiInsightsDashboard() {
             </div>
 
             {}
-            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 flex-shrink-0">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 flex-shrink-0 max-lg:grid-cols-1">
               {/* Stat 1 */}
               <div className="bg-white p-5 rounded-[20px] border border-slate-200 shadow-sm flex items-start gap-4">
                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">

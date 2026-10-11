@@ -245,7 +245,7 @@ export default function NotificationsManagementDashboard() {
       <main className="flex-1 flex flex-col min-w-0">
 
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-white/50 backdrop-blur-sm">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-white/50 backdrop-blur-sm max-lg:h-auto max-lg:py-3">
           <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -260,7 +260,7 @@ export default function NotificationsManagementDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 max-lg:flex-wrap">
             <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarDays size={15} className="text-slate-400" />
               {dateRange}
@@ -529,7 +529,7 @@ export default function NotificationsManagementDashboard() {
               {/* Pagination */}
               <div className="py-3 px-5 border-t border-slate-100 flex items-center justify-between text-[13px] bg-slate-50/30 flex-wrap gap-3">
                 <span className="text-slate-500 font-medium">Showing {visibleNotifications.length === 0 ? 0 : 1}–{visibleNotifications.length} of {notifications.length} notifications</span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 max-lg:flex-wrap">
                   <button className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-400 hover:bg-slate-50">&lt;</button>
                   <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white font-bold">1</button>
                   <button className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-50 font-medium">2</button>

@@ -286,7 +286,7 @@ export default function PathiiCalendarDashboard() {
                 <h2 className="text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight mb-1">Your Schedule</h2>
                 <p className="text-[15px] text-slate-500 font-medium">Stay on top of your meetings, tasks and important events.</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 max-lg:flex-wrap">
                 <button
                   onClick={() => setIsAddEventModalOpen(true)}
                   className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-[13px] font-bold rounded-full shadow-sm flex items-center gap-1.5 transition-colors"

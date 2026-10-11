@@ -246,7 +246,7 @@ export default function PathiiDashboard() {
           <div className="relative w-full rounded-[24px] bg-gradient-to-br from-[#FAFCFF] to-[#F1F6FF] mb-6 overflow-hidden flex flex-col lg:flex-row items-center justify-between p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-white">
             
             {/* Background Graphic SVG */}
-            <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
               <svg width="100%" height="100%" viewBox="0 0 1000 200" preserveAspectRatio="xMaxYMax slice" xmlns="http://www.w3.org/2000/svg">
                 {/* Sun */}
                 <circle cx="85%" cy="80" r="45" fill="#FDE68A" fillOpacity="0.8" filter="blur(2px)" />

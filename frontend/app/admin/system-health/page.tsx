@@ -260,7 +260,7 @@ export default function AdminDashboard() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50 max-lg:h-auto max-lg:py-3">
           <div className="relative w-full max-w-[450px] lg:w-[450px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-wrap">
             {/* Header Date Picker */}
             <button onClick={() => setDateRange(cycleOption(dateRangeOptions, dateRange))} className="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-blue-600" />
@@ -426,7 +426,7 @@ export default function AdminDashboard() {
                      <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-red-500"></div> Down</div>
                   </div>
                 </div>
-                <div className="flex-1 flex gap-2">
+                <div className="flex-1 flex gap-2 max-lg:overflow-x-auto">
                    {/* Y Axis Labels */}
                    <div className="flex flex-col justify-between text-[10px] font-medium text-slate-400 pb-5">
                       {heatmapData.map(d => <span key={d.row}>{d.row}</span>)}
