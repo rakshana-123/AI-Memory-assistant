@@ -4,51 +4,42 @@ import React from 'react';
 import { 
   LayoutDashboard, Users, Database, FileText, CalendarCheck, 
   Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
-  Settings, Search, ChevronDown, ArrowUpRight, ArrowDownRight, 
+  Settings, Search, ChevronDown, ArrowUpRight,
   MoreVertical, ChevronRight, Brain, Mic, Image as ImageIcon,
-  Eye, Download, Trash2, Calendar, File, MoreHorizontal, Link2, CheckCircle2
+  Eye, Download, Trash2, Calendar, File, MoreHorizontal, Link2, CheckCircle2,
+  Clock
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-// Mock Data for Area Chart (Stacked)
-const memoryTrendsData = [
-  { name: 'Oct 1', voice: 50, notes: 30, docs: 20, images: 10, links: 5 },
-  { name: 'Oct 5', voice: 60, notes: 35, docs: 25, images: 15, links: 8 },
-  { name: 'Oct 10', voice: 55, notes: 40, docs: 30, images: 20, links: 10 },
-  { name: 'Oct 15', voice: 70, notes: 45, docs: 28, images: 25, links: 12 },
-  { name: 'Oct 20', voice: 65, notes: 50, docs: 35, images: 22, links: 15 },
-  { name: 'Oct 25', voice: 80, notes: 55, docs: 40, images: 30, links: 18 },
-  { name: 'Oct 31', voice: 90, notes: 60, docs: 45, images: 35, links: 20 },
-];
+// Area Chart (Stacked) source — empty until real data exists
+type TrendPoint = { name: string; voice: number; notes: number; docs: number; images: number; links: number };
 
-const memoryBreakdownData = [
-  { name: 'Voice Notes', value: 5243, fill: '#3b82f6', percent: '42%' },
-  { name: 'Documents', value: 3198, fill: '#10b981', percent: '26%' },
-  { name: 'Images', value: 2176, fill: '#f59e0b', percent: '17%' },
-  { name: 'Links & Others', value: 865, fill: '#f43f5e', percent: '7%' },
-];
+const memoryTrendsData: TrendPoint[] = [];
 
-const recentMemories = [
-  { type: 'Voice Note', typeIcon: Mic, typeColor: 'text-blue-500', typeBg: 'bg-blue-100', title: 'Project discussion with team', user: 'sarahkumar@example.com', date: 'Oct 30, 2024', time: '10:24 AM', size: '2.4 MB' },
-  { type: 'Document', typeIcon: FileText, typeColor: 'text-purple-500', typeBg: 'bg-purple-100', title: 'Research_Paper.pdf', user: 'arunraj@example.com', date: 'Oct 29, 2024', time: '04:12 PM', size: '4.8 MB' },
-  { type: 'Image', typeIcon: ImageIcon, typeColor: 'text-emerald-500', typeBg: 'bg-emerald-100', title: 'IMG_2456.jpg', user: 'priya@example.com', date: 'Oct 29, 2024', time: '02:36 PM', size: '1.2 MB' },
-  { type: 'Link', typeIcon: Link2, typeColor: 'text-pink-500', typeBg: 'bg-pink-100', title: 'https://example.com', user: 'vikram@example.com', date: 'Oct 28, 2024', time: '11:03 AM', size: '256 KB' },
-  { type: 'Document', typeIcon: FileText, typeColor: 'text-purple-500', typeBg: 'bg-purple-100', title: 'Meeting notes.docx', user: 'meena@example.com', date: 'Oct 27, 2024', time: '09:17 AM', size: '3.6 MB' },
-];
+type BreakdownSlice = { name: string; value: number; fill: string; percent: string };
 
-const recentActivity = [
-  { icon: Mic, color: 'text-blue-600', bg: 'bg-blue-100', title: 'New voice note uploaded', sub: 'user123@example.com', time: '2 min ago' },
-  { icon: FileText, color: 'text-purple-600', bg: 'bg-purple-100', title: 'Document processed', sub: 'project-report.pdf', time: '8 min ago' },
-  { icon: ImageIcon, color: 'text-amber-500', bg: 'bg-amber-100', title: 'New image saved', sub: 'IMG_2456.jpg', time: '15 min ago' },
-  { icon: Link2, color: 'text-pink-600', bg: 'bg-pink-100', title: 'Link added', sub: 'https://example.com', time: '28 min ago' },
-  { icon: Database, color: 'text-slate-600', bg: 'bg-slate-100', title: 'Memory updated by admin', sub: 'task-summary', time: '42 min ago' },
-];
+const memoryBreakdownData: BreakdownSlice[] = [];
+
+type MemoryRecord = {
+  type: string; typeIcon: any; typeColor: string; typeBg: string;
+  title: string; user: string; date: string; time: string; size: string;
+};
+
+const recentMemories: MemoryRecord[] = [];
+
+type Activity = { icon: any; color: string; bg: string; title: string; sub: string; time: string };
+
+const recentActivity: Activity[] = [];
+
+type StorageType = { color: string; label: string; val: number; pct: string };
+
+const storageByType: StorageType[] = [];
 
 const memoryTypeOptions = ['All Types', 'Voice Note', 'Document', 'Image', 'Link'];
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 const userFilterOptions = ['All Users', 'Admins', 'Pro Users', 'Free Users'];
 const ageFilterOptions = ['Last 7 days', 'Last 30 days', 'All time'];
 
@@ -80,6 +71,16 @@ const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   </NextLink>
 );
 
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
 export default function MemoryManagementDashboard() {
   const [headerQuery, setHeaderQuery] = React.useState('');
   const [tableQuery, setTableQuery] = React.useState('');
@@ -90,6 +91,23 @@ export default function MemoryManagementDashboard() {
   const [userFilter, setUserFilter] = React.useState(userFilterOptions[0]);
   const [ageFilter, setAgeFilter] = React.useState(ageFilterOptions[0]);
   const [toast, setToast] = React.useState<string | null>(null);
+
+  const totalMemories = memories.length;
+  const voiceNoteCount = memories.filter((m) => m.type === 'Voice Note').length;
+  const documentCount = memories.filter((m) => m.type === 'Document').length;
+  const imageCount = memories.filter((m) => m.type === 'Image').length;
+  const linkCount = memories.filter((m) => m.type === 'Link').length;
+  const breakdownTotal = memoryBreakdownData.reduce((sum, slice) => sum + slice.value, 0);
+  const storageUsedGb = storageByType.reduce((sum, type) => sum + type.val, 0);
+  const totalPages = Math.max(1, Math.ceil(memories.length / 5));
+
+  const memoryStats = [
+    { title: 'Total Memories', value: totalMemories, icon: Mic, iconColor: 'text-blue-500', iconBg: 'bg-blue-100' },
+    { title: 'Voice Notes', value: voiceNoteCount, icon: FileText, iconColor: 'text-purple-500', iconBg: 'bg-purple-100' },
+    { title: 'Documents', value: documentCount, icon: File, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-100' },
+    { title: 'Images', value: imageCount, icon: ImageIcon, iconColor: 'text-amber-500', iconBg: 'bg-amber-100' },
+    { title: 'Links & Others', value: linkCount, icon: Link2, iconColor: 'text-pink-500', iconBg: 'bg-pink-100' },
+  ];
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -191,7 +209,7 @@ export default function MemoryManagementDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto">
           <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -222,12 +240,11 @@ export default function MemoryManagementDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer">
-                <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
                 <span className="text-[13px] font-bold text-slate-700 flex items-center gap-1">Admin <ChevronDown size={14} className="text-slate-400"/></span>
             </div>
           </div>
@@ -261,26 +278,21 @@ export default function MemoryManagementDashboard() {
 
             {}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-               {[
-                 { title: 'Total Memories', value: '12,482', icon: Mic, iconColor: 'text-blue-500', iconBg: 'bg-blue-100', trend: '18%', up: true },
-                 { title: 'Voice Notes', value: '5,243', icon: FileText, iconColor: 'text-purple-500', iconBg: 'bg-purple-100', trend: '22%', up: true },
-                 { title: 'Documents', value: '3,198', icon: File, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-100', trend: '16%', up: true },
-                 { title: 'Images', value: '2,176', icon: ImageIcon, iconColor: 'text-amber-500', iconBg: 'bg-amber-100', trend: '14%', up: true },
-                 { title: 'Links & Others', value: '865', icon: Link2, iconColor: 'text-pink-500', iconBg: 'bg-pink-100', trend: '9%', up: true },
-               ].map((stat, i) => (
+               {memoryStats.map((stat, i) => (
                  <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${stat.iconBg}`}>
                        <stat.icon size={16} className={stat.iconColor} />
                     </div>
                     <div>
                         <p className="text-[12px] text-slate-500 font-medium mb-1">{stat.title}</p>
-                        <h3 className="text-[24px] font-extrabold text-slate-900 leading-none mb-3">{stat.value}</h3>
+                        <h3 className="text-[24px] font-extrabold text-slate-900 leading-none mb-3">{stat.value.toLocaleString('en-US')}</h3>
                     </div>
-                    <div className={`flex items-center gap-1 text-[12px] font-semibold ${stat.up ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {stat.up ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                      <span>{stat.trend}</span>
-                      <span className="text-slate-400 font-medium ml-1">vs last month</span>
+                    {stat.value > 0 && (
+                    <div className={`flex items-center gap-1 text-[12px] font-semibold text-emerald-600`}>
+                      <ArrowUpRight size={14} />
+                      <span>vs last month</span>
                     </div>
+                    )}
                  </div>
                ))}
             </div>
@@ -300,7 +312,7 @@ export default function MemoryManagementDashboard() {
                     <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-pink-500"></div> Links</div>
                   </div>
                 </div>
-                
+                {memoryTrendsData.length > 0 ? (
                 <div className="h-[200px] w-full mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={memoryTrendsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
@@ -316,6 +328,9 @@ export default function MemoryManagementDashboard() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+                ) : (
+                  <EmptyState icon={BarChart2} title="No trends yet" subtitle="Memory creation activity will appear here." />
+                )}
             </div>
 
             {}
@@ -328,22 +343,24 @@ export default function MemoryManagementDashboard() {
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {[
-                    { label: 'Voice', val: '5,243', pct: '42%', icon: Mic, iconColor: 'text-blue-500', iconBg: 'bg-blue-100', trend: '22%' },
-                    { label: 'Documents', val: '3,198', pct: '26%', icon: FileText, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-100', trend: '16%' },
-                    { label: 'Images', val: '2,176', pct: '17%', icon: ImageIcon, iconColor: 'text-amber-500', iconBg: 'bg-amber-100', trend: '14%' },
-                    { label: 'Links', val: '865', pct: '7%', icon: Link2, iconColor: 'text-pink-500', iconBg: 'bg-pink-100', trend: '9%' },
-                    { label: 'Other', val: '1,000', pct: '8%', icon: MoreHorizontal, iconColor: 'text-slate-500', iconBg: 'bg-slate-100', trend: '6%' },
-                  ].map((src, i) => (
-                    <div key={i} className="border border-slate-100 rounded-xl p-3 flex flex-col items-start bg-slate-50/50">
+                    { label: 'Voice', count: voiceNoteCount, icon: Mic, iconColor: 'text-blue-500', iconBg: 'bg-blue-100' },
+                    { label: 'Documents', count: documentCount, icon: FileText, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-100' },
+                    { label: 'Images', count: imageCount, icon: ImageIcon, iconColor: 'text-amber-500', iconBg: 'bg-amber-100' },
+                    { label: 'Links', count: linkCount, icon: Link2, iconColor: 'text-pink-500', iconBg: 'bg-pink-100' },
+                    { label: 'Other', count: 0, icon: MoreHorizontal, iconColor: 'text-slate-500', iconBg: 'bg-slate-100' },
+                  ].map((src) => (
+                    <div key={src.label} className="border border-slate-100 rounded-xl p-3 flex flex-col items-start bg-slate-50/50">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${src.iconBg}`}>
                           <src.icon size={16} className={src.iconColor} />
                         </div>
                         <p className="text-[12px] font-bold text-slate-900 mb-1">{src.label}</p>
-                        <p className="text-[14px] font-extrabold text-slate-900 leading-none mb-1">{src.val}</p>
-                        <p className="text-[11px] text-slate-500 font-medium mb-2">{src.pct}</p>
+                        <p className="text-[14px] font-extrabold text-slate-900 leading-none mb-1">{src.count.toLocaleString('en-US')}</p>
+                        <p className="text-[11px] text-slate-500 font-medium mb-2">{totalMemories > 0 ? `${Math.round((src.count / totalMemories) * 100)}%` : '0%'}</p>
+                        {src.count > 0 && (
                         <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-                          <ArrowUpRight size={12} /> {src.trend}
+                          <ArrowUpRight size={12} /> active
                         </div>
+                        )}
                     </div>
                   ))}
                 </div>
@@ -368,7 +385,7 @@ export default function MemoryManagementDashboard() {
                       onClick={() => {
                         if (action.label === 'Export Memories') exportMemories();
                         else if (action.label === 'Cleanup Old Memories') handleCleanup();
-                        else if (action.label === 'Manage Storage') showToast('Storage: 24.8 GB of 100 GB used (25%)');
+                        else if (action.label === 'Manage Storage') showToast('Storage: 0 GB of 100 GB used');
                         else showToast('Showing recent memories — use search and filters to narrow down');
                       }}
                       className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 rounded-xl transition-colors group">
@@ -441,7 +458,20 @@ export default function MemoryManagementDashboard() {
                        </tr>
                      </thead>
                      <tbody className="text-[13px]">
-                       {visibleMemories.map((mem) => (
+                       {memories.length === 0 ? (
+                         <tr>
+                           <td colSpan={7} className="py-2">
+                             <EmptyState icon={Database} title="No memories yet" subtitle="Memories captured by users will appear here." />
+                           </td>
+                         </tr>
+                       ) : visibleMemories.length === 0 ? (
+                         <tr>
+                           <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
+                             No memories found matching your filters.
+                           </td>
+                         </tr>
+                       ) : (
+                       visibleMemories.map((mem) => (
                          <tr key={mem.title} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                            <td className="py-3 pl-2"><input type="checkbox" checked={selectedTitles.has(mem.title)} onChange={() => toggleMemory(mem.title)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
                            <td className="py-3">
@@ -462,7 +492,8 @@ export default function MemoryManagementDashboard() {
                              <button onClick={() => showToast(`Opened actions for "${mem.title}"`)} className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
                            </td>
                          </tr>
-                       ))}
+                       ))
+                       )}
                      </tbody>
                    </table>
                  </div>
@@ -471,16 +502,19 @@ export default function MemoryManagementDashboard() {
                     <span className="text-[12px] text-slate-500 font-medium">
                       {isFiltered
                         ? `Showing ${visibleMemories.length === 0 ? 0 : 1}–${visibleMemories.length} of ${visibleMemories.length} memories`
-                        : 'Showing 1–5 of 12,482 memories'}
+                        : `Showing ${memories.length === 0 ? 0 : 1}–${memories.length} of ${memories.length} memories`}
                     </span>
                     <div className="flex items-center gap-1">
                       <button className="w-7 h-7 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100"><ChevronRight size={14} className="rotate-180" /></button>
-                      <button className="w-7 h-7 rounded flex items-center justify-center bg-blue-600 text-white font-bold text-[12px]">1</button>
-                      <button className="w-7 h-7 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-[12px]">2</button>
-                      <button className="w-7 h-7 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-[12px]">3</button>
-                      <button className="w-7 h-7 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-[12px]">4</button>
-                      <button className="w-7 h-7 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-[12px]">5</button>
-                      <span className="w-7 h-7 flex items-center justify-center text-slate-400">...</span>
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((pageNum) => (
+                        <button key={pageNum} className={`w-7 h-7 rounded flex items-center justify-center font-bold text-[12px] ${pageNum === 1 ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>{pageNum}</button>
+                      ))}
+                      {totalPages > 5 && (
+                        <>
+                          <span className="w-7 h-7 flex items-center justify-center text-slate-400">...</span>
+                          <button className="w-7 h-7 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-[12px]">{totalPages}</button>
+                        </>
+                      )}
                       <button className="w-7 h-7 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100"><ChevronRight size={14} /></button>
                     </div>
                  </div>
@@ -495,31 +529,26 @@ export default function MemoryManagementDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[16px] font-bold text-slate-900">Storage Usage</h3>
-                  <span className="text-[12px] font-medium text-slate-500">24.8 GB of 100 GB used</span>
+                  <span className="text-[12px] font-medium text-slate-500">{storageUsedGb.toLocaleString('en-US')} GB of 100 GB used</span>
                 </div>
 
-                <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden mb-6 relative">
-                    <div className="absolute top-0 left-0 h-full w-[25%] bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-                </div>
+                <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden mb-6 relative"></div>
 
                 <div className="space-y-3.5">
-                  {[
-                    { color: 'bg-blue-500', label: 'Voice Notes', val: '8.4 GB', pct: '34%' },
-                    { color: 'bg-purple-500', label: 'Documents', val: '7.1 GB', pct: '29%' },
-                    { color: 'bg-amber-500', label: 'Images', val: '5.2 GB', pct: '21%' },
-                    { color: 'bg-pink-500', label: 'Links & Others', val: '4.1 GB', pct: '16%' },
-                  ].map((item, i) => (
+                  {storageByType.length > 0 ? storageByType.map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-[13px]">
                       <div className="flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
                         <span className="font-bold text-slate-700">{item.label}</span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-slate-500 font-medium w-12 text-right">{item.val}</span>
+                        <span className="text-slate-500 font-medium w-12 text-right">{item.val.toLocaleString('en-US')} GB</span>
                         <span className="text-slate-400 font-medium w-8 text-right">{item.pct}</span>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <EmptyState icon={Database} title="No storage used yet" subtitle="Storage breakdown will appear here." />
+                  )}
                 </div>
             </div>
 
@@ -527,6 +556,7 @@ export default function MemoryManagementDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                <h3 className="text-[16px] font-bold text-slate-900 mb-6">Memory Types Breakdown</h3>
 
+               {memoryBreakdownData.length > 0 ? (
                <div className="flex items-center justify-between max-lg:flex-col max-lg:gap-4">
                   <div className="relative w-[140px] h-[140px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -546,7 +576,7 @@ export default function MemoryManagementDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">12,482</span>
+                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">{breakdownTotal.toLocaleString('en-US')}</span>
                       <span className="text-[10px] text-slate-500 font-semibold mt-1">Total Memories</span>
                     </div>
                   </div>
@@ -565,6 +595,9 @@ export default function MemoryManagementDashboard() {
                     ))}
                   </div>
                </div>
+               ) : (
+                 <EmptyState icon={Database} title="No data yet" subtitle="Your memory type breakdown will appear here." />
+               )}
             </div>
 
             {/* Recent Memory Activity */}
@@ -575,7 +608,7 @@ export default function MemoryManagementDashboard() {
               </div>
 
               <div className="space-y-5">
-                {recentActivity.map((act, i) => (
+                {recentActivity.length > 0 ? recentActivity.map((act, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${act.bg}`}>
                       <act.icon size={16} className={act.color} />
@@ -586,7 +619,9 @@ export default function MemoryManagementDashboard() {
                     </div>
                     <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap mt-1">{act.time}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Clock} title="No memory activity yet" subtitle="Recent memory activity will appear here." />
+                )}
               </div>
             </div>
 

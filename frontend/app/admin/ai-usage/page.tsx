@@ -5,76 +5,46 @@ import React, { useState } from 'react';
 import {
   LayoutDashboard, Users, Database, FileText, CalendarCheck,
   Cpu, Link as LinkIcon, BarChart2, FileSpreadsheet, Bell, ShieldCheck,
-  Settings, Search, ChevronDown, MoreVertical, Plus, ChevronRight,
+  Settings, Search, ChevronDown, ChevronRight,
   Brain, ArrowUpRight, ArrowDownRight, Bot, MessageSquare, Clock,
-  Coins, Star, FileSearch, Mic, Image as ImageIcon, ListTodo, CheckCircle2,
-  Lightbulb, TrendingUp, Clock3, Filter, Settings2, Download,
-  FileBox
+  Coins, Star, CheckCircle2,
+  Lightbulb, Filter, Settings2, Download
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-const usageTrendData = [
-  { name: 'Oct 1', requests: 200 }, { name: 'Oct 5', requests: 500 },
-  { name: 'Oct 10', requests: 380 }, { name: 'Oct 15', requests: 450 },
-  { name: 'Oct 20', requests: 390 }, { name: 'Oct 25', requests: 680 },
-  { name: 'Oct 31', requests: 900 },
-];
+type UsagePoint = { name: string; requests: number };
 
-const featureUsageData = [
-  { name: 'Chat / Q&A', value: 4218, fill: '#3b82f6', percent: '33%' },
-  { name: 'Summarization', value: 2864, fill: '#8b5cf6', percent: '22%' },
-  { name: 'Transcription', value: 1986, fill: '#10b981', percent: '15%' },
-  { name: 'OCR', value: 1542, fill: '#f59e0b', percent: '12%' },
-  { name: 'Task Extraction', value: 986, fill: '#ec4899', percent: '8%' },
-  { name: 'Others', value: 1249, fill: '#64748b', percent: '10%' },
-];
+const usageTrendData: UsagePoint[] = [];
 
-const costBreakdownData = [
-  { name: 'Chat / Q&A', value: 782, fill: '#3b82f6', percent: '42%' },
-  { name: 'Summarization', value: 421, fill: '#8b5cf6', percent: '23%' },
-  { name: 'Transcription', value: 298, fill: '#10b981', percent: '16%' },
-  { name: 'OCR', value: 194, fill: '#f59e0b', percent: '10%' },
-  { name: 'Task Extraction', value: 98, fill: '#ec4899', percent: '5%' },
-  { name: 'Others', value: 49, fill: '#f43f5e', percent: '3%' },
-];
+type FeatureSlice = { name: string; value: number; fill: string; percent: string };
 
-const modelUsageData = [
-  { name: 'GPT-4o', percent: 42, bg: 'bg-blue-500' },
-  { name: 'GPT-4o mini', percent: 28, bg: 'bg-purple-500' },
-  { name: 'Claude 3.5', percent: 12, bg: 'bg-emerald-500' },
-  { name: 'Gemini 1.5', percent: 10, bg: 'bg-amber-500' },
-  { name: 'Whisper (STT)', percent: 6, bg: 'bg-pink-500' },
-  { name: 'Tesseract (OCR)', percent: 2, bg: 'bg-indigo-500' },
-];
+const featureUsageData: FeatureSlice[] = [];
 
-const topUsersData = [
-  { rank: 1, name: 'Sarah Kumar', avatar: 'https://i.pravatar.cc/150?img=1', requests: '1,842', percent: 14, color: 'bg-blue-500' },
-  { rank: 2, name: 'Vikram S', avatar: 'https://i.pravatar.cc/150?img=11', requests: '1,263', percent: 10, color: 'bg-purple-500' },
-  { rank: 3, name: 'Priya Nair', avatar: 'https://i.pravatar.cc/150?img=5', requests: '1,102', percent: 9, color: 'bg-emerald-500' },
-  { rank: 4, name: 'Arun Raj', avatar: 'https://i.pravatar.cc/150?img=8', requests: '986', percent: 8, color: 'bg-amber-500' },
-  { rank: 5, name: 'Meena R', avatar: 'https://i.pravatar.cc/150?img=9', requests: '842', percent: 7, color: 'bg-pink-500' },
-];
+const costBreakdownData: FeatureSlice[] = [];
 
-const featurePerformanceData = [
-  { feature: 'Chat / Q&A', icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-100', requests: '4,218', avgTime: '1.8s', success: '98.5%' },
-  { feature: 'Summarization', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-100', requests: '2,864', avgTime: '2.4s', success: '97.8%' },
-  { feature: 'Transcription', icon: Mic, color: 'text-emerald-500', bg: 'bg-emerald-100', requests: '1,986', avgTime: '3.1s', success: '96.2%' },
-  { feature: 'OCR', icon: ImageIcon, color: 'text-amber-500', bg: 'bg-amber-100', requests: '1,542', avgTime: '2.7s', success: '97.9%' },
-  { feature: 'Task Extraction', icon: ListTodo, color: 'text-pink-500', bg: 'bg-pink-100', requests: '986', avgTime: '1.9s', success: '98.7%' },
-  { feature: 'Embeddings', icon: Database, color: 'text-indigo-500', bg: 'bg-indigo-100', requests: '684', avgTime: '2.3s', success: '98.1%' },
-  { feature: 'Others', icon: Cpu, color: 'text-slate-500', bg: 'bg-slate-100', requests: '565', avgTime: '2.1s', success: '97.6%' },
-];
+// Model usage shares are usage records (not a static catalog) — empty until real traffic exists.
+type ModelUsage = { name: string; percent: number; bg: string };
 
-const recentActivityData = [
-  { num: '4', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-100', prompt: 'Summarize meeting notes', feature: 'Summarization', user: 'Sarah Kumar', avatar: 'https://i.pravatar.cc/150?img=1', tokens: '1.2K', time: '2.1s', status: 'Success', timeAgo: '2 min ago' },
-  { num: '2', icon: ListTodo, color: 'text-pink-500', bg: 'bg-pink-100', prompt: 'Extract tasks from this note', feature: 'Task Extraction', user: 'Arun Raj', avatar: 'https://i.pravatar.cc/150?img=8', tokens: '856', time: '1.8s', status: 'Success', timeAgo: '8 min ago' },
-  { num: '4', icon: Mic, color: 'text-emerald-500', bg: 'bg-emerald-100', prompt: 'Transcribe audio file', feature: 'Transcription', user: 'Priya Nair', avatar: 'https://i.pravatar.cc/150?img=5', tokens: '2.4K', time: '3.2s', status: 'Success', timeAgo: '15 min ago' },
-  { num: '5', icon: ImageIcon, color: 'text-amber-500', bg: 'bg-amber-100', prompt: 'What is in this image?', feature: 'OCR', user: 'Vikram S', avatar: 'https://i.pravatar.cc/150?img=11', tokens: '1.1K', time: '2.6s', status: 'Success', timeAgo: '22 min ago' },
-  { num: '5', icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-100', prompt: 'Answer my question', feature: 'Chat / Q&A', user: 'Meena R', avatar: 'https://i.pravatar.cc/150?img=9', tokens: '980', time: '1.9s', status: 'Success', timeAgo: '28 min ago' },
-];
+const modelUsageData: ModelUsage[] = [];
+
+type TopUser = { rank: number; name: string; initials: string; bg: string; requests: number; percent: number; color: string };
+
+const topUsersData: TopUser[] = [];
+
+type FeaturePerformance = { feature: string; icon: any; color: string; bg: string; requests: number; avgTime: string; success: string };
+
+const featurePerformanceData: FeaturePerformance[] = [];
+
+type ActivityRow = {
+  num: string; icon: any; color: string; bg: string; prompt: string; feature: string;
+  user: string; initials: string; avatarColor: string; tokens: string;
+  time: string; status: string; timeAgo: string;
+};
+
+const recentActivityData: ActivityRow[] = [];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -97,16 +67,28 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, subValue, trend
       <div>
         <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1 flex items-center">
           {isCurrency && <span className="font-semibold mr-0.5">₹</span>}
-          {value}
+          {typeof value === 'number' ? value.toLocaleString('en-US') : value}
         </h3>
         <p className="text-[13px] text-slate-500 font-medium leading-none">{title}</p>
       </div>
     </div>
-    <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-      {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-      <span>{trend}</span>
-      <span className="text-slate-400 font-medium ml-1">vs last month</span>
+    {trend && (
+      <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+        <span>{trend}</span>
+        <span className="text-slate-400 font-medium ml-1">vs last month</span>
+      </div>
+    )}
+  </div>
+);
+
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
     </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
   </div>
 );
 
@@ -144,6 +126,12 @@ export default function AdminDashboard() {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
+
+  const totalAiRequests = usageTrendData.reduce((sum, point) => sum + point.requests, 0);
+  const activeAiUsers = topUsersData.length;
+  const featureUsageTotal = featureUsageData.reduce((sum, slice) => sum + slice.value, 0);
+  const totalCost = costBreakdownData.reduce((sum, slice) => sum + slice.value, 0);
+  const totalPages = Math.max(1, Math.ceil(recentActivityData.length / 5));
 
   const visibleActivity = recentActivityData.filter((row) => {
     const matchesSearch =
@@ -194,7 +182,7 @@ export default function AdminDashboard() {
           <SidebarItem icon={LinkIcon} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -202,7 +190,7 @@ export default function AdminDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -242,12 +230,11 @@ export default function AdminDashboard() {
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
@@ -285,11 +272,11 @@ export default function AdminDashboard() {
 
             {/* Stat Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <StatCard icon={MessageSquare} iconColor="text-purple-500" iconBg="bg-purple-100" title="Total AI Requests" value="12,845" trend="28%" trendUp={true} />
-              <StatCard icon={Users} iconColor="text-blue-500" iconBg="bg-blue-100" title="Active Users" value="1,248" trend="18%" trendUp={true} />
-              <StatCard icon={Clock} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Avg Response Time" value="2.4s" trend="32%" trendUp={true} />
-              <StatCard icon={Coins} iconColor="text-amber-500" iconBg="bg-amber-100" title="Estimated Cost" value="1,842" trend="12%" trendUp={false} isCurrency={true} />
-              <StatCard icon={Star} iconColor="text-pink-500" iconBg="bg-pink-100" title="Success Rate" value="98.2%" trend="2%" trendUp={true} />
+              <StatCard icon={MessageSquare} iconColor="text-purple-500" iconBg="bg-purple-100" title="Total AI Requests" value={totalAiRequests} />
+              <StatCard icon={Users} iconColor="text-blue-500" iconBg="bg-blue-100" title="Active Users" value={activeAiUsers} />
+              <StatCard icon={Clock} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Avg Response Time" value="0s" />
+              <StatCard icon={Coins} iconColor="text-amber-500" iconBg="bg-amber-100" title="Estimated Cost" value={totalCost} isCurrency={true} />
+              <StatCard icon={Star} iconColor="text-pink-500" iconBg="bg-pink-100" title="Success Rate" value="0%" />
             </div>
 
             {/* Charts Row */}
@@ -305,6 +292,7 @@ export default function AdminDashboard() {
                     {chartGranularity} <ChevronDown size={14} />
                   </button>
                 </div>
+                {usageTrendData.length > 0 ? (
                 <div className="flex-1 min-h-[220px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={usageTrendData} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
@@ -322,11 +310,15 @@ export default function AdminDashboard() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+                ) : (
+                  <EmptyState icon={BarChart2} title="No usage yet" subtitle="AI request activity will appear here." />
+                )}
               </div>
 
               {/* Usage by AI Feature Donut */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <h3 className="text-[16px] font-bold text-slate-900 mb-4">Usage by AI Feature</h3>
+                {featureUsageData.length > 0 ? (
                 <div className="flex-1 flex items-center justify-between">
                   <div className="relative w-[140px] h-[140px] ml-4 flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
@@ -346,7 +338,7 @@ export default function AdminDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">12,845</span>
+                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">{featureUsageTotal.toLocaleString('en-US')}</span>
                       <span className="text-[9px] text-slate-500 font-semibold mt-1 text-center leading-tight">Total<br/>Requests</span>
                     </div>
                   </div>
@@ -358,7 +350,7 @@ export default function AdminDashboard() {
                           <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.fill }}></div>
                           <span className="font-semibold text-slate-700">{item.name}</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3">
                            <span className="text-slate-500 font-medium">{item.value.toLocaleString('en-US')}</span>
                            <span className="text-slate-400 font-medium w-9 text-right">({item.percent})</span>
                         </div>
@@ -366,6 +358,9 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={Cpu} title="No data yet" subtitle="Feature usage breakdown will appear here." />
+                )}
               </div>
             </div>
 
@@ -375,14 +370,14 @@ export default function AdminDashboard() {
                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                  <h3 className="text-[16px] font-bold text-slate-900 mb-5">Top Users by AI Usage</h3>
                  <div className="flex flex-col gap-4">
-                   {topUsersData.map((user, i) => (
+                   {topUsersData.length > 0 ? topUsersData.map((user, i) => (
                      <div key={i} className="flex items-center gap-4">
                        <span className="text-[12px] font-bold text-slate-400 w-3">{user.rank}</span>
-                       <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
+                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
                        <div className="flex-1 min-w-0 flex items-center justify-between">
                          <div className="min-w-[100px]">
                            <p className="text-[13px] font-bold text-slate-900 truncate">{user.name}</p>
-                           <p className="text-[12px] text-slate-500 font-medium">{user.requests} requests</p>
+                           <p className="text-[12px] text-slate-500 font-medium">{user.requests.toLocaleString('en-US')} requests</p>
                          </div>
                          <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden mx-4">
                            <div className={`h-full rounded-full ${user.color}`} style={{ width: `${user.percent * 3}%` }}></div>
@@ -390,7 +385,9 @@ export default function AdminDashboard() {
                          <span className="text-[13px] font-medium text-slate-400 w-8 text-right">{user.percent}%</span>
                        </div>
                      </div>
-                   ))}
+                   )) : (
+                     <EmptyState icon={Users} title="No AI usage yet" subtitle="Top users will appear here once AI features are used." />
+                   )}
                  </div>
                </div>
 
@@ -408,7 +405,14 @@ export default function AdminDashboard() {
                        </tr>
                      </thead>
                      <tbody className="text-[13px]">
-                       {featurePerformanceData.map((item, i) => (
+                       {featurePerformanceData.length === 0 ? (
+                         <tr>
+                           <td colSpan={4} className="py-2">
+                             <EmptyState icon={Cpu} title="No performance data yet" subtitle="Feature metrics will appear here as AI features are used." />
+                           </td>
+                         </tr>
+                       ) : (
+                       featurePerformanceData.map((item, i) => (
                          <tr key={i} className="border-b border-slate-50 last:border-0">
                            <td className="py-2.5 flex items-center gap-3 font-bold text-slate-700">
                              <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${item.bg}`}>
@@ -416,11 +420,12 @@ export default function AdminDashboard() {
                              </div>
                              {item.feature}
                            </td>
-                           <td className="py-2.5 text-right font-medium text-slate-500">{item.requests}</td>
+                           <td className="py-2.5 text-right font-medium text-slate-500">{item.requests.toLocaleString('en-US')}</td>
                            <td className="py-2.5 text-right font-medium text-slate-500">{item.avgTime}</td>
                            <td className="py-2.5 text-right font-bold text-emerald-500">{item.success}</td>
                          </tr>
-                       ))}
+                       ))
+                       )}
                      </tbody>
                    </table>
                  </div>
@@ -489,7 +494,13 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleActivity.length === 0 ? (
+                    {recentActivityData.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="py-2">
+                          <EmptyState icon={Cpu} title="No AI activity yet" subtitle="AI requests will appear here as features are used." />
+                        </td>
+                      </tr>
+                    ) : visibleActivity.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="py-8 text-center text-slate-400 text-[13px] font-medium">
                           No AI activity matching your search criteria.
@@ -518,7 +529,7 @@ export default function AdminDashboard() {
                           <td className="py-3 px-4 text-slate-500 font-medium">{row.feature}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2 font-semibold text-slate-700">
-                               <img src={row.avatar} alt={row.user} className="w-6 h-6 rounded-full object-cover" />
+                               <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[9px] ${row.avatarColor}`}>{row.initials}</div>
                                {row.user}
                             </div>
                           </td>
@@ -542,13 +553,15 @@ export default function AdminDashboard() {
                  <span>Showing {visibleActivity.length === 0 ? 0 : 1}–{visibleActivity.length} of {recentActivityData.length} requests</span>
                  <div className="flex items-center gap-1">
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">2</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">3</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">4</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">5</button>
-                   <span className="px-1 text-slate-400">...</span>
-                   <button className="w-[50px] h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">2,569</button>
+                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((pageNum) => (
+                     <button key={pageNum} className={`w-8 h-8 flex items-center justify-center rounded-lg ${pageNum === 1 ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-100 font-semibold text-slate-700'}`}>{pageNum}</button>
+                   ))}
+                   {totalPages > 5 && (
+                     <>
+                       <span className="px-1 text-slate-400">...</span>
+                       <button className="w-[50px] h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">{totalPages.toLocaleString('en-US')}</button>
+                     </>
+                   )}
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="-rotate-90" /></button>
                  </div>
                  <div className="flex items-center gap-2">
@@ -568,7 +581,7 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
               <h3 className="text-[16px] font-bold text-slate-900 mb-5">Model Usage</h3>
               <div className="flex flex-col gap-4">
-                {modelUsageData.map((model, i) => (
+                {modelUsageData.length > 0 ? modelUsageData.map((model, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <span className="text-[13px] font-semibold text-slate-700 w-28 flex-shrink-0">{model.name}</span>
                     <div className="flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden">
@@ -576,7 +589,9 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-[12px] font-medium text-slate-400 w-8 text-right">{model.percent}%</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Cpu} title="No model usage yet" subtitle="Request share per AI model will appear here." />
+                )}
               </div>
             </div>
 
@@ -589,10 +604,11 @@ export default function AdminDashboard() {
                  </button>
               </div>
               <div className="mb-4">
-                 <h4 className="text-[24px] font-extrabold text-slate-900 flex items-center tracking-tight">₹1,842</h4>
+                 <h4 className="text-[24px] font-extrabold text-slate-900 flex items-center tracking-tight">₹{totalCost.toLocaleString('en-US')}</h4>
                  <p className="text-[12px] text-slate-500 font-medium">Total Cost (Estimated)</p>
               </div>
               
+              {costBreakdownData.length > 0 ? (
               <div className="flex items-center justify-between">
                 <div className="relative w-[110px] h-[110px] flex-shrink-0">
                   <ResponsiveContainer width="100%" height="100%">
@@ -628,6 +644,9 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               </div>
+              ) : (
+                <EmptyState icon={Coins} title="No costs yet" subtitle="Cost breakdown will appear here once AI features are used." />
+              )}
             </div>
 
             {/* AI Insights */}
@@ -643,22 +662,7 @@ export default function AdminDashboard() {
                 <button onClick={() => showToast('All AI insights for this period are shown')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
 
-              <div className="space-y-4">
-                {[
-                  { icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-100', text: 'AI usage increased by 28% this month.' },
-                  { icon: Users, color: 'text-blue-500', bg: 'bg-blue-100', text: 'Summarization is the most used feature.' },
-                  { icon: Clock3, color: 'text-purple-500', bg: 'bg-purple-100', text: 'Average response time improved by 32%.' },
-                  { icon: Star, color: 'text-amber-500', bg: 'bg-amber-100', text: '98.2% success rate across all features.' },
-                  { icon: Coins, color: 'text-pink-500', bg: 'bg-pink-100', text: 'Estimated cost is within budget.' },
-                ].map((insight, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${insight.bg}`}>
-                      <insight.icon size={16} className={insight.color} />
-                    </div>
-                    <p className="text-[13px] font-medium text-slate-700 leading-snug">{insight.text}</p>
-                  </div>
-                ))}
-              </div>
+              <EmptyState icon={Lightbulb} title="No insights yet" subtitle="Insights will appear as AI usage grows." />
             </div>
 
             {/* Quick Actions */}
@@ -676,8 +680,8 @@ export default function AdminDashboard() {
                      key={i}
                      onClick={() => {
                        if (action.label === 'View Full Reports') router.push('/admin/reports');
-                       else if (action.label === 'Manage AI Models') showToast('6 models configured (GPT-4o, Claude 3.5, Gemini 1.5, Whisper, Tesseract)');
-                       else if (action.label === 'Set Usage Limits') showToast('Usage limits: 1,000 requests per user per month');
+                       else if (action.label === 'Manage AI Models') showToast('AI model configuration opened');
+                       else if (action.label === 'Set Usage Limits') showToast('Usage limit settings opened');
                        else {
                          downloadCsv('pathii-ai-activity.csv', [
                            ['Prompt / Input', 'Feature', 'User', 'Tokens', 'Response Time', 'Status'],

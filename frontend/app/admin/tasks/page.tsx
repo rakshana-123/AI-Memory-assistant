@@ -7,48 +7,45 @@ import {
   Settings, Search, ChevronDown, MoreVertical, Plus, ChevronRight, 
   Brain, CheckCircle2, ArrowUpRight, ArrowDownRight,
   CheckSquare, Calendar, Clock, XCircle, Filter,
-  Phone, Video, BellRing, Edit3, Trash2, Download, Layers, FolderKanban
+  Download, Layers, FolderKanban, Trash2
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-const trendsData = [
-  { name: 'Oct 1', tasks: 50, events: 20 }, { name: 'Oct 5', tasks: 95, events: 45 },
-  { name: 'Oct 10', tasks: 80, events: 50 }, { name: 'Oct 15', tasks: 150, events: 80 },
-  { name: 'Oct 20', tasks: 120, events: 70 }, { name: 'Oct 25', tasks: 160, events: 90 },
-  { name: 'Oct 31', tasks: 130, events: 100 },
-];
+type TrendPoint = { name: string; tasks: number; events: number };
 
-const statusData = [
-  { name: 'Completed', value: 2461, fill: '#10b981' },
-  { name: 'Pending', value: 694, fill: '#f59e0b' },
-  { name: 'Overdue', value: 210, fill: '#ef4444' },
-];
+const trendsData: TrendPoint[] = [];
 
-const eventTypesData = [
-  { name: 'Meetings', value: 642, fill: '#3b82f6' },
-  { name: 'Calls', value: 428, fill: '#8b5cf6' },
-  { name: 'Reminders', value: 304, fill: '#10b981' },
-  { name: 'Deadlines', value: 268, fill: '#f59e0b' },
-  { name: 'Others', value: 200, fill: '#ef4444' },
-];
+type StatusSlice = { name: string; value: number; fill: string };
 
-const tableData = [
-  { title: 'Complete project proposal', icon: CheckSquare, iconBg: 'bg-purple-100 text-purple-600', type: 'Task', typeColor: 'text-purple-700 bg-purple-100', status: 'Pending', statusColor: 'text-amber-700 bg-amber-100', assignedAvatar: 'https://i.pravatar.cc/150?img=1', assignedName: 'Sarah Kumar', date: 'Oct 28, 2024', time: '11:59 PM', createdAvatar: 'https://i.pravatar.cc/150?img=11', createdName: 'Arun Raj' },
-  { title: 'Team meeting', icon: Calendar, iconBg: 'bg-blue-100 text-blue-600', type: 'Event', typeColor: 'text-blue-700 bg-blue-100', status: 'Upcoming', statusColor: 'text-sky-700 bg-sky-100', assignedAvatar: 'https://i.pravatar.cc/150?img=5', assignedName: 'Priya Nair', date: 'Oct 28, 2024', time: '10:00 AM', createdAvatar: 'https://i.pravatar.cc/150?img=1', createdName: 'Sarah Kumar' },
-  { title: 'Client call with ABC Corp', icon: Phone, iconBg: 'bg-emerald-100 text-emerald-600', type: 'Event', typeColor: 'text-blue-700 bg-blue-100', status: 'Completed', statusColor: 'text-emerald-700 bg-emerald-100', initials: 'VS', avatarColor: 'bg-indigo-100 text-indigo-600', assignedName: 'Vikram S', date: 'Oct 27, 2024', time: '02:00 PM', createdAvatar: 'https://i.pravatar.cc/150?img=5', createdName: 'Priya Nair' },
-  { title: 'Prepare research report', icon: FileText, iconBg: 'bg-purple-100 text-purple-600', type: 'Task', typeColor: 'text-purple-700 bg-purple-100', status: 'Overdue', statusColor: 'text-rose-700 bg-rose-100', assignedAvatar: 'https://i.pravatar.cc/150?img=9', assignedName: 'Meena R', date: 'Oct 25, 2024', time: '11:59 PM', createdAvatar: 'https://i.pravatar.cc/150?img=12', createdName: 'Karthik P' },
-  { title: 'Webinar session', icon: Video, iconBg: 'bg-rose-100 text-rose-600', type: 'Event', typeColor: 'text-blue-700 bg-blue-100', status: 'Upcoming', statusColor: 'text-sky-700 bg-sky-100', assignedAvatar: 'https://i.pravatar.cc/150?img=15', assignedName: 'Rakesh M', initials: 'VS', createdAvatarColor: 'bg-blue-100 text-blue-600', createdName: 'Vikram S' , date: 'Oct 31, 2024', time: '04:00 PM'},
-  { title: 'Update documentation', icon: CheckSquare, iconBg: 'bg-amber-100 text-amber-600', type: 'Task', typeColor: 'text-purple-700 bg-purple-100', status: 'Completed', statusColor: 'text-emerald-700 bg-emerald-100', initials: 'AS', avatarColor: 'bg-blue-100 text-blue-600', assignedName: 'Ananya S', date: 'Oct 24, 2024', time: '11:59 PM', createdAvatar: 'https://i.pravatar.cc/150?img=9', createdName: 'Meena R' },
-  { title: 'Product demo', icon: Users, iconBg: 'bg-blue-100 text-blue-600', type: 'Event', typeColor: 'text-blue-700 bg-blue-100', status: 'Upcoming', statusColor: 'text-sky-700 bg-sky-100', initials: 'JD', avatarColor: 'bg-rose-100 text-rose-600', assignedName: 'John Doe', date: 'Oct 29, 2024', time: '03:00 PM', createdAvatar: 'https://i.pravatar.cc/150?img=1', createdName: 'Sarah Kumar' },
-  { title: 'Fix bugs in module', icon: CheckSquare, iconBg: 'bg-purple-100 text-purple-600', type: 'Task', typeColor: 'text-purple-700 bg-purple-100', status: 'Pending', statusColor: 'text-amber-700 bg-amber-100', assignedAvatar: 'https://i.pravatar.cc/150?img=20', assignedName: 'Sneha B', date: 'Oct 30, 2024', time: '11:59 PM', createdAvatar: 'https://i.pravatar.cc/150?img=11', createdName: 'Arun Raj' },
-];
+const statusData: StatusSlice[] = [];
+
+type EventTypeSlice = { name: string; value: number; fill: string };
+
+const eventTypesData: EventTypeSlice[] = [];
+
+type TaskRow = {
+  title: string; icon: any; iconBg: string; type: string; typeColor: string;
+  status: string; statusColor: string; initials: string; avatarColor: string;
+  assignedName: string; date: string; time: string; createdInitials?: string;
+  createdAvatarColor?: string; createdName: string;
+};
+
+const tableData: TaskRow[] = [];
+
+type UpcomingEvent = { day: string; mth: string; title: string; time: string; icon: any; color: string };
+
+const upcomingEvents: UpcomingEvent[] = [];
+
+type Activity = { icon: any; color: string; bg: string; title: string; desc: string; time: string };
+
+const recentActivity: Activity[] = [];
 
 const taskTypeOptions = ['All Types', 'Task', 'Event'];
 const taskStatusOptions = ['All Status', 'Pending', 'Upcoming', 'Completed', 'Overdue'];
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 const userFilterOptions = ['All Users', 'Admins', 'Team Leads', 'Pro Users'];
 
@@ -87,22 +84,34 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp 
         <Icon size={20} className={iconColor} />
       </div>
       <div>
-        <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1">{value}</h3>
+        <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1">{typeof value === 'number' ? value.toLocaleString('en-US') : value}</h3>
         <p className="text-[13px] text-slate-500 font-medium leading-none">{title}</p>
       </div>
     </div>
-    <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-      {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-      <span>{trend}</span>
-      <span className="text-slate-400 font-medium ml-1">vs last month</span>
+    {trend && (
+      <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+        <span>{trend}</span>
+        <span className="text-slate-400 font-medium ml-1">vs last month</span>
+      </div>
+    )}
+  </div>
+);
+
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
     </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
   </div>
 );
 
 export default function AdminDashboard() {
   const [headerQuery, setHeaderQuery] = useState('');
   const [tableQuery, setTableQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('All (5,057)');
+  const [activeTab, setActiveTab] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [selectedTitles, setSelectedTitles] = useState<Set<string>>(new Set());
@@ -111,6 +120,15 @@ export default function AdminDashboard() {
   const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
   const [userFilter, setUserFilter] = useState(userFilterOptions[0]);
   const [toast, setToast] = useState<string | null>(null);
+
+  const totalTasks = rows.filter((r) => r.type === 'Task').length;
+  const totalEvents = rows.filter((r) => r.type === 'Event').length;
+  const completedCount = rows.filter((r) => r.status === 'Completed').length;
+  const pendingCount = rows.filter((r) => r.status === 'Pending').length;
+  const overdueCount = rows.filter((r) => r.status === 'Overdue').length;
+  const statusTotal = statusData.reduce((sum, slice) => sum + slice.value, 0);
+  const eventTypesTotal = eventTypesData.reduce((sum, slice) => sum + slice.value, 0);
+  const totalPages = Math.max(1, Math.ceil(rows.length / 10));
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -129,11 +147,13 @@ export default function AdminDashboard() {
         typeColor: 'text-purple-700 bg-purple-100',
         status: 'Pending',
         statusColor: 'text-amber-700 bg-amber-100',
-        assignedAvatar: 'https://i.pravatar.cc/150?img=11',
+        initials: 'A',
+        avatarColor: 'bg-blue-100 text-blue-600',
         assignedName: 'Admin',
-        date: 'Oct 31, 2024',
-        time: '05:00 PM',
-        createdAvatar: 'https://i.pravatar.cc/150?img=11',
+        date: 'Today',
+        time: 'Now',
+        createdInitials: 'A',
+        createdAvatarColor: 'bg-blue-100 text-blue-600',
         createdName: 'Admin',
       },
       ...prev,
@@ -161,9 +181,9 @@ export default function AdminDashboard() {
 
   const visibleRows = rows.filter((row) => {
     const matchesTab =
-      activeTab === 'All (5,057)' ||
-      (activeTab === 'Tasks (3,215)' && row.type === 'Task') ||
-      (activeTab === 'Events (1,842)' && row.type === 'Event');
+      activeTab === 'All' ||
+      (activeTab === 'Tasks' && row.type === 'Task') ||
+      (activeTab === 'Events' && row.type === 'Event');
     const header = headerQuery.trim().toLowerCase();
     const table = tableQuery.trim().toLowerCase();
     const matchesSearch =
@@ -237,7 +257,7 @@ export default function AdminDashboard() {
           <SidebarItem icon={Link} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -245,7 +265,7 @@ export default function AdminDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto">
           <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -282,12 +302,11 @@ export default function AdminDashboard() {
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
@@ -316,11 +335,11 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <StatCard icon={CheckSquare} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Tasks" value="3,215" trend="18%" trendUp={true} />
-              <StatCard icon={Calendar} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Events" value="1,842" trend="24%" trendUp={true} />
-              <StatCard icon={CheckCircle2} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Completed" value="2,461" trend="28%" trendUp={true} />
-              <StatCard icon={Clock} iconColor="text-orange-500" iconBg="bg-orange-100" title="Pending" value="694" trend="12%" trendUp={false} />
-              <StatCard icon={XCircle} iconColor="text-red-500" iconBg="bg-red-100" title="Overdue" value="210" trend="6%" trendUp={false} />
+              <StatCard icon={CheckSquare} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Tasks" value={totalTasks} />
+              <StatCard icon={Calendar} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Events" value={totalEvents} />
+              <StatCard icon={CheckCircle2} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Completed" value={completedCount} />
+              <StatCard icon={Clock} iconColor="text-orange-500" iconBg="bg-orange-100" title="Pending" value={pendingCount} />
+              <StatCard icon={XCircle} iconColor="text-red-500" iconBg="bg-red-100" title="Overdue" value={overdueCount} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
@@ -342,6 +361,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+                {trendsData.length > 0 ? (
                 <div className="flex-1 min-h-[220px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={trendsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
@@ -364,6 +384,9 @@ export default function AdminDashboard() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+                ) : (
+                  <EmptyState icon={BarChart2} title="No trends yet" subtitle="Task and event activity will appear here." />
+                )}
               </div>
 
               {/* Task Status Donut Chart */}
@@ -371,6 +394,7 @@ export default function AdminDashboard() {
                 <h3 className="text-[16px] font-bold text-slate-900">Task Status</h3>
                 <p className="text-[13px] text-slate-500 font-medium mb-4">Current status of all tasks.</p>
                 
+                {statusData.length > 0 ? (
                 <div className="flex-1 flex items-center justify-between pl-2 pr-4 max-lg:flex-col max-lg:items-start max-lg:gap-4">
                   <div className="relative w-[130px] h-[130px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -390,7 +414,7 @@ export default function AdminDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[20px] font-extrabold text-slate-900 leading-none">3,215</span>
+                      <span className="text-[20px] font-extrabold text-slate-900 leading-none">{statusTotal.toLocaleString('en-US')}</span>
                       <span className="text-[10px] text-slate-500 font-semibold mt-1">Total Tasks</span>
                     </div>
                   </div>
@@ -404,12 +428,15 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center justify-between pl-4 text-[12px]">
                            <span className="text-slate-500 font-medium">{item.value.toLocaleString('en-US')}</span>
-                           <span className="text-slate-400 font-medium">({item.name === 'Completed' ? '77%' : item.name === 'Pending' ? '22%' : '7%'})</span>
+                           <span className="text-slate-400 font-medium">({statusTotal > 0 ? Math.round((item.value / statusTotal) * 100) : 0}%)</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={CheckSquare} title="No data yet" subtitle="Task status breakdown will appear here." />
+                )}
               </div>
             </div>
 
@@ -461,22 +488,22 @@ export default function AdminDashboard() {
               {/* Tabs */}
               <div className="px-4 pt-3 flex gap-6 border-b border-slate-100 max-lg:flex-wrap">
                 <button
-                  onClick={() => setActiveTab('All (5,057)')}
-                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'All (5,057)' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setActiveTab('All')}
+                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'All' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                 >
-                  <span className="bg-blue-600 text-white px-2 py-0.5 rounded-md mr-1.5">All (5,057)</span>
+                  <span className="bg-blue-600 text-white px-2 py-0.5 rounded-md mr-1.5">All ({rows.length})</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab('Tasks (3,215)')}
-                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'Tasks (3,215)' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setActiveTab('Tasks')}
+                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'Tasks' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                 >
-                  Tasks (3,215)
+                  Tasks ({totalTasks})
                 </button>
                 <button
-                  onClick={() => setActiveTab('Events (1,842)')}
-                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'Events (1,842)' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setActiveTab('Events')}
+                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'Events' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                 >
-                  Events (1,842)
+                  Events ({totalEvents})
                 </button>
               </div>
 
@@ -496,7 +523,20 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleRows.map((row) => (
+                    {rows.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-2">
+                          <EmptyState icon={CheckSquare} title="No tasks or events yet" subtitle="Items you create will appear here." />
+                        </td>
+                      </tr>
+                    ) : visibleRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
+                          No items found matching your filters.
+                        </td>
+                      </tr>
+                    ) : (
+                    visibleRows.map((row) => (
                       <tr key={row.title} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                         <td className="py-3 px-4"><input type="checkbox" checked={selectedTitles.has(row.title)} onChange={() => toggleRow(row.title)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
                         <td className="py-3 px-4 flex items-center gap-3 font-bold text-slate-900">
@@ -517,11 +557,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2 font-semibold text-slate-700">
-                             {row.assignedAvatar ? (
-                               <img src={row.assignedAvatar} alt={row.assignedName} className="w-6 h-6 rounded-full object-cover" />
-                             ) : (
-                               <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[9px] ${row.avatarColor}`}>{row.initials}</div>
-                             )}
+                             <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[9px] ${row.avatarColor}`}>{row.initials}</div>
                              <span className="whitespace-nowrap">{row.assignedName}</span>
                           </div>
                         </td>
@@ -533,11 +569,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2 font-semibold text-slate-700">
-                             {row.createdAvatar ? (
-                               <img src={row.createdAvatar} alt={row.createdName} className="w-6 h-6 rounded-full object-cover" />
-                             ) : (
-                               <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[9px] ${row.createdAvatarColor}`}>{row.initials}</div>
-                             )}
+                             <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[9px] ${row.createdAvatarColor ?? row.avatarColor}`}>{row.createdInitials ?? row.initials}</div>
                              <span className="whitespace-nowrap">{row.createdName}</span>
                           </div>
                         </td>
@@ -545,7 +577,8 @@ export default function AdminDashboard() {
                           <button onClick={() => showToast(`Opened actions for "${row.title}"`)} className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
                         </td>
                       </tr>
-                    ))}
+                    ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -555,17 +588,19 @@ export default function AdminDashboard() {
                  <span>
                    {isFiltered
                      ? `Showing ${visibleRows.length === 0 ? 0 : 1}–${visibleRows.length} of ${visibleRows.length} items`
-                     : 'Showing 1–8 of 5,057 items'}
+                     : `Showing ${rows.length === 0 ? 0 : 1}–${rows.length} of ${rows.length} items`}
                  </span>
                  <div className="flex items-center gap-1">
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold shadow-sm">1</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">2</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">3</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">4</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">5</button>
-                   <span className="px-1 text-slate-400">...</span>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">632</button>
+                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((pageNum) => (
+                     <button key={pageNum} className={`w-8 h-8 flex items-center justify-center rounded-lg ${pageNum === 1 ? 'bg-blue-600 text-white font-bold shadow-sm' : 'hover:bg-slate-100 font-semibold text-slate-700'}`}>{pageNum}</button>
+                   ))}
+                   {totalPages > 5 && (
+                     <>
+                       <span className="px-1 text-slate-400">...</span>
+                       <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">{totalPages}</button>
+                     </>
+                   )}
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="-rotate-90" /></button>
                  </div>
                  <div className="flex items-center gap-2">
@@ -588,12 +623,7 @@ export default function AdminDashboard() {
                </div>
                
                <div className="space-y-4">
-                 {[
-                   { day: '28', mth: 'Oct', title: 'Team Meeting', time: '10:00 AM - 11:00 AM', icon: Users, color: 'text-blue-600 bg-blue-50' },
-                   { day: '29', mth: 'Oct', title: 'Project Review', time: '02:00 PM - 03:00 PM', icon: FileText, color: 'text-purple-600 bg-purple-50' },
-                   { day: '30', mth: 'Oct', title: 'Client Call', time: '11:00 AM - 12:00 PM', icon: Phone, color: 'text-emerald-600 bg-emerald-50' },
-                   { day: '31', mth: 'Oct', title: 'Webinar Session', time: '04:00 PM - 05:00 PM', icon: Video, color: 'text-rose-600 bg-rose-50' },
-                 ].map((event, i) => (
+                 {upcomingEvents.length > 0 ? upcomingEvents.map((event, i) => (
                    <div key={i} className="flex items-center gap-3 group cursor-pointer">
                      <div className="flex flex-col items-center justify-center w-10 h-11 bg-slate-50 rounded-lg border border-slate-100 flex-shrink-0 group-hover:border-blue-200 transition-colors">
                        <span className="text-[10px] font-bold text-slate-500 uppercase leading-none mt-1">{event.mth}</span>
@@ -607,7 +637,9 @@ export default function AdminDashboard() {
                        <p className="text-[12px] text-slate-500 font-medium">{event.time}</p>
                      </div>
                    </div>
-                 ))}
+                 )) : (
+                   <EmptyState icon={Calendar} title="No upcoming events" subtitle="Events scheduled for the next 7 days will appear here." />
+                 )}
                </div>
             </div>
 
@@ -618,6 +650,7 @@ export default function AdminDashboard() {
                  <button onClick={() => showToast('All event types are shown above')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
               
+              {eventTypesData.length > 0 ? (
               <div className="flex items-center gap-4">
                 <div className="relative w-[110px] h-[110px] flex-shrink-0">
                   <ResponsiveContainer width="100%" height="100%">
@@ -637,7 +670,7 @@ export default function AdminDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[18px] font-extrabold text-slate-900 leading-none">1,842</span>
+                    <span className="text-[18px] font-extrabold text-slate-900 leading-none">{eventTypesTotal.toLocaleString('en-US')}</span>
                     <span className="text-[9px] text-slate-500 font-semibold mt-0.5 leading-tight text-center">Total Events</span>
                   </div>
                 </div>
@@ -651,12 +684,15 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                          <span className="text-slate-500 font-medium">{item.value}</span>
-                         <span className="text-slate-400 font-medium w-7 text-right">({item.name === 'Meetings' ? '35%' : item.name === 'Calls' ? '23%' : item.name === 'Reminders' ? '17%' : item.name === 'Deadlines' ? '15%' : '10%'})</span>
+                         <span className="text-slate-400 font-medium w-7 text-right">({eventTypesTotal > 0 ? Math.round((item.value / eventTypesTotal) * 100) : 0}%)</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
+              ) : (
+                <EmptyState icon={Calendar} title="No data yet" subtitle="Event type breakdown will appear here." />
+              )}
             </div>
 
             {/* Recent Activity */}
@@ -667,13 +703,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-4">
-                {[
-                  { icon: CheckSquare, color: 'text-emerald-600', bg: 'bg-emerald-100', title: 'Task completed', desc: 'Sarah Kumar marked "UI Design" as completed', time: '2 min ago' },
-                  { icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-100', title: 'New event created', desc: 'Arun Raj created "Project Review"', time: '8 min ago' },
-                  { icon: Edit3, color: 'text-amber-500', bg: 'bg-amber-100', title: 'Task updated', desc: 'Priya Nair updated "Research Report"', time: '15 min ago' },
-                  { icon: Trash2, color: 'text-rose-600', bg: 'bg-rose-100', title: 'Event deleted', desc: 'Karthik P deleted "Old Meeting"', time: '28 min ago' },
-                  { icon: BellRing, color: 'text-orange-500', bg: 'bg-orange-100', title: 'Reminder set', desc: 'Meena R set reminder for "Client Call"', time: '42 min ago' },
-                ].map((act, i) => (
+                {recentActivity.length > 0 ? recentActivity.map((act, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${act.bg}`}>
                       <act.icon size={16} className={act.color} />
@@ -684,7 +714,9 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-[10px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap mt-1">{act.time}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Clock} title="No activity yet" subtitle="Recent task and event activity will appear here." />
+                )}
               </div>
             </div>
 

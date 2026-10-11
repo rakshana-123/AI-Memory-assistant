@@ -1,69 +1,49 @@
 "use client";
 import NextLink from "next/link";
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, Users, Database, FileText, CalendarCheck, 
-  Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
+import {
+  LayoutDashboard, Users, Database, FileText, CalendarCheck,
+  Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck,
   Settings, Search, ChevronDown, MoreVertical, Plus, ChevronRight,
-  Brain, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight,
-  Filter, UserPlus, LogIn, Upload, Layers
+  Brain, CheckCircle2, XCircle, ArrowUpRight,
+  Filter, Clock, Layers
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-const statCardsData = [
-  { title: 'Total Users', value: '1,248', trend: '12%', trendUp: true, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-  { title: 'Active Users', value: '912', trend: '18%', trendUp: true, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-  { title: 'Inactive Users', value: '186', trend: '6%', trendUp: false, icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-100' },
-  { title: 'Pro Users', value: '324', trend: '28%', trendUp: true, icon: Layers, color: 'text-amber-500', bg: 'bg-amber-100' },
-  { title: 'Team Workspaces', value: '24', trend: '20%', trendUp: true, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-100' },
-];
+type UserRecord = {
+  id: number; name: string; email: string; plan: string; status: string;
+  team: string; joined: string; lastActive: string; initials: string; bg: string;
+};
 
-const userGrowthData = [
-  { name: 'Oct 1', newUsers: 30, activeUsers: 60 },
-  { name: 'Oct 8', newUsers: 50, activeUsers: 90 },
-  { name: 'Oct 15', newUsers: 40, activeUsers: 140 },
-  { name: 'Oct 22', newUsers: 90, activeUsers: 120 },
-  { name: 'Oct 31', newUsers: 140, activeUsers: 200 },
-];
+type GrowthPoint = { name: string; newUsers: number; activeUsers: number };
 
-const planDistributionData = [
-  { name: 'Free', value: 924, percent: '74%', fill: '#3b82f6' },
-  { name: 'Pro', value: 324, percent: '26%', fill: '#a855f7' },
-  { name: 'Team', value: 24, percent: '2%', fill: '#f59e0b' },
-];
+const userGrowthData: GrowthPoint[] = [];
 
-const topTeamsData = [
-  { name: 'Development', value: 428, percent: '34%', color: 'bg-blue-500', iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
-  { name: 'Design', value: 312, percent: '25%', color: 'bg-purple-500', iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
-  { name: 'Product', value: 246, percent: '20%', color: 'bg-emerald-400', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-  { name: 'Marketing', value: 162, percent: '13%', color: 'bg-amber-400', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
-  { name: 'Research', value: 100, percent: '8%', color: 'bg-rose-400', iconBg: 'bg-rose-100', iconColor: 'text-rose-600' },
-];
+type PlanSlice = { name: string; value: number; percent: string; fill: string };
 
-const usersData = [
-  { id: 1, name: 'Sarah Kumar', email: 'sarah@example.com', plan: 'Pro', status: 'Active', team: 'Design', joined: 'Oct 28, 2024', lastActive: '2 min ago', avatar: 'https://i.pravatar.cc/150?img=1' },
-  { id: 2, name: 'Arun Raj', email: 'arun@example.com', plan: 'Free', status: 'Active', team: 'Development', joined: 'Oct 26, 2024', lastActive: '15 min ago', avatar: 'https://i.pravatar.cc/150?img=11' },
-  { id: 3, name: 'Priya Nair', email: 'priya@example.com', plan: 'Pro', status: 'Active', team: 'Product', joined: 'Oct 24, 2024', lastActive: '1 hour ago', avatar: 'https://i.pravatar.cc/150?img=5' },
-  { id: 4, name: 'Vikram S', email: 'vikram@example.com', plan: 'Team', status: 'Inactive', team: 'Marketing', joined: 'Oct 22, 2024', lastActive: '3 days ago', initials: 'VS', bg: 'bg-purple-100 text-purple-600' },
-  { id: 5, name: 'Meena R', email: 'meena@example.com', plan: 'Free', status: 'Active', team: 'Research', joined: 'Oct 20, 2024', lastActive: '10 min ago', avatar: 'https://i.pravatar.cc/150?img=9' },
-  { id: 6, name: 'Karthik P', email: 'karthik@example.com', plan: 'Pro', status: 'Active', team: 'Development', joined: 'Oct 18, 2024', lastActive: '4 min ago', avatar: 'https://i.pravatar.cc/150?img=12' },
-  { id: 7, name: 'Ananya S', email: 'ananya@example.com', plan: 'Free', status: 'Inactive', team: 'Design', joined: 'Oct 16, 2024', lastActive: '7 days ago', initials: 'AS', bg: 'bg-blue-100 text-blue-600' },
-  { id: 8, name: 'Rakesh M', email: 'rakesh@example.com', plan: 'Pro', status: 'Active', team: 'Product', joined: 'Oct 14, 2024', lastActive: '30 min ago', avatar: 'https://i.pravatar.cc/150?img=14' },
-  { id: 9, name: 'Sneha B', email: 'sneha@example.com', plan: 'Team', status: 'Active', team: 'Marketing', joined: 'Oct 12, 2024', lastActive: '1 hour ago', avatar: 'https://i.pravatar.cc/150?img=20' },
-  { id: 10, name: 'John Doe', email: 'john@example.com', plan: 'Free', status: 'Active', team: 'Research', joined: 'Oct 10, 2024', lastActive: '5 min ago', initials: 'JD', bg: 'bg-rose-100 text-rose-600' },
-];
+const planDistributionData: PlanSlice[] = [];
+
+type TeamStat = { name: string; value: number; percent: string; color: string; iconBg: string; iconColor: string };
+
+const topTeamsData: TeamStat[] = [];
+
+const usersData: UserRecord[] = [];
 
 const userTabs = [
-  { label: 'All Users (1,248)', match: (u: typeof usersData[number]) => true },
-  { label: 'Active (912)', match: (u: typeof usersData[number]) => u.status === 'Active' },
-  { label: 'Inactive (186)', match: (u: typeof usersData[number]) => u.status === 'Inactive' },
-  { label: 'Pro (324)', match: (u: typeof usersData[number]) => u.plan === 'Pro' },
-  { label: 'Free (924)', match: (u: typeof usersData[number]) => u.plan === 'Free' },
-  { label: 'Teams (24)', match: (u: typeof usersData[number]) => u.plan === 'Team' },
+  { label: 'All Users', match: (u: UserRecord) => true },
+  { label: 'Active', match: (u: UserRecord) => u.status === 'Active' },
+  { label: 'Inactive', match: (u: UserRecord) => u.status === 'Inactive' },
+  { label: 'Pro', match: (u: UserRecord) => u.plan === 'Pro' },
+  { label: 'Free', match: (u: UserRecord) => u.plan === 'Free' },
+  { label: 'Teams', match: (u: UserRecord) => u.plan === 'Team' },
 ];
+
+type Activity = { user: string; action: string; time: string; icon: any; bg: string; color: string };
+
+const recentUserActivity: Activity[] = [];
 
 const planOptions = ['All Plans', 'Free', 'Pro', 'Team'];
 const statusOptions = ['All Status', 'Active', 'Inactive'];
@@ -106,6 +86,16 @@ const StatusBadge = ({ status }: any) => {
   );
 };
 
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
 export default function UsersManagementDashboard() {
   const [headerQuery, setHeaderQuery] = useState('');
   const [tableQuery, setTableQuery] = useState('');
@@ -127,6 +117,22 @@ export default function UsersManagementDashboard() {
   };
 
   const tabMatch = userTabs.find((tab) => tab.label === activeTab) ?? userTabs[0];
+
+  const totalUsers = usersList.length;
+  const activeUserCount = usersList.filter((u) => u.status === 'Active').length;
+  const inactiveUserCount = usersList.filter((u) => u.status === 'Inactive').length;
+  const proUserCount = usersList.filter((u) => u.plan === 'Pro').length;
+  const teamWorkspaceCount = new Set(usersList.filter((u) => u.plan === 'Team').map((u) => u.team)).size;
+
+  const statCardsData = [
+    { title: 'Total Users', value: totalUsers, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { title: 'Active Users', value: activeUserCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    { title: 'Inactive Users', value: inactiveUserCount, icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-100' },
+    { title: 'Pro Users', value: proUserCount, icon: Layers, color: 'text-amber-500', bg: 'bg-amber-100' },
+    { title: 'Team Workspaces', value: teamWorkspaceCount, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-100' },
+  ];
+
+  const totalPages = Math.max(1, Math.ceil(usersList.length / 10));
 
   const visibleUsers = usersList.filter((user) => {
     const header = headerQuery.trim().toLowerCase();
@@ -224,7 +230,7 @@ export default function UsersManagementDashboard() {
           <SidebarItem icon={Link} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -232,7 +238,7 @@ export default function UsersManagementDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -269,12 +275,11 @@ export default function UsersManagementDashboard() {
           </div>
 
           <div className="flex items-center gap-4 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => showToast('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 pl-2 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-8 h-8 rounded-full object-cover shadow-sm" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm">A</div>
               <span className="text-[13px] font-bold text-slate-700">Admin</span>
               <ChevronDown size={14} className="text-slate-400" />
             </div>
@@ -314,15 +319,16 @@ export default function UsersManagementDashboard() {
                       <stat.icon size={20} className={stat.color} />
                     </div>
                     <div>
-                      <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1">{stat.value}</h3>
+                      <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1">{stat.value.toLocaleString('en-US')}</h3>
                       <p className="text-[12px] text-slate-500 font-medium leading-none">{stat.title}</p>
                     </div>
                   </div>
-                  <div className={`flex items-center gap-1 text-[12px] font-semibold ${stat.trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {stat.trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                    <span>{stat.trend}</span>
-                    <span className="text-slate-400 font-medium ml-1">vs last month</span>
+                  {stat.value > 0 && (
+                  <div className="flex items-center gap-1 text-[12px] font-semibold text-emerald-600">
+                    <ArrowUpRight size={14} />
+                    <span>vs last month</span>
                   </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -391,7 +397,13 @@ export default function UsersManagementDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleUsers.length === 0 ? (
+                    {usersList.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="py-2">
+                          <EmptyState icon={Users} title="No users yet" subtitle="Users you add will appear here." />
+                        </td>
+                      </tr>
+                    ) : visibleUsers.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="py-12 text-center text-slate-400 font-medium">
                           No users found matching your filters.
@@ -402,11 +414,7 @@ export default function UsersManagementDashboard() {
                         <tr key={user.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                           <td className="py-3 px-4"><input type="checkbox" checked={selectedIds.has(user.id)} onChange={() => toggleUser(user.id)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
                           <td className="py-3 px-2 flex items-center gap-3 font-bold text-slate-900">
-                            {user.avatar ? (
-                              <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
-                            ) : (
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
-                            )}
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
                             {user.name}
                           </td>
                           <td className="py-3 px-2 text-slate-500 font-medium">{user.email}</td>
@@ -430,7 +438,7 @@ export default function UsersManagementDashboard() {
                 <span className="text-slate-500 font-medium">
                   {isFiltered
                     ? `Showing ${visibleUsers.length === 0 ? 0 : 1}–${visibleUsers.length} of ${visibleUsers.length} users`
-                    : 'Showing 1–10 of 1,248 users'}
+                    : `Showing ${usersList.length === 0 ? 0 : 1}–${usersList.length} of ${usersList.length} users`}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button 
@@ -439,7 +447,7 @@ export default function UsersManagementDashboard() {
                   >
                     &lt;
                   </button>
-                  {[1, 2, 3, 4, 5].map((pageNum) => (
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((pageNum) => (
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
@@ -452,13 +460,17 @@ export default function UsersManagementDashboard() {
                       {pageNum}
                     </button>
                   ))}
-                  <span className="text-slate-400 px-1">...</span>
-                  <button 
-                    onClick={() => setCurrentPage(125)}
-                    className="w-8 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-100 font-medium"
-                  >
-                    125
-                  </button>
+                  {totalPages > 5 && (
+                    <>
+                      <span className="text-slate-400 px-1">...</span>
+                      <button 
+                        onClick={() => setCurrentPage(totalPages)}
+                        className="w-8 h-7 flex items-center justify-center rounded border border-transparent text-slate-600 hover:bg-slate-100 font-medium"
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
                   <button 
                     onClick={() => setCurrentPage(p => p + 1)}
                     className="w-7 h-7 flex items-center justify-center rounded border border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -480,6 +492,7 @@ export default function UsersManagementDashboard() {
             {/* User Plan Distribution */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <h3 className="text-[16px] font-bold text-slate-900 mb-4">User Plan Distribution</h3>
+              {planDistributionData.length > 0 ? (
               <div className="flex items-center justify-between max-lg:flex-col max-lg:gap-4">
                 <div className="relative w-[140px] h-[140px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -499,7 +512,7 @@ export default function UsersManagementDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[18px] font-extrabold text-slate-900 leading-none">1,248</span>
+                    <span className="text-[18px] font-extrabold text-slate-900 leading-none">{totalUsers.toLocaleString('en-US')}</span>
                     <span className="text-[10px] text-slate-500 font-semibold mt-1">Total Users</span>
                   </div>
                 </div>
@@ -518,6 +531,9 @@ export default function UsersManagementDashboard() {
                   ))}
                 </div>
               </div>
+              ) : (
+                <EmptyState icon={Users} title="No plan data yet" subtitle="Plan distribution will appear here as users sign up." />
+              )}
             </div>
 
             {/* User Growth Chart */}
@@ -532,6 +548,7 @@ export default function UsersManagementDashboard() {
                 <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500"></div> New Users</div>
                 <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500"></div> Active Users</div>
               </div>
+              {userGrowthData.length > 0 ? (
               <div className="h-[140px] w-full -ml-3">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={userGrowthData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
@@ -554,16 +571,19 @@ export default function UsersManagementDashboard() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+              ) : (
+                <EmptyState icon={BarChart2} title="No growth data yet" subtitle="User growth will appear here as users register." />
+              )}
             </div>
 
             {/* Top Teams */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[16px] font-bold text-slate-900">Top Teams</h3>
-                <button onClick={() => showToast('All teams are shown above (12 total)')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
+                <button onClick={() => showToast('Showing all teams')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
               <div className="space-y-4">
-                {topTeamsData.map((team, i) => (
+                {topTeamsData.length > 0 ? topTeamsData.map((team, i) => (
                   <div key={i} className="flex items-center gap-3 text-[12px]">
                     <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${team.iconBg}`}>
                        {i === 0 && <Layers size={12} className={team.iconColor} />}
@@ -581,7 +601,9 @@ export default function UsersManagementDashboard() {
                       <span className="text-slate-400 font-medium">({team.percent})</span>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Users} title="No teams yet" subtitle="Teams will appear here as users join workspaces." />
+                )}
               </div>
             </div>
 
@@ -592,13 +614,7 @@ export default function UsersManagementDashboard() {
                 <button onClick={() => showToast('Showing all recent user activity')} className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
               </div>
               <div className="space-y-4">
-                {[
-                  { user: 'Sarah Kumar', action: 'upgraded to Pro plan', time: '2 min ago', icon: ArrowUpRight, bg: 'bg-blue-100', color: 'text-blue-600' },
-                  { user: 'New user registered', action: '(arun@example.com)', time: '8 min ago', icon: UserPlus, bg: 'bg-blue-50', color: 'text-blue-500' },
-                  { user: 'Vikram S', action: 'logged in', time: '15 min ago', icon: LogIn, bg: 'bg-amber-100', color: 'text-amber-500' },
-                  { user: 'Meena R', action: 'created a new workspace', time: '28 min ago', icon: Users, bg: 'bg-emerald-100', color: 'text-emerald-500' },
-                  { user: 'Priya Nair', action: 'uploaded a document', time: '42 min ago', icon: Upload, bg: 'bg-purple-100', color: 'text-purple-500' },
-                ].map((act, i) => (
+                {recentUserActivity.length > 0 ? recentUserActivity.map((act, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${act.bg}`}>
                       <act.icon size={12} className={act.color} />
@@ -608,7 +624,9 @@ export default function UsersManagementDashboard() {
                     </div>
                     <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap pt-0.5">{act.time}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Clock} title="No user activity yet" subtitle="Recent user activity will appear here." />
+                )}
               </div>
             </div>
 

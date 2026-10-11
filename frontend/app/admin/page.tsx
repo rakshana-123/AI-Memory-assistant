@@ -6,53 +6,49 @@ import {
   LayoutDashboard, Users, Database, FileText, CalendarCheck, 
   Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
   Settings, Search, ChevronDown, ArrowUpRight, ArrowDownRight, 
-  MoreVertical, Plus, ChevronRight, Brain, Clock, CheckCircle2,
-  AlertCircle, Upload, Mic, Crown
+  MoreVertical, ChevronRight, Brain, Clock, CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { 
   LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-const userGrowthData = [
-  { name: 'Oct 1', newUsers: 20, activeUsers: 50 },
-  { name: 'Oct 5', newUsers: 45, activeUsers: 80 },
-  { name: 'Oct 10', newUsers: 30, activeUsers: 110 },
-  { name: 'Oct 15', newUsers: 80, activeUsers: 90 },
-  { name: 'Oct 20', newUsers: 60, activeUsers: 150 },
-  { name: 'Oct 25', newUsers: 100, activeUsers: 120 },
-  { name: 'Oct 31', newUsers: 120, activeUsers: 180 },
-];
+type GrowthPoint = { name: string; newUsers: number; activeUsers: number };
 
-const memoryActivityData = [
-  { name: 'Voice Notes', value: 3124, fill: '#3b82f6', percent: '35%' },
-  { name: 'Text Notes', value: 2416, fill: '#8b5cf6', percent: '27%' },
-  { name: 'Images', value: 1528, fill: '#10b981', percent: '17%' },
-  { name: 'Documents', value: 1234, fill: '#f59e0b', percent: '14%' },
-  { name: 'Links', value: 630, fill: '#64748b', percent: '7%' },
-];
+const userGrowthData: GrowthPoint[] = [];
 
-const aiProcessingData = [
-  { time: '1', req: 1200 }, { time: '2', req: 1800 }, { time: '3', req: 1400 },
-  { time: '4', req: 2200 }, { time: '5', req: 1900 }, { time: '6', req: 2600 },
-  { time: '7', req: 2100 }, { time: '8', req: 2800 },
-];
+type MemorySlice = { name: string; value: number; fill: string; percent: string };
 
-const recentUsers = [
-  { name: 'Sarah Kumar', email: 'sarah@example.com', plan: 'Pro', planColor: 'text-pink-600 bg-pink-100', joined: 'Oct 28, 2024', status: 'Active', statusColor: 'text-emerald-600 bg-emerald-100', avatar: 'https://i.pravatar.cc/150?img=1' },
-  { name: 'Arun Raj', email: 'arun@example.com', plan: 'Free', planColor: 'text-slate-600 bg-slate-100', joined: 'Oct 26, 2024', status: 'Active', statusColor: 'text-emerald-600 bg-emerald-100', avatar: 'https://i.pravatar.cc/150?img=11' },
-  { name: 'Priya Nair', email: 'priya@example.com', plan: 'Pro', planColor: 'text-pink-600 bg-pink-100', joined: 'Oct 24, 2024', status: 'Active', statusColor: 'text-emerald-600 bg-emerald-100', avatar: 'https://i.pravatar.cc/150?img=5' },
-  { name: 'Vikram S', email: 'vikram@example.com', plan: 'Team', planColor: 'text-blue-600 bg-blue-100', joined: 'Oct 22, 2024', status: 'Inactive', statusColor: 'text-rose-600 bg-rose-100', initials: 'VS', bg: 'bg-purple-100 text-purple-600' },
-  { name: 'Meena R', email: 'meena@example.com', plan: 'Free', planColor: 'text-slate-600 bg-slate-100', joined: 'Oct 20, 2024', status: 'Active', statusColor: 'text-emerald-600 bg-emerald-100', avatar: 'https://i.pravatar.cc/150?img=9' },
-];
+const memoryActivityData: MemorySlice[] = [];
 
-const systemHealth = [
-  { name: 'API Server', status: 'Operational' },
-  { name: 'Database', status: 'Operational' },
-  { name: 'AI Services', status: 'Operational' },
-  { name: 'File Storage', status: 'Operational' },
-  { name: 'Integrations', status: 'Operational' },
-];
+type AiPoint = { time: string; req: number };
+
+const aiProcessingData: AiPoint[] = [];
+
+type RecentUser = {
+  name: string; email: string; plan: string; planColor: string;
+  joined: string; status: string; statusColor: string;
+  initials: string; bg: string;
+};
+
+const recentUsers: RecentUser[] = [];
+
+type SystemService = { name: string; status: string };
+
+const systemHealth: SystemService[] = [];
+
+type FeatureUsage = { label: string; width: string; color: string };
+
+const topFeaturesUsage: FeatureUsage[] = [];
+
+type StorageType = { name: string; color: string; gb: number; pct: string };
+
+const storageByType: StorageType[] = [];
+
+type Activity = { icon: any; color: string; bg: string; title: string; sub: string; time: string };
+
+const recentActivities: Activity[] = [];
 
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
@@ -77,15 +73,27 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp 
         <p className="text-[13px] text-slate-500 font-medium leading-none">{title}</p>
       </div>
     </div>
-    <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-      {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-      <span>{trend}</span>
-      <span className="text-slate-400 font-medium ml-1">vs last month</span>
-    </div>
+    {trend && (
+      <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+        <span>{trend}</span>
+        <span className="text-slate-400 font-medium ml-1">vs last month</span>
+      </div>
+    )}
   </div>
 );
 
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 
 const cycleOption = (options: string[], current: string) => {
@@ -109,6 +117,14 @@ export default function AdminDashboard() {
     const query = searchQuery.trim().toLowerCase();
     return user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query);
   });
+
+  const totalUsers = recentUsers.length;
+  const totalMemories = memoryActivityData.reduce((sum, slice) => sum + slice.value, 0);
+  const totalDocuments = 0;
+  const tasksAndEvents = 0;
+  const systemUptime = '0%';
+  const aiRequestsThisMonth = aiProcessingData.reduce((sum, point) => sum + point.req, 0);
+  const storageUsedGb = storageByType.reduce((sum, type) => sum + type.gb, 0);
 
   return (
     <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
@@ -135,7 +151,7 @@ export default function AdminDashboard() {
           <SidebarItem icon={Link} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -143,7 +159,7 @@ export default function AdminDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto flex flex-col gap-2">
           <NextLink href="/admin/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -179,11 +195,10 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
-            <img onClick={() => showToast('Signed in as Administrator')} src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Signed in as Administrator')} className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -205,11 +220,11 @@ export default function AdminDashboard() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Users" value="1,248" trend="12%" trendUp={true} />
-              <StatCard icon={Database} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Memories" value="8,932" trend="28%" trendUp={true} />
-              <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-50" title="Documents" value="2,461" trend="34%" trendUp={true} />
-              <StatCard icon={CalendarCheck} iconColor="text-rose-600" iconBg="bg-rose-100" title="Tasks & Events" value="3,215" trend="18%" trendUp={true} />
-              <StatCard icon={ShieldCheck} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="System Uptime" value="96.2%" trend="0.4%" trendUp={true} />
+              <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Users" value={totalUsers} trend={totalUsers > 0 ? '12%' : undefined} trendUp={true} />
+              <StatCard icon={Database} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Memories" value={totalMemories} trend={totalMemories > 0 ? '28%' : undefined} trendUp={true} />
+              <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-50" title="Documents" value={totalDocuments} />
+              <StatCard icon={CalendarCheck} iconColor="text-rose-600" iconBg="bg-rose-100" title="Tasks & Events" value={tasksAndEvents} />
+              <StatCard icon={ShieldCheck} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="System Uptime" value={systemUptime} />
             </div>
 
             {/* Charts Row */}
@@ -229,6 +244,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div> New Users</div>
                   <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div> Active Users</div>
                 </div>
+                {userGrowthData.length > 0 ? (
                 <div className="flex-1 min-h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={userGrowthData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
@@ -251,6 +267,9 @@ export default function AdminDashboard() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+                ) : (
+                  <EmptyState icon={BarChart2} title="No growth data yet" subtitle="User growth will appear here as users register." />
+                )}
               </div>
 
               {/* Memory Activity Donut */}
@@ -265,6 +284,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
+                {memoryActivityData.length > 0 ? (
                 <div className="flex-1 flex items-center justify-between px-2 max-lg:flex-col max-lg:gap-4">
                   <div className="relative w-[160px] h-[160px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -284,7 +304,7 @@ export default function AdminDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[20px] font-extrabold text-slate-900 leading-none">8,932</span>
+                      <span className="text-[20px] font-extrabold text-slate-900 leading-none">{totalMemories.toLocaleString('en-US')}</span>
                       <span className="text-[11px] text-slate-500 font-semibold mt-1">Total Memories</span>
                     </div>
                   </div>
@@ -304,6 +324,9 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={Database} title="No memories yet" subtitle="Memory activity will appear here as users capture." />
+                )}
               </div>
             </div>
 
@@ -314,14 +337,7 @@ export default function AdminDashboard() {
                 <p className="text-[13px] text-slate-500 font-medium mb-6">Most used features across all users.</p>
                 
                 <div className="space-y-4">
-                  {[
-                    { label: 'Voice Capture', width: '78%', color: 'bg-blue-500' },
-                    { label: 'Memories', width: '64%', color: 'bg-purple-500' },
-                    { label: 'Documents', width: '52%', color: 'bg-emerald-400' },
-                    { label: 'Tasks & Schedule', width: '46%', color: 'bg-amber-400' },
-                    { label: 'Integrations', width: '38%', color: 'bg-rose-400' },
-                    { label: 'AI Insights', width: '32%', color: 'bg-indigo-400' },
-                  ].map((feature, i) => (
+                  {topFeaturesUsage.length > 0 ? topFeaturesUsage.map((feature, i) => (
                     <div key={i} className="flex items-center gap-4">
                       <span className="w-32 text-[12px] font-semibold text-slate-700">{feature.label}</span>
                       <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden flex items-center">
@@ -329,7 +345,9 @@ export default function AdminDashboard() {
                       </div>
                       <span className="w-8 text-right text-[12px] font-medium text-slate-500">{feature.width}</span>
                     </div>
-                  ))}
+                  )) : (
+                    <EmptyState icon={BarChart2} title="No feature usage yet" subtitle="Usage across features will appear here." />
+                  )}
                 </div>
               </div>
 
@@ -338,52 +356,29 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex justify-between items-end mb-1">
                     <h3 className="text-[16px] font-bold text-slate-900">Storage Usage</h3>
-                    <span className="text-[13px] font-semibold text-blue-600">428 GB of 1 TB used</span>
+                    <span className="text-[13px] font-semibold text-blue-600">{storageUsedGb.toLocaleString('en-US')} GB of 1 TB used</span>
                   </div>
                   <p className="text-[13px] text-slate-500 font-medium mb-5">Total storage used by all users.</p>
                   
-                  <div className="w-full h-4 rounded-full overflow-hidden flex shadow-inner mb-6">
-                    <div className="bg-blue-500 w-[42%]"></div>
-                    <div className="bg-purple-500 w-[28%]"></div>
-                    <div className="bg-emerald-500 w-[19%]"></div>
-                    <div className="bg-amber-500 w-[11%]"></div>
-                  </div>
+                  <div className="w-full h-4 rounded-full overflow-hidden flex shadow-inner bg-slate-100 mb-6"></div>
                 </div>
 
+                {storageByType.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-y-4 gap-x-8 mt-auto">
-                  <div className="flex items-center justify-between text-[13px]">
-                    <div className="flex items-center gap-2 font-semibold text-slate-700">
-                      <div className="w-3 h-3 rounded-full bg-blue-500"></div> Documents
+                  {storageByType.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between text-[13px]">
+                      <div className="flex items-center gap-2 font-semibold text-slate-700">
+                        <div className={`w-3 h-3 rounded-full ${item.color}`}></div> {item.name}
+                      </div>
+                      <div className="flex items-center gap-3 text-slate-500 font-medium">
+                        <span>{item.gb.toLocaleString('en-US')} GB</span><span className="text-slate-400 w-8 text-right">{item.pct}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-slate-500 font-medium">
-                      <span>180 GB</span><span className="text-slate-400 w-8 text-right">42%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[13px]">
-                    <div className="flex items-center gap-2 font-semibold text-slate-700">
-                      <div className="w-3 h-3 rounded-full bg-purple-500"></div> Voice Notes
-                    </div>
-                    <div className="flex items-center gap-3 text-slate-500 font-medium">
-                      <span>120 GB</span><span className="text-slate-400 w-8 text-right">28%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[13px]">
-                    <div className="flex items-center gap-2 font-semibold text-slate-700">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div> Images
-                    </div>
-                    <div className="flex items-center gap-3 text-slate-500 font-medium">
-                      <span>80 GB</span><span className="text-slate-400 w-8 text-right">19%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[13px]">
-                    <div className="flex items-center gap-2 font-semibold text-slate-700">
-                      <div className="w-3 h-3 rounded-full bg-amber-500"></div> Others
-                    </div>
-                    <div className="flex items-center gap-3 text-slate-500 font-medium">
-                      <span>48 GB</span><span className="text-slate-400 w-8 text-right">11%</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
+                ) : (
+                  <EmptyState icon={Database} title="No storage used yet" subtitle="Storage breakdown will appear here." />
+                )}
               </div>
             </div>
 
@@ -413,7 +408,13 @@ export default function AdminDashboard() {
                        </tr>
                      </thead>
                      <tbody className="text-[13px]">
-                       {visibleUsers.length === 0 ? (
+                       {recentUsers.length === 0 ? (
+                         <tr>
+                           <td colSpan={6} className="py-2">
+                             <EmptyState icon={Users} title="No users yet" subtitle="Users you add will appear here." />
+                           </td>
+                         </tr>
+                       ) : visibleUsers.length === 0 ? (
                          <tr>
                            <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
                              No users found matching "{searchQuery}"
@@ -423,11 +424,7 @@ export default function AdminDashboard() {
                          visibleUsers.map((user) => (
                            <tr key={user.email} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                              <td className="py-3 flex items-center gap-3 font-bold text-slate-900 whitespace-nowrap">
-                               {user.avatar ? (
-                                 <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
-                               ) : (
-                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
-                               )}
+                               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${user.bg}`}>{user.initials}</div>
                                {user.name}
                              </td>
                              <td className="py-3 text-slate-500 font-medium whitespace-nowrap">{user.email}</td>
@@ -456,10 +453,10 @@ export default function AdminDashboard() {
                     <CalendarCheck size={18} className="text-emerald-600" />
                     <h3 className="text-[16px] font-bold text-slate-900">System Health</h3>
                   </div>
-                  <p className="text-[13px] text-slate-500 font-medium mb-4">All systems are running smoothly.</p>
+                  <p className="text-[13px] text-slate-500 font-medium mb-4">Live status of monitored services.</p>
 
                   <div className="space-y-3 mb-4">
-                    {systemHealth.map((sys, i) => (
+                    {systemHealth.length > 0 ? systemHealth.map((sys, i) => (
                       <div key={i} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CheckCircle2 size={16} className="text-emerald-500" />
@@ -467,13 +464,15 @@ export default function AdminDashboard() {
                         </div>
                         <span className="px-2 py-0.5 rounded text-[11px] font-bold text-emerald-600 bg-emerald-50">{sys.status}</span>
                       </div>
-                    ))}
+                    )) : (
+                      <EmptyState icon={ShieldCheck} title="No health checks yet" subtitle="Service status will appear here once checks report in." />
+                    )}
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-[20px] font-extrabold text-slate-900 leading-none mb-1">96.2%</span>
+                    <span className="text-[20px] font-extrabold text-slate-900 leading-none mb-1">{systemUptime}</span>
                     <span className="text-[11px] font-semibold text-slate-500">Uptime</span>
                   </div>
                   <div className="w-24 h-8 relative">
@@ -510,14 +509,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-4">
-                {[
-                  { icon: Users, color: 'text-blue-600', bg: 'bg-blue-100', title: 'New user registered', sub: 'sarah@example.com', time: '2 min ago' },
-                  { icon: FileText, color: 'text-purple-600', bg: 'bg-purple-100', title: 'Document uploaded', sub: 'Research_Paper.pdf', time: '8 min ago' },
-                  { icon: Mic, color: 'text-amber-500', bg: 'bg-amber-100', title: 'New memory created', sub: 'Voice note - 2 min', time: '15 min ago' },
-                  { icon: Link, color: 'text-emerald-600', bg: 'bg-emerald-100', title: 'Integration connected', sub: 'Google Calendar', time: '28 min ago' },
-                  { icon: CalendarCheck, color: 'text-rose-500', bg: 'bg-rose-100', title: 'Task created', sub: 'Project planning', time: '42 min ago' },
-                  { icon: Crown, color: 'text-amber-500', bg: 'bg-amber-100', title: 'User upgraded to Pro', sub: 'alex@example.com', time: '1 hour ago' },
-                ].map((act, i) => (
+                {recentActivities.length > 0 ? recentActivities.map((act, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${act.bg}`}>
                       <act.icon size={14} className={act.color} />
@@ -528,7 +520,9 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap mt-1">{act.time}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Clock} title="No recent activities yet" subtitle="Platform activity will appear here." />
+                )}
               </div>
             </div>
 
@@ -544,15 +538,18 @@ export default function AdminDashboard() {
                   <CheckCircle2 size={16} />
                 </div>
                 <div>
-                  <h4 className="text-[20px] font-extrabold text-slate-900 leading-none">24,561</h4>
+                  <h4 className="text-[20px] font-extrabold text-slate-900 leading-none">{aiRequestsThisMonth.toLocaleString('en-US')}</h4>
                   <p className="text-[12px] text-slate-500 font-medium">AI requests this month</p>
                 </div>
               </div>
               
+              {aiRequestsThisMonth > 0 && (
               <div className="flex items-center gap-1 text-[12px] font-semibold text-emerald-600 mb-4 pl-11">
                 <ArrowUpRight size={14} /> <span>36%</span> <span className="text-slate-400 font-medium">vs last month</span>
               </div>
+              )}
 
+              {aiProcessingData.length > 0 ? (
               <div className="h-16 w-full -ml-2 mb-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={aiProcessingData}>
@@ -566,10 +563,13 @@ export default function AdminDashboard() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+              ) : (
+                <EmptyState icon={Cpu} title="No AI usage yet" subtitle="AI request activity will appear here." />
+              )}
 
               <div className="flex items-center justify-between text-[12px] font-semibold">
                 <span className="text-slate-500">Avg. response time</span>
-                <span className="text-slate-900 text-[14px] font-bold">1.2s</span>
+                <span className="text-slate-900 text-[14px] font-bold">0s</span>
               </div>
             </div>
 

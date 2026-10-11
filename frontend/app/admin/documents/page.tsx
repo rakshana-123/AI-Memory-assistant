@@ -1,51 +1,47 @@
 "use client";
 import NextLink from "next/link";
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, Users, Database, FileText, CalendarCheck, 
-  Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck, 
-  Settings, Search, ChevronDown, MoreVertical, Plus, ChevronRight, 
+import {
+  LayoutDashboard, Users, Database, FileText, CalendarCheck,
+  Cpu, Link, BarChart2, FileSpreadsheet, Bell, ShieldCheck,
+  Settings, Search, ChevronDown, MoreVertical, ChevronRight,
   Brain, CheckCircle2, ArrowUpRight, ArrowDownRight, CloudUpload,
-  Image as ImageIcon, FileCode2, File, GraduationCap, Briefcase, 
-  User, Folder, BookOpen, MoreHorizontal, Download, Layers, 
-  Trash2, Filter, Upload, Share2, FolderKanban
+  Image as ImageIcon, File, GraduationCap, Briefcase,
+  User, Folder, BookOpen, MoreHorizontal, Download, Layers,
+  Trash2, Filter, FolderKanban, Clock
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 
-const documentTrendsData = [
-  { name: 'Oct 1', docs: 50 }, { name: 'Oct 5', docs: 45 },
-  { name: 'Oct 10', docs: 95 }, { name: 'Oct 15', docs: 140 },
-  { name: 'Oct 20', docs: 110 }, { name: 'Oct 25', docs: 160 },
-  { name: 'Oct 31', docs: 180 },
-];
+type TrendPoint = { name: string; docs: number };
 
-const documentTypesData = [
-  { name: 'PDF', value: 1124, fill: '#ef4444', percent: '35%' },
-  { name: 'Word', value: 856, fill: '#3b82f6', percent: '27%' },
-  { name: 'Spreadsheet', value: 428, fill: '#10b981', percent: '13%' },
-  { name: 'Image', value: 562, fill: '#f59e0b', percent: '18%' },
-  { name: 'Others', value: 228, fill: '#8b5cf6', percent: '7%' },
-];
+const documentTrendsData: TrendPoint[] = [];
 
-const documentsList = [
-  { type: 'pdf', name: 'Project Proposal.pdf', uploader: 'Sarah Kumar', uploaderAvatar: 'https://i.pravatar.cc/150?img=1', category: 'Projects', catColor: 'text-amber-600 bg-amber-100', size: '2.4 MB', date: 'Oct 30, 2024', time: '10:24 AM' },
-  { type: 'word', name: 'Meeting Notes.docx', uploader: 'Arun Raj', uploaderAvatar: 'https://i.pravatar.cc/150?img=11', category: 'Work', catColor: 'text-blue-600 bg-blue-100', size: '1.8 MB', date: 'Oct 29, 2024', time: '04:12 PM' },
-  { type: 'image', name: 'IMG_2456.jpg', uploader: 'Priya Nair', uploaderAvatar: 'https://i.pravatar.cc/150?img=5', category: 'Personal', catColor: 'text-orange-500 bg-orange-100', size: '1.2 MB', date: 'Oct 29, 2024', time: '02:36 PM' },
-  { type: 'spreadsheet', name: 'Budget_Planner.xlsx', uploader: 'Vikram S', initials: 'VS', avatarColor: 'bg-indigo-100 text-indigo-600', category: 'Work', catColor: 'text-blue-600 bg-blue-100', size: '856 KB', date: 'Oct 28, 2024', time: '11:03 AM' },
-  { type: 'pdf', name: 'Research_Paper.pdf', uploader: 'Meena R', uploaderAvatar: 'https://i.pravatar.cc/150?img=9', category: 'Academic', catColor: 'text-indigo-600 bg-indigo-100', size: '3.6 MB', date: 'Oct 27, 2024', time: '09:17 AM' },
-  { type: 'others', name: 'Presentation.pptx', uploader: 'Karthik P', uploaderAvatar: 'https://i.pravatar.cc/150?img=12', category: 'Projects', catColor: 'text-amber-600 bg-amber-100', size: '5.2 MB', date: 'Oct 26, 2024', time: '01:24 PM' },
-  { type: 'pdf', name: 'Syllabus.pdf', uploader: 'Ananya S', initials: 'AS', avatarColor: 'bg-blue-100 text-blue-600', category: 'Academic', catColor: 'text-indigo-600 bg-indigo-100', size: '1.1 MB', date: 'Oct 25, 2024', time: '11:48 AM' },
-  { type: 'image', name: 'Diagram.png', uploader: 'Rakesh M', uploaderAvatar: 'https://i.pravatar.cc/150?img=15', category: 'Research', catColor: 'text-purple-600 bg-purple-100', size: '632 KB', date: 'Oct 24, 2024', time: '03:15 PM' },
-  { type: 'word', name: 'Documentation.docx', uploader: 'Sneha B', uploaderAvatar: 'https://i.pravatar.cc/150?img=20', category: 'Projects', catColor: 'text-amber-600 bg-amber-100', size: '2.0 MB', date: 'Oct 23, 2024', time: '10:05 AM' },
-  { type: 'pdf', name: 'User_Manual.pdf', uploader: 'John Doe', initials: 'JD', avatarColor: 'bg-rose-100 text-rose-600', category: 'Others', catColor: 'text-slate-600 bg-slate-100', size: '4.1 MB', date: 'Oct 22, 2024', time: '06:21 PM' },
-];
+type TypeSlice = { name: string; value: number; fill: string; percent: string };
+
+const documentTypesData: TypeSlice[] = [];
+
+type DocumentRecord = {
+  type: string; name: string; uploader: string; initials: string;
+  avatarColor: string; category: string; catColor: string;
+  size: string; date: string; time: string;
+};
+
+const documentsList: DocumentRecord[] = [];
+
+type StorageType = { name: string; color: string; gb: number; pct: string };
+
+const storageByType: StorageType[] = [];
+
+type Activity = { icon: any; color: string; bg: string; title: string; sub: string; time: string };
+
+const recentDocumentActivity: Activity[] = [];
 
 const docTypeOptions = ['All Types', 'pdf', 'word', 'spreadsheet', 'image', 'others'];
 const docCategoryOptions = ['All Categories', 'Projects', 'Work', 'Personal', 'Academic', 'Research', 'Others'];
-const dateRangeOptions = ['Oct 1, 2024 - Oct 31, 2024', 'Sep 1, 2024 - Sep 30, 2024', 'Last 7 days', 'Today'];
+const dateRangeOptions = ['Last 7 days', 'Last 30 days', 'All time', 'Today'];
 const chartPeriodOptions = ['This Month', 'Last Month', 'Last 7 days', 'Today'];
 const userFilterOptions = ['All Users', 'Admins', 'Pro Users', 'Free Users'];
 const ageFilterOptions = ['Last 30 days', 'Last 7 days', 'All time'];
@@ -85,15 +81,27 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp 
         <Icon size={20} className={iconColor} />
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1">{value}</h3>
+        <h3 className="text-[20px] font-bold text-slate-900 leading-none mb-1">{typeof value === 'number' ? value.toLocaleString('en-US') : value}</h3>
         <p className="text-[13px] text-slate-500 font-medium leading-none whitespace-nowrap">{title}</p>
       </div>
     </div>
-    <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-      {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-      <span>{trend}</span>
-      <span className="text-slate-400 font-medium ml-1">vs last month</span>
+    {trend && (
+      <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+        <span>{trend}</span>
+        <span className="text-slate-400 font-medium ml-1">vs last month</span>
+      </div>
+    )}
+  </div>
+);
+
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
     </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
   </div>
 );
 
@@ -117,8 +125,38 @@ export default function AdminDashboard() {
   const [chartPeriod, setChartPeriod] = useState(chartPeriodOptions[0]);
   const [userFilter, setUserFilter] = useState(userFilterOptions[0]);
   const [ageFilter, setAgeFilter] = useState(ageFilterOptions[0]);
+  const [docsList, setDocsList] = useState(documentsList);
 
-  const visibleDocuments = documentsList.filter((doc) => {
+  const totalDocs = docsList.length;
+  const pdfCount = docsList.filter((d) => d.type === 'pdf').length;
+  const wordCount = docsList.filter((d) => d.type === 'word').length;
+  const spreadsheetCount = docsList.filter((d) => d.type === 'spreadsheet').length;
+  const imageCount = docsList.filter((d) => d.type === 'image').length;
+  const othersCount = docsList.filter((d) => d.type === 'others').length;
+  const typesTotal = documentTypesData.reduce((sum, slice) => sum + slice.value, 0);
+  const storageUsedGb = storageByType.reduce((sum, type) => sum + type.gb, 0);
+  const totalPages = Math.max(1, Math.ceil(docsList.length / 10));
+
+  const categoryMeta: Record<string, { icon: any; color: string; bg: string }> = {
+    Academic: { icon: GraduationCap, color: 'text-blue-600', bg: 'bg-blue-100' },
+    Work: { icon: Briefcase, color: 'text-amber-500', bg: 'bg-amber-100' },
+    Personal: { icon: User, color: 'text-rose-500', bg: 'bg-rose-100' },
+    Projects: { icon: Folder, color: 'text-emerald-500', bg: 'bg-emerald-100' },
+    Research: { icon: BookOpen, color: 'text-purple-600', bg: 'bg-purple-100' },
+    Others: { icon: MoreHorizontal, color: 'text-slate-500', bg: 'bg-slate-100' },
+  };
+  const categoryCounts = Object.entries(
+    docsList.reduce((acc, doc) => {
+      acc[doc.category] = (acc[doc.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  ).map(([label, count]) => ({
+    label,
+    count,
+    ...(categoryMeta[label] ?? { icon: MoreHorizontal, color: 'text-slate-500', bg: 'bg-slate-100' }),
+  }));
+
+  const visibleDocuments = docsList.filter((doc) => {
     const header = headerQuery.trim().toLowerCase();
     const table = tableQuery.trim().toLowerCase();
     const matchesSearch =
@@ -137,7 +175,7 @@ export default function AdminDashboard() {
     );
   });
 
-  const isFiltered = visibleDocuments.length !== documentsList.length;
+  const isFiltered = visibleDocuments.length !== docsList.length;
 
   const allVisibleSelected =
     visibleDocuments.length > 0 && visibleDocuments.every((doc) => selectedNames.has(doc.name));
@@ -173,6 +211,27 @@ export default function AdminDashboard() {
     setTimeout(() => setActionFeedback(null), 3500);
   };
 
+  const handleUpload = () => {
+    const suffix = docsList.filter((d) => d.name.startsWith('Admin upload')).length + 1;
+    const name = suffix === 1 ? 'Admin upload.pdf' : `Admin upload (${suffix}).pdf`;
+    setDocsList((prev) => [
+      {
+        type: 'pdf',
+        name,
+        uploader: 'Admin',
+        initials: 'A',
+        avatarColor: 'bg-blue-100 text-blue-600',
+        category: 'Work',
+        catColor: 'text-blue-600 bg-blue-100',
+        size: '—',
+        date: 'Today',
+        time: 'Just now',
+      },
+      ...prev,
+    ]);
+    handleAction(`Uploaded "${name}"`);
+  };
+
   return (
     <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased">
       
@@ -198,7 +257,7 @@ export default function AdminDashboard() {
           <SidebarItem icon={Link} label="Integrations" href="/admin/integrations" />
           <SidebarItem icon={BarChart2} label="Analytics" href="/admin/analytics" />
           <SidebarItem icon={FileSpreadsheet} label="Reports" href="/admin/reports" />
-          <SidebarItem icon={Bell} label="Notifications" badge="3" href="/admin/notifications" />
+          <SidebarItem icon={Bell} label="Notifications" href="/admin/notifications" />
           <SidebarItem icon={ShieldCheck} label="System Health" href="/admin/system-health" />
           <SidebarItem icon={Settings} label="Settings" href="/admin/settings" />
         </nav>
@@ -206,7 +265,7 @@ export default function AdminDashboard() {
         <div className="p-4 border-t border-slate-100 mt-auto">
           <div onClick={() => handleAction('Signed in as Administrator')} className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Admin" className="w-9 h-9 rounded-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Admin</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Administrator</p>
@@ -244,12 +303,11 @@ export default function AdminDashboard() {
               <ChevronDown size={14} className="text-slate-400 ml-1" />
             </button>
 
-            <button onClick={() => handleAction('You have 3 unread notifications')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
+            <button onClick={() => handleAction('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
             </button>
             <div onClick={() => handleAction('Signed in as Administrator')} className="flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-5">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200" />
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[12px] shadow-sm border border-slate-200">A</div>
               <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">Admin <ChevronDown size={14} className="text-slate-400" /></div>
             </div>
           </div>
@@ -282,7 +340,7 @@ export default function AdminDashboard() {
                  </div>
                </div>
                <button 
-                 onClick={() => handleAction('Upload dialog opened: select PDF, Word or Spreadsheet files')}
+                 onClick={handleUpload}
                  className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm shadow-blue-200 transition-all flex items-center gap-2"
                >
                  <CloudUpload size={18} /> Upload Document
@@ -290,12 +348,12 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-              <StatCard icon={FileText} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Documents" value="3,198" trend="16%" trendUp={true} />
-              <StatCard icon={FileText} iconColor="text-red-500" iconBg="bg-red-100" title="PDF Files" value="1,124" trend="20%" trendUp={true} />
-              <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-100" title="Word Documents" value="856" trend="12%" trendUp={true} />
-              <StatCard icon={FileSpreadsheet} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Spreadsheets" value="428" trend="8%" trendUp={true} />
-              <StatCard icon={ImageIcon} iconColor="text-amber-500" iconBg="bg-amber-100" title="Images" value="562" trend="18%" trendUp={true} />
-              <StatCard icon={File} iconColor="text-purple-500" iconBg="bg-purple-100" title="Others" value="228" trend="10%" trendUp={true} />
+              <StatCard icon={FileText} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Documents" value={totalDocs} />
+              <StatCard icon={FileText} iconColor="text-red-500" iconBg="bg-red-100" title="PDF Files" value={pdfCount} />
+              <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-100" title="Word Documents" value={wordCount} />
+              <StatCard icon={FileSpreadsheet} iconColor="text-emerald-500" iconBg="bg-emerald-100" title="Spreadsheets" value={spreadsheetCount} />
+              <StatCard icon={ImageIcon} iconColor="text-amber-500" iconBg="bg-amber-100" title="Images" value={imageCount} />
+              <StatCard icon={File} iconColor="text-purple-500" iconBg="bg-purple-100" title="Others" value={othersCount} />
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-[2.5fr_1fr] gap-4">
@@ -315,6 +373,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+                {documentTrendsData.length > 0 ? (
                 <div className="flex-1 min-h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={documentTrendsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
@@ -332,12 +391,16 @@ export default function AdminDashboard() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+                ) : (
+                  <EmptyState icon={BarChart2} title="No trends yet" subtitle="Document upload activity will appear here." />
+                )}
               </div>
 
               {/* Document Types Donut Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <h3 className="text-[16px] font-bold text-slate-900 mb-4">Document Types</h3>
                 
+                {documentTypesData.length > 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-between">
                   <div className="relative w-[140px] h-[140px] mb-4">
                     <ResponsiveContainer width="100%" height="100%">
@@ -357,7 +420,7 @@ export default function AdminDashboard() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">3,198</span>
+                      <span className="text-[18px] font-extrabold text-slate-900 leading-none">{typesTotal.toLocaleString('en-US')}</span>
                       <span className="text-[9px] text-slate-500 font-semibold mt-1 text-center leading-tight">Total<br/>Documents</span>
                     </div>
                   </div>
@@ -377,6 +440,9 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 </div>
+                ) : (
+                  <EmptyState icon={File} title="No data yet" subtitle="Your document type breakdown will appear here." />
+                )}
               </div>
             </div>
 
@@ -448,7 +514,20 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {visibleDocuments.map((doc) => (
+                    {docsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-2">
+                          <EmptyState icon={Folder} title="No documents yet" subtitle="Documents uploaded by users will appear here." />
+                        </td>
+                      </tr>
+                    ) : visibleDocuments.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
+                          No documents found matching your filters.
+                        </td>
+                      </tr>
+                    ) : (
+                    visibleDocuments.map((doc) => (
                       <tr key={doc.name} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                         <td className="py-3 px-4"><input type="checkbox" checked={selectedNames.has(doc.name)} onChange={() => toggleDocument(doc.name)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
                         <td className="py-3 px-4 flex items-center gap-3 font-bold text-slate-900">
@@ -458,11 +537,7 @@ export default function AdminDashboard() {
                         <td className="py-3 px-4 text-slate-500 font-medium uppercase text-[11px]">{doc.type}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2 font-semibold text-slate-700">
-                             {doc.uploaderAvatar ? (
-                               <img src={doc.uploaderAvatar} alt={doc.uploader} className="w-6 h-6 rounded-full object-cover" />
-                             ) : (
-                               <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[9px] ${doc.avatarColor}`}>{doc.initials}</div>
-                             )}
+                             <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[9px] ${doc.avatarColor}`}>{doc.initials}</div>
                              {doc.uploader}
                           </div>
                         </td>
@@ -480,7 +555,8 @@ export default function AdminDashboard() {
                           <button onClick={() => handleAction(`Opened actions for "${doc.name}"`)} className="text-slate-400 hover:text-slate-600 p-1"><MoreVertical size={16} /></button>
                         </td>
                       </tr>
-                    ))}
+                    ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -490,17 +566,19 @@ export default function AdminDashboard() {
                  <span>
                    {isFiltered
                      ? `Showing ${visibleDocuments.length === 0 ? 0 : 1}–${visibleDocuments.length} of ${visibleDocuments.length} documents`
-                     : 'Showing 1–10 of 3,198 documents'}
+                     : `Showing ${docsList.length === 0 ? 0 : 1}–${docsList.length} of ${docsList.length} documents`}
                  </span>
                  <div className="flex items-center gap-1 max-lg:flex-wrap">
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="rotate-90" /></button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">2</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">3</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">4</button>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">5</button>
-                   <span className="px-1 text-slate-400">...</span>
-                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">320</button>
+                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((pageNum) => (
+                     <button key={pageNum} className={`w-8 h-8 flex items-center justify-center rounded-lg ${pageNum === 1 ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-100 font-semibold text-slate-700'}`}>{pageNum}</button>
+                   ))}
+                   {totalPages > 5 && (
+                     <>
+                       <span className="px-1 text-slate-400">...</span>
+                       <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-semibold text-slate-700">{totalPages}</button>
+                     </>
+                   )}
                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronDown size={14} className="-rotate-90" /></button>
                  </div>
                  <div className="flex items-center gap-2">
@@ -521,36 +599,28 @@ export default function AdminDashboard() {
               <div>
                 <div className="flex justify-between items-end mb-4">
                   <h3 className="text-[16px] font-bold text-slate-900">Storage Usage</h3>
-                  <span className="text-[13px] font-semibold text-slate-500">12.6 GB of 50 GB used</span>
+                  <span className="text-[13px] font-semibold text-slate-500">{storageUsedGb.toLocaleString('en-US')} GB of 50 GB used</span>
                 </div>
                 
-                <div className="w-full h-4 rounded-full overflow-hidden flex shadow-inner mb-6">
-                  <div className="bg-red-400 w-[33%]"></div>
-                  <div className="bg-amber-400 w-[25%]"></div>
-                  <div className="bg-blue-400 w-[22%]"></div>
-                  <div className="bg-emerald-400 w-[13%]"></div>
-                  <div className="bg-purple-400 w-[7%]"></div>
-                </div>
+                <div className="w-full h-4 rounded-full overflow-hidden flex shadow-inner bg-slate-100 mb-6"></div>
               </div>
 
+              {storageByType.length > 0 ? (
               <div className="flex flex-col gap-3">
-                {[
-                  { name: 'PDF Files', val: '4.2 GB', pct: '33%', color: 'bg-red-500' },
-                  { name: 'Images', val: '3.1 GB', pct: '25%', color: 'bg-amber-500' },
-                  { name: 'Word Documents', val: '2.8 GB', pct: '22%', color: 'bg-blue-500' },
-                  { name: 'Spreadsheets', val: '1.6 GB', pct: '13%', color: 'bg-emerald-500' },
-                  { name: 'Others', val: '0.9 GB', pct: '7%', color: 'bg-purple-500' },
-                ].map((item, i) => (
+                {storageByType.map((item, i) => (
                   <div key={i} className="flex items-center justify-between text-[13px]">
                     <div className="flex items-center gap-2 font-semibold text-slate-700">
                       <div className={`w-3 h-3 rounded-full ${item.color}`}></div> {item.name}
                     </div>
                     <div className="flex items-center gap-3 text-slate-500 font-medium">
-                      <span>{item.val}</span><span className="text-slate-400 w-8 text-right">{item.pct}</span>
+                      <span>{item.gb.toLocaleString('en-US')} GB</span><span className="text-slate-400 w-8 text-right">{item.pct}</span>
                     </div>
                   </div>
                 ))}
               </div>
+              ) : (
+                <EmptyState icon={Database} title="No storage used yet" subtitle="Storage breakdown will appear here." />
+              )}
             </div>
 
             {/* Top Document Categories */}
@@ -559,16 +629,10 @@ export default function AdminDashboard() {
                  <h3 className="text-[16px] font-bold text-slate-900">Top Document Categories</h3>
                  <button onClick={() => handleAction('All document categories are shown above')} className="text-[13px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700">View all <ArrowUpRight size={14} /></button>
                </div>
+               {categoryCounts.length > 0 ? (
                <div className="space-y-4">
-                 {[
-                   { icon: GraduationCap, label: 'Academic', color: 'text-blue-600', bg: 'bg-blue-100', count: '684', pct: '(21%)' },
-                   { icon: Briefcase, label: 'Work', color: 'text-amber-500', bg: 'bg-amber-100', count: '542', pct: '(17%)' },
-                   { icon: User, label: 'Personal', color: 'text-rose-500', bg: 'bg-rose-100', count: '498', pct: '(16%)' },
-                   { icon: Folder, label: 'Projects', color: 'text-emerald-500', bg: 'bg-emerald-100', count: '436', pct: '(14%)' },
-                   { icon: BookOpen, label: 'Research', color: 'text-purple-600', bg: 'bg-purple-100', count: '398', pct: '(12%)' },
-                   { icon: MoreHorizontal, label: 'Others', color: 'text-slate-500', bg: 'bg-slate-100', count: '640', pct: '(20%)' },
-                 ].map((cat, i) => (
-                   <div key={i} className="flex items-center justify-between">
+                 {categoryCounts.map((cat) => (
+                   <div key={cat.label} className="flex items-center justify-between">
                      <div className="flex items-center gap-3">
                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cat.bg} ${cat.color}`}>
                          <cat.icon size={16} />
@@ -576,11 +640,14 @@ export default function AdminDashboard() {
                        <span className="text-[13px] font-semibold text-slate-700">{cat.label}</span>
                      </div>
                      <div className="flex items-center gap-1 text-[13px] text-slate-500 font-medium">
-                       <span>{cat.count}</span> <span className="text-slate-400">{cat.pct}</span>
+                       <span>{cat.count}</span> <span className="text-slate-400">({totalDocs > 0 ? Math.round((cat.count / totalDocs) * 100) : 0}%)</span>
                      </div>
                    </div>
                  ))}
                </div>
+               ) : (
+                 <EmptyState icon={FolderKanban} title="No categories in use yet" subtitle="Category counts will appear here as documents are uploaded." />
+               )}
             </div>
 
             {/* Recent Document Activity */}
@@ -591,13 +658,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-4">
-                {[
-                  { icon: FileText, color: 'text-red-500', bg: 'bg-red-100', title: 'New PDF uploaded', sub: 'project-report.pdf', time: '2 min ago' },
-                  { icon: Share2, color: 'text-blue-600', bg: 'bg-blue-100', title: 'Document shared', sub: 'Marketing_Strategy.docx', time: '8 min ago' },
-                  { icon: ImageIcon, color: 'text-amber-500', bg: 'bg-amber-100', title: 'New image uploaded', sub: 'IMG_2456.jpg', time: '15 min ago' },
-                  { icon: Trash2, color: 'text-rose-600', bg: 'bg-rose-100', title: 'Document deleted', sub: 'old_notes.pdf', time: '28 min ago' },
-                  { icon: FileSpreadsheet, color: 'text-emerald-500', bg: 'bg-emerald-100', title: 'New spreadsheet uploaded', sub: 'budget_planner.xlsx', time: '42 min ago' },
-                ].map((act, i) => (
+                {recentDocumentActivity.length > 0 ? recentDocumentActivity.map((act, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${act.bg}`}>
                       <act.icon size={16} className={act.color} />
@@ -608,7 +669,9 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-[11px] text-slate-400 font-medium flex-shrink-0 whitespace-nowrap mt-1">{act.time}</span>
                   </div>
-                ))}
+                )) : (
+                  <EmptyState icon={Clock} title="No document activity yet" subtitle="Recent document activity will appear here." />
+                )}
               </div>
             </div>
 
@@ -629,9 +692,9 @@ export default function AdminDashboard() {
                        if (action.label === 'Export Documents') {
                          downloadCsv('pathii-documents.csv', [
                            ['Name', 'Type', 'Uploaded By', 'Category', 'Size', 'Uploaded On'],
-                           ...documentsList.map((d) => [d.name, d.type.toUpperCase(), d.uploader, d.category, d.size, d.date]),
+                           ...docsList.map((d) => [d.name, d.type.toUpperCase(), d.uploader, d.category, d.size, d.date]),
                          ]);
-                         handleAction(`Exported ${documentsList.length} documents`);
+                         handleAction(`Exported ${docsList.length} documents`);
                        } else {
                          handleAction(`${action.label} completed!`);
                        }
