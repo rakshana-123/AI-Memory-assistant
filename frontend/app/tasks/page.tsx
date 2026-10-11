@@ -29,76 +29,34 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
-const tasksData = [
-  {
-    id: 1,
-    title: 'Prepare project presentation',
-    date: 'Today, 2:00 PM',
-    category: 'College',
-    categoryColor: 'blue',
-    priority: 'High',
-    priorityColor: 'red',
-    icon: 'calendar',
-    iconColor: 'pink',
-    completed: false
-  },
-  {
-    id: 2,
-    title: 'Follow up with Sarah',
-    date: 'Tomorrow, 10:00 AM',
-    category: 'Meeting',
-    categoryColor: 'purple',
-    priority: 'Medium',
-    priorityColor: 'orange',
-    icon: 'document',
-    iconColor: 'purple',
-    completed: false
-  },
-  {
-    id: 3,
-    title: 'Review research paper',
-    date: 'Oct 16, 2024',
-    category: 'Research',
-    categoryColor: 'green',
-    priority: 'Medium',
-    priorityColor: 'orange',
-    icon: 'excel',
-    iconColor: 'green',
-    completed: false
-  },
-  {
-    id: 4,
-    title: 'Book travel tickets',
-    date: 'Oct 10, 2024',
-    category: 'Personal',
-    categoryColor: 'red',
-    priority: 'Low',
-    priorityColor: 'blue',
-    icon: 'document',
-    iconColor: 'cyan',
-    completed: true
-  },
-  {
-    id: 5,
-    title: 'Organize project files',
-    date: 'Oct 17, 2024',
-    category: 'Work',
-    categoryColor: 'blue',
-    priority: 'Low',
-    priorityColor: 'blue',
-    icon: 'folder',
-    iconColor: 'purple',
-    completed: false
-  }
-];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
 
-const timelineData = [
-  { time: '09:00 AM', title: 'Team Standup', location: 'Google Meet', type: 'video', status: 'Join', statusType: 'primary', color: 'bg-blue-500' },
-  { time: '11:00 AM', title: 'Client Call', location: 'Zoom Meeting', type: 'video', status: 'Join', statusType: 'secondary', color: 'bg-purple-500' },
-  { time: '02:00 PM', title: 'Project Review', location: 'Meeting Room A', type: 'location', status: 'In 1h', statusType: 'success', color: 'bg-green-500' },
-  { time: '04:00 PM', title: 'Research Discussion', location: 'Google Meet', type: 'video', status: 'In 3h', statusType: 'warning', color: 'bg-orange-500' },
-  { time: '07:00 PM', title: 'Plan Tomorrow', location: 'Personal', type: 'document', status: 'Later', statusType: 'neutral', color: 'bg-slate-400' },
-];
+type Task = {
+  id: number;
+  title: string;
+  date: string;
+  category: string;
+  categoryColor: string;
+  priority: string;
+  priorityColor: string;
+  icon: string;
+  iconColor: string;
+  completed: boolean;
+};
+
+const tasksData: Task[] = [];
+
+type TimelineItem = { time: string; title: string; location: string; type: string; status: string; statusType: string; color: string };
+
+const timelineData: TimelineItem[] = [];
 
 const CategoryTag = ({ text, color }: any) => {
   const styles = {
@@ -216,6 +174,11 @@ export default function PathiiTasksDashboard() {
     return matchesFilter && matchesSearch;
   });
 
+  const totalTasks = tasks.length;
+  const pendingTasks = tasks.filter((task) => !task.completed).length;
+  const completedTasks = tasks.filter((task) => task.completed).length;
+  const upcomingEventsCount = timelineData.length;
+
   return (
     <div className="flex min-h-screen bg-[#F4F7F9] font-sans text-slate-900 antialiased selection:bg-blue-100">
       
@@ -247,7 +210,7 @@ export default function PathiiTasksDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto">
           <div onClick={() => showToast('Account settings opened')} className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -278,11 +241,10 @@ export default function PathiiTasksDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
             </button>
-            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -334,11 +296,13 @@ export default function PathiiTasksDashboard() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">8</h3>
+                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">{totalTasks}</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Total Tasks</p>
-                  <p className="text-[12px] font-bold text-green-600 flex items-center gap-1 whitespace-nowrap">
-                    <ArrowUp size={12} strokeWidth={3} /> 2 new
-                  </p>
+                  {totalTasks > 0 && (
+                    <p className="text-[12px] font-bold text-green-600 flex items-center gap-1 whitespace-nowrap">
+                      <ArrowUp size={12} strokeWidth={3} /> {totalTasks} in list
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -348,11 +312,13 @@ export default function PathiiTasksDashboard() {
                   <CalendarIcon size={24} />
                 </div>
                 <div>
-                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">3</h3>
+                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">{upcomingEventsCount}</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Upcoming Events</p>
-                  <p className="text-[12px] font-bold text-rose-500 flex items-center gap-1 whitespace-nowrap">
-                    <ArrowDown size={12} strokeWidth={3} /> Today
-                  </p>
+                  {upcomingEventsCount > 0 && (
+                    <p className="text-[12px] font-bold text-rose-500 flex items-center gap-1 whitespace-nowrap">
+                      <ArrowDown size={12} strokeWidth={3} /> Today
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -362,9 +328,11 @@ export default function PathiiTasksDashboard() {
                   <Clock size={24} />
                 </div>
                 <div>
-                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">5</h3>
+                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">{pendingTasks}</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Pending Tasks</p>
-                  <p className="text-[12px] font-bold text-orange-500 whitespace-nowrap">Need attention</p>
+                  {pendingTasks > 0 && (
+                    <p className="text-[12px] font-bold text-orange-500 whitespace-nowrap">Need attention</p>
+                  )}
                 </div>
               </div>
 
@@ -374,9 +342,11 @@ export default function PathiiTasksDashboard() {
                   <CheckCircle2 size={28} />
                 </div>
                 <div>
-                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">3</h3>
+                  <h3 className="text-[24px] font-bold text-slate-900 leading-none mb-1">{completedTasks}</h3>
                   <p className="text-[13px] text-slate-500 font-medium mb-2">Completed</p>
-                  <p className="text-[12px] font-bold text-green-500 whitespace-nowrap">This week</p>
+                  {completedTasks > 0 && (
+                    <p className="text-[12px] font-bold text-green-500 whitespace-nowrap">This week</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -410,7 +380,7 @@ export default function PathiiTasksDashboard() {
 
             {/* Task List */}
             <div className="flex flex-col gap-3 mb-8">
-              {visibleTasks.map((task) => (
+              {visibleTasks.length > 0 ? visibleTasks.map((task) => (
                 <div key={task.id} className="bg-white rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-100 group hover:border-[#2563EB]/30 transition-colors max-lg:flex-wrap max-lg:gap-y-3">
                   <div className="flex items-center gap-4 max-lg:min-w-0">
                     {/* Checkbox */}
@@ -438,7 +408,7 @@ export default function PathiiTasksDashboard() {
                     <div className="w-[80px] flex justify-end">
                       <PriorityBadge text={task.priority} color={task.priorityColor} />
                     </div>
-                    <button 
+                    <button
                       onClick={() => showToast(`Options for "${task.title}"`)}
                       className="text-slate-400 hover:text-slate-600 p-1"
                     >
@@ -446,7 +416,11 @@ export default function PathiiTasksDashboard() {
                     </button>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
+                  <EmptyState icon={CheckSquare} title="No tasks yet" subtitle="Tasks you add will appear here." />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
@@ -504,8 +478,8 @@ export default function PathiiTasksDashboard() {
                   <h3 className="text-[18px] font-bold text-slate-900 flex items-center gap-2">
                     <Sparkles size={20} className="text-[#8B5CF6]" /> AI Suggestions
                   </h3>
-                  <button 
-                    onClick={() => showToast('Loaded all 6 AI task recommendations')}
+                  <button
+                    onClick={() => showToast('Loaded all AI task recommendations')}
                     className="text-[#2563EB] text-[13px] font-bold flex items-center gap-1 hover:underline"
                   >
                     See all <ChevronRight size={14} strokeWidth={3} />
@@ -599,87 +573,17 @@ export default function PathiiTasksDashboard() {
                   {/* Empty Days */}
                   <div className="text-center text-[14px] font-medium text-slate-300 py-1">29</div>
                   <div className="text-center text-[14px] font-medium text-slate-300 py-1">30</div>
-                  
-                  {/* First week */}
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    1
-                    <div className="flex gap-0.5 mt-1"><div className="w-1 h-1 rounded-full bg-orange-400"></div></div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    2
-                    <div className="flex gap-0.5 mt-1"><div className="w-1 h-1 rounded-full bg-[#2563EB]"></div></div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    3
-                    <div className="flex gap-0.5 mt-1"><div className="w-1 h-1 rounded-full bg-[#2563EB]"></div></div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    4
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    5
-                  </div>
 
-                  {/* Second week */}
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">6</div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">7</div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    8
-                    <div className="flex gap-0.5 mt-1"><div className="w-1 h-1 rounded-full bg-orange-400"></div></div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    9
-                    <div className="flex gap-0.5 mt-1">
-                      <div className="w-1 h-1 rounded-full bg-pink-400"></div>
-                      <div className="w-1 h-1 rounded-full bg-[#2563EB]"></div>
-                    </div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    10
-                    <div className="flex gap-0.5 mt-1">
-                      <div className="w-1 h-1 rounded-full bg-pink-400"></div>
-                      <div className="w-1 h-1 rounded-full bg-[#2563EB]"></div>
-                    </div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    11
-                    <div className="flex gap-0.5 mt-1"><div className="w-1 h-1 rounded-full bg-orange-400"></div></div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">12</div>
-
-                  {/* Third week */}
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">13</div>
-                  <div className="text-center text-[14px] font-bold text-white bg-[#2563EB] rounded-full w-8 h-8 mx-auto flex flex-col items-center justify-center relative">
-                    14
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    15
-                    <div className="flex gap-0.5 mt-1">
-                      <div className="w-1 h-1 rounded-full bg-green-500"></div>
-                      <div className="w-1 h-1 rounded-full bg-[#2563EB]"></div>
-                    </div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    16
-                    <div className="flex gap-0.5 mt-1"><div className="w-1 h-1 rounded-full bg-pink-400"></div></div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    17
-                    <div className="flex gap-0.5 mt-1"><div className="w-1 h-1 rounded-full bg-green-500"></div></div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                    18
-                    <div className="flex gap-0.5 mt-1">
-                       <div className="w-1 h-1 rounded-full bg-orange-400"></div>
-                       <div className="w-1 h-1 rounded-full bg-[#2563EB]"></div>
-                    </div>
-                  </div>
-                  <div className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">19</div>
-
-                  {/* Rest of the month */}
-                  {[20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31].map(d => (
+                  {/* Days of the month (no events yet) */}
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                     <div key={d} className="text-center text-[14px] font-bold text-slate-700 py-1 flex flex-col items-center">
-                      {d}
+                      {d === 14 ? (
+                        <div className="text-white bg-[#2563EB] rounded-full w-8 h-8 mx-auto flex flex-col items-center justify-center relative">
+                          {d}
+                        </div>
+                      ) : (
+                        d
+                      )}
                     </div>
                   ))}
                   <div className="text-center text-[14px] font-medium text-slate-300 py-1">1</div>
@@ -691,10 +595,11 @@ export default function PathiiTasksDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-[18px] font-bold text-slate-900">Today's Schedule</h3>
-                  <span className="text-[13px] font-semibold text-[#2563EB]">Mon, Oct 14, 2024</span>
                 </div>
 
                 <div className="relative">
+                  {timelineData.length > 0 ? (
+                    <>
                   {/* Vertical Line */}
                   <div className="absolute left-[78px] top-2 bottom-4 w-px bg-slate-200"></div>
 
@@ -758,6 +663,10 @@ export default function PathiiTasksDashboard() {
                       </div>
                     ))}
                   </div>
+                    </>
+                  ) : (
+                    <EmptyState icon={CalendarIcon} title="No events yet" subtitle="Your schedule for the day will appear here." />
+                  )}
                 </div>
               </div>
 

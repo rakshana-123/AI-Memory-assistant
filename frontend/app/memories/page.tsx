@@ -89,7 +89,7 @@ const TagPill = ({ text, colorType }: any) => {
 
 const MapPreview = () => (
   <div className="w-full h-20 bg-[#E2E8F0] rounded-xl relative overflow-hidden border border-slate-200">
-    <div className="absolute inset-0 opacity-50 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-300"></div>
+    <div className="absolute inset-0 opacity-50 bg-slate-300"></div>
     <div className="absolute top-1/2 left-2/3 -translate-y-1/2 -translate-x-1/2 drop-shadow-md">
       <MapPin size={24} className="text-rose-500 fill-rose-500" />
     </div>
@@ -113,106 +113,38 @@ const DocPreview = () => (
   </div>
 )
 
-const memoriesData = [
-  {
-    id: 1,
-    type: 'voice',
-    title: 'Project idea discussion',
-    meta: 'Voice • Today, 10:42 AM',
-    duration: '02:14',
-    tags: [{text: 'Idea', color: 'blue'}, {text: 'AI', color: 'purple'}],
-    active: true,
-    icon: Mic,
-    iconColor: 'text-blue-500',
-    iconBg: 'bg-blue-50'
-  },
-  {
-    id: 2,
-    type: 'document',
-    title: 'Research paper notes',
-    meta: 'Document • Yesterday, 4:20 PM',
-    tags: [{text: 'Research', color: 'green'}, {text: 'PDF', color: 'red'}],
-    active: false,
-    icon: FileText,
-    iconColor: 'text-blue-600',
-    iconBg: 'bg-blue-50',
-  },
-  {
-    id: 3,
-    type: 'image',
-    title: 'Trip to Kyoto',
-    meta: 'Image • Oct 9, 2024',
-    tags: [{text: 'Personal', color: 'purple'}, {text: 'Travel', color: 'blue'}],
-    active: false,
-    icon: ImageIcon,
-    iconColor: 'text-transparent',
-    iconBg: 'bg-transparent',
-    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80'
-  },
-  {
-    id: 4,
-    type: 'meeting',
-    title: 'Meeting with Sarah',
-    meta: 'Conversation • Oct 8, 2024',
-    tags: [{text: 'Meeting', color: 'purple'}, {text: 'Team', color: 'blue'}],
-    active: false,
-    icon: CalendarIcon,
-    iconColor: 'text-rose-500',
-    iconBg: 'bg-rose-50'
-  },
-  {
-    id: 5,
-    type: 'note',
-    title: 'Book recommendations',
-    meta: 'Note • Oct 7, 2024',
-    snippet: 'Some great books for productivity and AI...',
-    tags: [{text: 'Learning', color: 'yellow'}, {text: 'Books', color: 'blue'}],
-    active: false,
-    icon: FileText,
-    iconColor: 'text-amber-500',
-    iconBg: 'bg-amber-50'
-  },
-  {
-    id: 6,
-    type: 'location',
-    title: 'Client office location',
-    meta: 'Location • Oct 6, 2024',
-    tags: [{text: 'Work', color: 'blue'}, {text: 'Client', color: 'green'}],
-    active: false,
-    icon: MapPin,
-    iconColor: 'text-green-500',
-    iconBg: 'bg-green-50'
-  },
-  {
-    id: 7,
-    type: 'link',
-    title: 'Interesting article',
-    meta: 'Link • Oct 5, 2024',
-    url: 'https://www.example.com/article',
-    tags: [{text: 'Reference', color: 'purple'}, {text: 'Article', color: 'blue'}],
-    active: false,
-    icon: Link2,
-    iconColor: 'text-purple-600',
-    iconBg: 'bg-purple-50'
-  },
-  {
-    id: 8,
-    type: 'voice',
-    title: 'Ideas for next sprint',
-    meta: 'Voice • Oct 4, 2024',
-    duration: '01:32',
-    tags: [{text: 'Work', color: 'blue'}, {text: 'Product', color: 'green'}],
-    active: false,
-    icon: Mic,
-    iconColor: 'text-blue-500',
-    iconBg: 'bg-blue-50'
-  }
-];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
+type Memory = {
+  id: number;
+  type: string;
+  title: string;
+  meta: string;
+  duration?: string;
+  snippet?: string;
+  url?: string;
+  image?: string;
+  tags: { text: string; color: string }[];
+  active: boolean;
+  icon: any;
+  iconColor: string;
+  iconBg: string;
+};
+
+const memoriesData: Memory[] = [];
 
 export default function PathiiMemoriesDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
-  const [selectedId, setSelectedId] = useState(1);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('Transcript');
   const [isPlaying, setIsPlaying] = useState(false);
   const [memories, setMemories] = useState(memoriesData);
@@ -241,7 +173,7 @@ export default function PathiiMemoriesDashboard() {
     return matchesFilter && matchesSearch;
   });
 
-  const selectedMemory = memories.find(m => m.id === selectedId) || memories[0];
+  const selectedMemory = memories.find(m => m.id === selectedId) || null;
 
   const handleAddMemory = () => {
     const nextId = memories.reduce((max, m) => Math.max(max, m.id), 0) + 1;
@@ -293,7 +225,7 @@ export default function PathiiMemoriesDashboard() {
         <div className="p-4 border-t border-slate-200/60 mt-auto flex flex-col gap-2">
           <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-100 p-2 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900 leading-none mb-1">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium leading-none">Free Plan</p>
@@ -327,11 +259,10 @@ export default function PathiiMemoriesDashboard() {
           </div>
 
           <div className="flex items-center gap-5 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
             </button>
-            <img onClick={() => showToast('Profile menu opened')} src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm cursor-pointer border border-slate-200" />
+            <div onClick={() => showToast('Profile menu opened')} className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[13px] shadow-sm cursor-pointer border border-slate-200">A</div>
           </div>
         </header>
 
@@ -395,7 +326,7 @@ export default function PathiiMemoriesDashboard() {
             {/* Grid Container (2 Columns) */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
-                {filteredMemories.map((card) => (
+                {filteredMemories.length > 0 ? filteredMemories.map((card) => (
                   <div 
                     key={card.id} 
                     onClick={() => setSelectedId(card.id)}
@@ -466,7 +397,11 @@ export default function PathiiMemoriesDashboard() {
                       </div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="lg:col-span-2">
+                    <EmptyState icon={Database} title="No memories yet" subtitle="Memories you add will appear here." />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -474,7 +409,8 @@ export default function PathiiMemoriesDashboard() {
           {}
           <div className="w-[400px] bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col flex-shrink-0 h-full overflow-hidden max-lg:w-full">
             <div className="p-6 overflow-y-auto custom-scrollbar h-full flex flex-col">
-              
+              {selectedMemory ? (
+              <>
               {/* Header Info */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2 text-[13px] text-slate-500 font-medium">
@@ -644,6 +580,10 @@ export default function PathiiMemoriesDashboard() {
                   </button>
                 </div>
               </div>
+              </>
+              ) : (
+                <EmptyState icon={FileText} title="No memory selected" subtitle="Add or select a memory to see its details." />
+              )}
 
             </div>
           </div>

@@ -72,18 +72,23 @@ const CaptureCard = ({ title, time, tag, tagColor, onCardClick, onMoreClick }: a
   </div>
 );
 
-const recentCaptures = [
-  { id: 1, title: "Project discussion", time: "Today, 10:42 AM • 02:14", tag: "Idea", tagColor: "bg-[#EBF3FF] text-[#2563EB]" },
-  { id: 2, title: "Meeting with Sarah", time: "Yesterday, 4:20 PM • 05:30", tag: "Meeting", tagColor: "bg-[#F3E8FF] text-[#8B5CF6]" },
-  { id: 3, title: "Research notes", time: "Oct 12, 2024 • 03:18", tag: "Document", tagColor: "bg-[#EBF3FF] text-[#2563EB]" },
-  { id: 4, title: "Client call", time: "Oct 10, 2024 • 08:45", tag: "Task", tagColor: "bg-[#E6F8F0] text-[#10B981]" },
-];
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
+  </div>
+);
+
+type Capture = { id: number; title: string; time: string; tag: string; tagColor: string };
 
 export default function PathiiDashboard() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isRecording, setIsRecording] = React.useState(false);
   const [seconds, setSeconds] = React.useState(0);
-  const [captures, setCaptures] = React.useState(recentCaptures);
+  const [captures, setCaptures] = React.useState<Capture[]>([]);
   const [toast, setToast] = React.useState<string | null>(null);
   const [inputSourceIndex, setInputSourceIndex] = React.useState(0);
 
@@ -180,7 +185,7 @@ export default function PathiiDashboard() {
         <div className="mt-4 flex flex-col gap-2">
           <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-200/50 p-2 rounded-2xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium">Free Plan</p>
@@ -214,12 +219,11 @@ export default function PathiiDashboard() {
           </div>
 
           <div className="flex items-center gap-4 max-lg:flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">1</span>
             </button>
             <NextLink href="/settings">
-              <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" className="w-[42px] h-[42px] rounded-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer" />
+              <div className="w-[42px] h-[42px] rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[15px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer">A</div>
             </NextLink>
           </div>
         </header>
@@ -439,17 +443,23 @@ export default function PathiiDashboard() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {filteredCaptures.map((capture) => (
-                <CaptureCard
-                  key={capture.id}
-                  title={capture.title}
-                  time={capture.time}
-                  tag={capture.tag}
-                  tagColor={capture.tagColor}
-                  onCardClick={() => showToast(`Playing '${capture.title}'`)}
-                  onMoreClick={() => showToast(`More options for '${capture.title}'`)}
-                />
-              ))}
+              {filteredCaptures.length > 0 ? (
+                filteredCaptures.map((capture) => (
+                  <CaptureCard
+                    key={capture.id}
+                    title={capture.title}
+                    time={capture.time}
+                    tag={capture.tag}
+                    tagColor={capture.tagColor}
+                    onCardClick={() => showToast(`Playing '${capture.title}'`)}
+                    onMoreClick={() => showToast(`More options for '${capture.title}'`)}
+                  />
+                ))
+              ) : (
+                <div className="sm:col-span-2 lg:col-span-4">
+                  <EmptyState icon={Mic} title="No captures yet" subtitle="Recordings you make will appear here." />
+                </div>
+              )}
             </div>
           </div>
 

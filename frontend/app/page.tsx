@@ -1,10 +1,10 @@
 "use client";
 import NextLink from "next/link";
 import React from 'react';
-import { 
-  Search, Bell, Home, Mic, Database, CheckSquare, Calendar, 
+import {
+  Search, Bell, Home, Mic, Database, CheckSquare, Calendar,
   FileText, Users, Link, BarChart2, Settings, ChevronRight,
-  MoreVertical, Play, MapPin, TrendingUp, TrendingDown,
+  MoreVertical, TrendingUp, TrendingDown,
   ArrowRight, Circle, CheckCircle2
 } from 'lucide-react';
 
@@ -37,11 +37,23 @@ const StatCard = ({ icon: Icon, iconBg, iconColor, value, label, trend, trendUp 
     <div className="flex flex-col">
       <h3 className="text-[26px] font-bold text-slate-900 leading-none">{value}</h3>
       <p className="text-[13px] text-slate-500 mt-1.5 mb-1.5 font-medium">{label}</p>
-      <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-        {trendUp ? <TrendingUp size={14} strokeWidth={3} /> : <TrendingDown size={14} strokeWidth={3} />}
-        <span>{trend}</span>
-      </div>
+      {trend && (
+        <div className={`flex items-center gap-1 text-[12px] font-semibold ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+          {trendUp ? <TrendingUp size={14} strokeWidth={3} /> : <TrendingDown size={14} strokeWidth={3} />}
+          <span>{trend}</span>
+        </div>
+      )}
     </div>
+  </div>
+);
+
+const EmptyState = ({ icon: Icon, title, subtitle }: any) => (
+  <div className="flex flex-col items-center justify-center text-center py-12">
+    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+      <Icon size={22} className="text-slate-400" strokeWidth={2} />
+    </div>
+    <p className="text-[15px] font-semibold text-slate-700">{title}</p>
+    <p className="text-[13px] text-slate-400 mt-1">{subtitle}</p>
   </div>
 );
 
@@ -99,54 +111,31 @@ const CalendarItem = ({ date, month, title, time, dotColor, onRowClick }: any) =
   </div>
 );
 
-const recentMemories = [
-  {
-    icon: Mic,
-    iconBg: "bg-[#EBF3FF]",
-    iconColor: "text-[#2563EB]",
-    title: "Project idea for AI assistant",
-    subtitle: "Voice • 2 min",
-    time: "10:42 AM",
-    actionIcon: Play,
-    isPlay: true,
-  },
-  {
-    icon: FileText,
-    iconBg: "bg-[#F1F5F9]",
-    iconColor: "text-slate-500",
-    title: "Research notes on MCP",
-    subtitle: "Document • PDF",
-    time: "Yesterday",
-    actionIcon: MoreVertical,
-  },
-  {
-    icon: Calendar,
-    iconBg: "bg-[#F3E8FF]",
-    iconColor: "text-[#8B5CF6]",
-    title: "Team meeting with Sarah",
-    subtitle: "Meeting • Summary",
-    time: "Oct 12",
-    actionIcon: MoreVertical,
-  },
-  {
-    icon: MapPin,
-    iconBg: "bg-[#E6F8F0]",
-    iconColor: "text-[#10B981]",
-    title: "Visit to client office",
-    subtitle: "Location • New Delhi",
-    time: "Oct 11",
-    actionIcon: MoreVertical,
-  },
-  {
-    icon: FileText,
-    iconBg: "bg-[#FFF4DF]",
-    iconColor: "text-[#F59E0B]",
-    title: "Book recommendations",
-    subtitle: "Note",
-    time: "Oct 10",
-    actionIcon: MoreVertical,
-  },
-];
+const recentMemories: {
+  icon: any;
+  iconBg: string;
+  iconColor: string;
+  title: string;
+  subtitle: string;
+  time: string;
+  actionIcon: any;
+  isPlay?: boolean;
+}[] = [];
+
+const upcomingTasks: {
+  title: string;
+  subtitle: string;
+  priority: string;
+  priorityColor: string;
+}[] = [];
+
+const upcomingEvents: {
+  date: string;
+  month: string;
+  title: string;
+  time: string;
+  dotColor: string;
+}[] = [];
 
 export default function PathiiDashboard() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -191,11 +180,11 @@ export default function PathiiDashboard() {
           <SidebarItem icon={Settings} label="Settings" href="/settings" />
         </nav>
 
-        {/* User Profile */}
+          {/* User Profile */}
         <div className="mt-4 flex flex-col gap-2">
           <NextLink href="/settings" className="flex items-center justify-between cursor-pointer hover:bg-slate-200/50 p-2 rounded-2xl transition-colors">
             <div className="flex items-center gap-3">
-              <img src="https://i.pravatar.cc/150?img=32" alt="Alex" className="w-10 h-10 rounded-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[14px]">A</div>
               <div>
                 <p className="text-[14px] font-bold text-slate-900">Alex</p>
                 <p className="text-[12px] text-slate-500 font-medium">Free Plan</p>
@@ -229,12 +218,11 @@ export default function PathiiDashboard() {
           </div>
 
           <div className="flex items-center gap-4 flex-shrink-0">
-            <button onClick={() => showToast('Notifications opened — 1 new alert')} className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <button onClick={() => showToast('Notifications opened')} className="relative p-2.5 rounded-full hover:bg-white/80 transition-colors text-slate-600 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">1</span>
             </button>
             <NextLink href="/settings">
-              <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar" className="w-[42px] h-[42px] rounded-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer" />
+              <div className="w-[42px] h-[42px] rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[15px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer">A</div>
             </NextLink>
           </div>
         </header>
@@ -269,7 +257,6 @@ export default function PathiiDashboard() {
             
             {/* Right Content */}
             <div className="relative z-10 text-right self-end lg:self-start mt-2">
-              <p className="text-slate-700 font-semibold text-[15px]">Mon, Oct 14, 2024</p>
               <p className="text-slate-500 italic mt-3 text-[14px]">"Capture today.<br/>Remember tomorrow."</p>
             </div>
           </div>
@@ -277,27 +264,27 @@ export default function PathiiDashboard() {
           {/* Stat Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             <NextLink href="/memories" className="transition-transform hover:-translate-y-0.5">
-              <StatCard 
+              <StatCard
                 icon={BrainLogo} iconBg="bg-[#EBF3FF]" iconColor="text-[#2563EB]"
-                value="128" label="Total Memories" trend="↑ +12%" trendUp={true}
+                value={0} label="Total Memories"
               />
             </NextLink>
             <NextLink href="/tasks" className="transition-transform hover:-translate-y-0.5">
-              <StatCard 
+              <StatCard
                 icon={CheckSquare} iconBg="bg-[#E6F8F0]" iconColor="text-[#10B981]"
-                value="8" label="Active Tasks" trend="↓ -2%" trendUp={false}
+                value={0} label="Active Tasks"
               />
             </NextLink>
             <NextLink href="/calendar" className="transition-transform hover:-translate-y-0.5">
-              <StatCard 
+              <StatCard
                 icon={Calendar} iconBg="bg-[#FFEBEF]" iconColor="text-[#F43F5E]"
-                value="3" label="Upcoming Events" trend="↑ +3 this week" trendUp={true}
+                value={0} label="Upcoming Events"
               />
             </NextLink>
             <NextLink href="/people" className="transition-transform hover:-translate-y-0.5">
-              <StatCard 
+              <StatCard
                 icon={Users} iconBg="bg-[#F3E8FF]" iconColor="text-[#8B5CF6]"
-                value="12" label="Important People" trend="↑ +2 new" trendUp={true}
+                value={0} label="Important People"
               />
             </NextLink>
           </div>
@@ -317,21 +304,25 @@ export default function PathiiDashboard() {
                   </NextLink>
                 </div>
                 <div className="flex flex-col">
-                  {filteredMemories.map((memory) => (
-                    <MemoryItem
-                      key={memory.title}
-                      icon={memory.icon}
-                      iconBg={memory.iconBg}
-                      iconColor={memory.iconColor}
-                      title={memory.title}
-                      subtitle={memory.subtitle}
-                      time={memory.time}
-                      actionIcon={memory.actionIcon}
-                      isPlay={memory.isPlay}
-                      onRowClick={() => showToast(`Opening '${memory.title}'`)}
-                      onActionClick={() => showToast(memory.isPlay ? `Playing '${memory.title}'` : `More options for '${memory.title}'`)}
-                    />
-                  ))}
+                  {filteredMemories.length > 0 ? (
+                    filteredMemories.map((memory) => (
+                      <MemoryItem
+                        key={memory.title}
+                        icon={memory.icon}
+                        iconBg={memory.iconBg}
+                        iconColor={memory.iconColor}
+                        title={memory.title}
+                        subtitle={memory.subtitle}
+                        time={memory.time}
+                        actionIcon={memory.actionIcon}
+                        isPlay={memory.isPlay}
+                        onRowClick={() => showToast(`Opening '${memory.title}'`)}
+                        onActionClick={() => showToast(memory.isPlay ? `Playing '${memory.title}'` : `More options for '${memory.title}'`)}
+                      />
+                    ))
+                  ) : (
+                    <EmptyState icon={Database} title="No memories yet" subtitle="Memories you capture will appear here." />
+                  )}
                 </div>
               </div>
 
@@ -344,24 +335,21 @@ export default function PathiiDashboard() {
                   </NextLink>
                 </div>
                 <div className="flex flex-col">
-                  <TaskItem
-                    title="Prepare project presentation" subtitle="Today, 2:00 PM"
-                    priority="High" priorityColor="bg-[#FFEBEF] text-[#F43F5E]"
-                    onRowClick={() => showToast('Opening task \'Prepare project presentation\'')}
-                    onMoreClick={() => showToast('More options for \'Prepare project presentation\'')}
-                  />
-                  <TaskItem
-                    title="Follow up with Sarah" subtitle="Tomorrow, 10:00 AM"
-                    priority="Medium" priorityColor="bg-[#FFF4DF] text-[#F59E0B]"
-                    onRowClick={() => showToast('Opening task \'Follow up with Sarah\'')}
-                    onMoreClick={() => showToast('More options for \'Follow up with Sarah\'')}
-                  />
-                  <TaskItem
-                    title="Review research paper" subtitle="Oct 16, 2024"
-                    priority="Low" priorityColor="bg-[#EBF3FF] text-[#2563EB]"
-                    onRowClick={() => showToast('Opening task \'Review research paper\'')}
-                    onMoreClick={() => showToast('More options for \'Review research paper\'')}
-                  />
+                  {upcomingTasks.length > 0 ? (
+                    upcomingTasks.map((task) => (
+                      <TaskItem
+                        key={task.title}
+                        title={task.title}
+                        subtitle={task.subtitle}
+                        priority={task.priority}
+                        priorityColor={task.priorityColor}
+                        onRowClick={() => showToast(`Opening task '${task.title}'`)}
+                        onMoreClick={() => showToast(`More options for '${task.title}'`)}
+                      />
+                    ))
+                  ) : (
+                    <EmptyState icon={CheckSquare} title="No tasks yet" subtitle="Tasks you create will appear here." />
+                  )}
                 </div>
               </div>
 
@@ -417,21 +405,21 @@ export default function PathiiDashboard() {
                   </NextLink>
                 </div>
                 <div className="flex flex-col">
-                  <CalendarItem 
-                    date="14" month="Oct" dotColor="#3B82F6"
-                    title="Project Review Meeting" time="10:00 AM - 11:00 AM"
-                    onRowClick={() => showToast('Opening event \'Project Review Meeting\'')}
-                  />
-                  <CalendarItem 
-                    date="14" month="Oct" dotColor="#10B981"
-                    title="Client Call" time="2:00 PM - 2:30 PM"
-                    onRowClick={() => showToast('Opening event \'Client Call\'')}
-                  />
-                  <CalendarItem 
-                    date="14" month="Oct" dotColor="#8B5CF6"
-                    title="Team Sync" time="4:00 PM - 5:00 PM"
-                    onRowClick={() => showToast('Opening event \'Team Sync\'')}
-                  />
+                  {upcomingEvents.length > 0 ? (
+                    upcomingEvents.map((event) => (
+                      <CalendarItem
+                        key={event.title}
+                        date={event.date}
+                        month={event.month}
+                        dotColor={event.dotColor}
+                        title={event.title}
+                        time={event.time}
+                        onRowClick={() => showToast(`Opening event '${event.title}'`)}
+                      />
+                    ))
+                  ) : (
+                    <EmptyState icon={Calendar} title="No events yet" subtitle="Events you add will appear here." />
+                  )}
                 </div>
               </div>
 
