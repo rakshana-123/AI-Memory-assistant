@@ -56,6 +56,24 @@ const usersData = [
   { id: 10, name: 'John Doe', email: 'john@example.com', plan: 'Free', status: 'Active', team: 'Research', joined: 'Oct 10, 2024', lastActive: '5 min ago', initials: 'JD', bg: 'bg-rose-100 text-rose-600' },
 ];
 
+const userTabs = [
+  { label: 'All Users (1,248)', match: (u: typeof usersData[number]) => true },
+  { label: 'Active (912)', match: (u: typeof usersData[number]) => u.status === 'Active' },
+  { label: 'Inactive (186)', match: (u: typeof usersData[number]) => u.status === 'Inactive' },
+  { label: 'Pro (324)', match: (u: typeof usersData[number]) => u.plan === 'Pro' },
+  { label: 'Free (924)', match: (u: typeof usersData[number]) => u.plan === 'Free' },
+  { label: 'Teams (24)', match: (u: typeof usersData[number]) => u.plan === 'Team' },
+];
+
+const planOptions = ['All Plans', 'Free', 'Pro', 'Team'];
+const statusOptions = ['All Status', 'Active', 'Inactive'];
+const teamOptions = ['All Teams', 'Design', 'Development', 'Product', 'Marketing', 'Research'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
     <div className="flex items-center gap-3">
@@ -88,8 +106,67 @@ const StatusBadge = ({ status }: any) => {
 };
 
 export default function UsersManagementDashboard() {
+  const [headerQuery, setHeaderQuery] = useState('');
+  const [tableQuery, setTableQuery] = useState('');
+  const [activeTab, setActiveTab] = useState(userTabs[0].label);
+  const [planFilter, setPlanFilter] = useState('All Plans');
+  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [teamFilter, setTeamFilter] = useState('All Teams');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  const tabMatch = userTabs.find((tab) => tab.label === activeTab) ?? userTabs[0];
+
+  const visibleUsers = usersData.filter((user) => {
+    const header = headerQuery.trim().toLowerCase();
+    const table = tableQuery.trim().toLowerCase();
+    const matchesSearch =
+      (header === '' ||
+        user.name.toLowerCase().includes(header) ||
+        user.email.toLowerCase().includes(header) ||
+        user.team.toLowerCase().includes(header)) &&
+      (table === '' ||
+        user.name.toLowerCase().includes(table) ||
+        user.email.toLowerCase().includes(table) ||
+        user.team.toLowerCase().includes(table));
+    return (
+      tabMatch.match(user) &&
+      matchesSearch &&
+      (planFilter === 'All Plans' || user.plan === planFilter) &&
+      (statusFilter === 'All Status' || user.status === statusFilter) &&
+      (teamFilter === 'All Teams' || user.team === teamFilter)
+    );
+  });
+
+  const allVisibleSelected =
+    visibleUsers.length > 0 && visibleUsers.every((user) => selectedIds.has(user.id));
+
+  const toggleAllVisible = () => {
+    setSelectedIds((prev) => {
+      if (allVisibleSelected) {
+        const next = new Set(prev);
+        visibleUsers.forEach((user) => next.delete(user.id));
+        return next;
+      }
+      const next = new Set(prev);
+      visibleUsers.forEach((user) => next.add(user.id));
+      return next;
+    });
+  };
+
+  const toggleUser = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
       {}
       <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -124,10 +201,12 @@ export default function UsersManagementDashboard() {
         
         {/* Header */}
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-white/50 backdrop-blur-sm">
-          <div className="relative w-[400px]">
+          <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
+              value={headerQuery}
+              onChange={(event) => setHeaderQuery(event.target.value)}
               placeholder="Search users, email, plan, or anything..." 
               className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
@@ -136,7 +215,7 @@ export default function UsersManagementDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute 1 top-1.5 right-1.5 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
@@ -149,13 +228,13 @@ export default function UsersManagementDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar flex gap-6">
+        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar flex gap-6 max-lg:flex-col">
           
           {}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title Section */}
-            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm max-lg:flex-col max-lg:items-start max-lg:gap-4">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Users size={24} strokeWidth={2.5} />
@@ -171,7 +250,7 @@ export default function UsersManagementDashboard() {
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {statCardsData.map((stat, i) => (
                 <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col justify-between">
                   <div className="flex items-center gap-3 mb-3">
@@ -194,23 +273,41 @@ export default function UsersManagementDashboard() {
 
             {/* Tabs & Filters */}
             <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                {['All Users (1,248)', 'Active (912)', 'Inactive (186)', 'Pro (324)', 'Free (924)', 'Teams (24)'].map((tab, i) => (
-                  <button key={i} className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors border ${i === 0 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-                    {tab}
+              <div className="flex items-center gap-2 max-lg:flex-wrap">
+                {userTabs.map((tab) => (
+                  <button 
+                    key={tab.label}
+                    onClick={() => setActiveTab(tab.label)}
+                    className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors border ${activeTab === tab.label ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                  >
+                    {tab.label}
                   </button>
                 ))}
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
+              <div className="flex items-center gap-3 max-lg:flex-wrap">
+                <div className="relative flex-1 max-lg:min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input type="text" placeholder="Search by name, email or team..." className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                  <input 
+                    type="text" 
+                    value={tableQuery}
+                    onChange={(event) => setTableQuery(event.target.value)}
+                    placeholder="Search by name, email or team..." 
+                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-1 focus:ring-blue-400" 
+                  />
                 </div>
                 
-                {['All Plans', 'All Status', 'All Teams'].map((filter, i) => (
-                  <button key={i} className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-600 hover:bg-slate-50">
-                    {filter} <ChevronDown size={14} className="text-slate-400" />
+                {[
+                  { label: planFilter, options: planOptions, onSelect: setPlanFilter },
+                  { label: statusFilter, options: statusOptions, onSelect: setStatusFilter },
+                  { label: teamFilter, options: teamOptions, onSelect: setTeamFilter },
+                ].map((filter) => (
+                  <button 
+                    key={filter.options[0]}
+                    onClick={() => filter.onSelect(cycleOption(filter.options, filter.label))}
+                    className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-600 hover:bg-slate-50"
+                  >
+                    {filter.label} <ChevronDown size={14} className="text-slate-400" />
                   </button>
                 ))}
                 
@@ -226,7 +323,7 @@ export default function UsersManagementDashboard() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-[12px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                      <th className="py-3 px-4 w-10"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></th>
+                      <th className="py-3 px-4 w-10"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></th>
                       <th className="py-3 px-2 font-semibold">Name</th>
                       <th className="py-3 px-2 font-semibold">Email</th>
                       <th className="py-3 px-2 font-semibold">Plan</th>
@@ -238,9 +335,9 @@ export default function UsersManagementDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {usersData.map((user) => (
+                    {visibleUsers.map((user) => (
                       <tr key={user.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
+                        <td className="py-3 px-4"><input type="checkbox" checked={selectedIds.has(user.id)} onChange={() => toggleUser(user.id)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
                         <td className="py-3 px-2 flex items-center gap-3 font-bold text-slate-900">
                           {user.avatar ? (
                             <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
@@ -287,12 +384,12 @@ export default function UsersManagementDashboard() {
           </div>
 
           {}
-          <div className="w-[340px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-[340px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
             
             {/* User Plan Distribution */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <h3 className="text-[16px] font-bold text-slate-900 mb-4">User Plan Distribution</h3>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between max-lg:flex-col max-lg:gap-4">
                 <div className="relative w-[140px] h-[140px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -315,7 +412,7 @@ export default function UsersManagementDashboard() {
                     <span className="text-[10px] text-slate-500 font-semibold mt-1">Total Users</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3 flex-1 ml-4">
+                <div className="flex flex-col gap-3 flex-1 ml-4 max-lg:ml-0 max-lg:w-full">
                   {planDistributionData.map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-[12px]">
                       <div className="flex items-center gap-2">

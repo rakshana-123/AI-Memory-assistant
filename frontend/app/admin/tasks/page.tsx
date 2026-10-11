@@ -46,6 +46,14 @@ const tableData = [
   { title: 'Fix bugs in module', icon: CheckSquare, iconBg: 'bg-purple-100 text-purple-600', type: 'Task', typeColor: 'text-purple-700 bg-purple-100', status: 'Pending', statusColor: 'text-amber-700 bg-amber-100', assignedAvatar: 'https://i.pravatar.cc/150?img=20', assignedName: 'Sneha B', date: 'Oct 30, 2024', time: '11:59 PM', createdAvatar: 'https://i.pravatar.cc/150?img=11', createdName: 'Arun Raj' },
 ];
 
+const taskTypeOptions = ['All Types', 'Task', 'Event'];
+const taskStatusOptions = ['All Status', 'Pending', 'Upcoming', 'Completed', 'Overdue'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
     <div className="flex items-center gap-3">
@@ -78,8 +86,66 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp 
 );
 
 export default function AdminDashboard() {
+  const [headerQuery, setHeaderQuery] = useState('');
+  const [tableQuery, setTableQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('All (5,057)');
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [selectedTitles, setSelectedTitles] = useState<Set<string>>(new Set());
+
+  const visibleRows = tableData.filter((row) => {
+    const matchesTab =
+      activeTab === 'All (5,057)' ||
+      (activeTab === 'Tasks (3,215)' && row.type === 'Task') ||
+      (activeTab === 'Events (1,842)' && row.type === 'Event');
+    const header = headerQuery.trim().toLowerCase();
+    const table = tableQuery.trim().toLowerCase();
+    const matchesSearch =
+      (header === '' ||
+        row.title.toLowerCase().includes(header) ||
+        row.assignedName.toLowerCase().includes(header) ||
+        row.createdName.toLowerCase().includes(header)) &&
+      (table === '' ||
+        row.title.toLowerCase().includes(table) ||
+        row.assignedName.toLowerCase().includes(table) ||
+        row.createdName.toLowerCase().includes(table));
+    return (
+      matchesTab &&
+      matchesSearch &&
+      (typeFilter === 'All Types' || row.type === typeFilter) &&
+      (statusFilter === 'All Status' || row.status === statusFilter)
+    );
+  });
+
+  const allVisibleSelected =
+    visibleRows.length > 0 && visibleRows.every((row) => selectedTitles.has(row.title));
+
+  const toggleAllVisible = () => {
+    setSelectedTitles((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleRows.forEach((row) => next.delete(row.title));
+      } else {
+        visibleRows.forEach((row) => next.add(row.title));
+      }
+      return next;
+    });
+  };
+
+  const toggleRow = (title: string) => {
+    setSelectedTitles((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) {
+        next.delete(title);
+      } else {
+        next.add(title);
+      }
+      return next;
+    });
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
       {/* Left Sidebar */}
       <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -126,12 +192,14 @@ export default function AdminDashboard() {
       <main className="flex-1 flex flex-col min-w-0">
         
         {/* Top Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-[#F4F7F9]">
-          <div className="relative w-[400px]">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 border-b border-slate-200/50 bg-[#F4F7F9] max-lg:h-auto max-lg:flex-wrap max-lg:py-3 max-lg:gap-3">
+          <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search tasks, events, users, or anything..." 
+            <input
+              type="text"
+              value={headerQuery}
+              onChange={(event) => setHeaderQuery(event.target.value)}
+              placeholder="Search tasks, events, users, or anything..."
               className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-500">
@@ -139,7 +207,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-wrap">
             <button className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
               Oct 1, 2024 - Oct 31, 2024
@@ -158,13 +226,13 @@ export default function AdminDashboard() {
         </header>
 
         {/* Scrollable Workspace */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar flex gap-6">
+        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar flex gap-6 max-lg:flex-col">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Page Header */}
-            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm max-lg:flex-col max-lg:items-start max-lg:gap-4">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                     <CalendarCheck size={24} strokeWidth={2.5} />
@@ -179,7 +247,7 @@ export default function AdminDashboard() {
                </button>
             </div>
 
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard icon={CheckSquare} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Tasks" value="3,215" trend="18%" trendUp={true} />
               <StatCard icon={Calendar} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Events" value="1,842" trend="24%" trendUp={true} />
               <StatCard icon={CheckCircle2} iconColor="text-emerald-600" iconBg="bg-emerald-100" title="Completed" value="2,461" trend="28%" trendUp={true} />
@@ -187,7 +255,7 @@ export default function AdminDashboard() {
               <StatCard icon={XCircle} iconColor="text-red-500" iconBg="bg-red-100" title="Overdue" value="210" trend="6%" trendUp={false} />
             </div>
 
-            <div className="grid grid-cols-[2fr_1fr] gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
               
               {/* Tasks & Events Trend Area Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
@@ -235,7 +303,7 @@ export default function AdminDashboard() {
                 <h3 className="text-[16px] font-bold text-slate-900">Task Status</h3>
                 <p className="text-[13px] text-slate-500 font-medium mb-4">Current status of all tasks.</p>
                 
-                <div className="flex-1 flex items-center justify-between pl-2 pr-4">
+                <div className="flex-1 flex items-center justify-between pl-2 pr-4 max-lg:flex-col max-lg:items-start max-lg:gap-4">
                   <div className="relative w-[130px] h-[130px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -280,18 +348,34 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
               
               {/* Filter Bar */}
-              <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-                <div className="relative flex-1 max-w-[300px]">
+              <div className="p-4 border-b border-slate-100 flex items-center gap-3 max-lg:flex-wrap">
+                <div className="relative flex-1 max-w-[300px] max-lg:min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input 
-                    type="text" 
-                    placeholder="Search tasks or events..." 
+                  <input
+                    type="text"
+                    value={tableQuery}
+                    onChange={(event) => setTableQuery(event.target.value)}
+                    placeholder="Search tasks or events..."
                     className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700"
                   />
                 </div>
-                
-                {['All Types', 'All Status', 'All Users'].map((filter, i) => (
-                  <button key={i} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
+
+                <button
+                  onClick={() => setTypeFilter(cycleOption(taskTypeOptions, typeFilter))}
+                  className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors"
+                >
+                  {typeFilter} <ChevronDown size={14} className="text-slate-400" />
+                </button>
+
+                <button
+                  onClick={() => setStatusFilter(cycleOption(taskStatusOptions, statusFilter))}
+                  className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors"
+                >
+                  {statusFilter} <ChevronDown size={14} className="text-slate-400" />
+                </button>
+
+                {['All Users'].map((filter) => (
+                  <button key={filter} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
                     {filter} <ChevronDown size={14} className="text-slate-400" />
                   </button>
                 ))}
@@ -306,14 +390,23 @@ export default function AdminDashboard() {
               </div>
 
               {/* Tabs */}
-              <div className="px-4 pt-3 flex gap-6 border-b border-slate-100">
-                <button className="pb-3 border-b-2 border-blue-600 text-blue-600 text-[13px] font-bold">
+              <div className="px-4 pt-3 flex gap-6 border-b border-slate-100 max-lg:flex-wrap">
+                <button
+                  onClick={() => setActiveTab('All (5,057)')}
+                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'All (5,057)' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
                   <span className="bg-blue-600 text-white px-2 py-0.5 rounded-md mr-1.5">All (5,057)</span>
                 </button>
-                <button className="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-[13px] font-bold">
+                <button
+                  onClick={() => setActiveTab('Tasks (3,215)')}
+                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'Tasks (3,215)' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
                   Tasks (3,215)
                 </button>
-                <button className="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-[13px] font-bold">
+                <button
+                  onClick={() => setActiveTab('Events (1,842)')}
+                  className={`pb-3 border-b-2 text-[13px] font-bold ${activeTab === 'Events (1,842)' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
                   Events (1,842)
                 </button>
               </div>
@@ -323,7 +416,7 @@ export default function AdminDashboard() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-[12px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                      <th className="py-3 px-4 w-10"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></th>
+                      <th className="py-3 px-4 w-10"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></th>
                       <th className="py-3 px-4 font-semibold">Title</th>
                       <th className="py-3 px-4 font-semibold">Type</th>
                       <th className="py-3 px-4 font-semibold">Status</th>
@@ -334,9 +427,9 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {tableData.map((row, index) => (
-                      <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
+                    {visibleRows.map((row) => (
+                      <tr key={row.title} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                        <td className="py-3 px-4"><input type="checkbox" checked={selectedTitles.has(row.title)} onChange={() => toggleRow(row.title)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
                         <td className="py-3 px-4 flex items-center gap-3 font-bold text-slate-900">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${row.iconBg}`}>
                             <row.icon size={16} />
@@ -412,7 +505,7 @@ export default function AdminDashboard() {
 
           </div>
 
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
             
             {/* Upcoming Events */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">

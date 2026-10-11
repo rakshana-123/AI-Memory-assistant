@@ -43,6 +43,14 @@ const documentsList = [
   { type: 'pdf', name: 'User_Manual.pdf', uploader: 'John Doe', initials: 'JD', avatarColor: 'bg-rose-100 text-rose-600', category: 'Others', catColor: 'text-slate-600 bg-slate-100', size: '4.1 MB', date: 'Oct 22, 2024', time: '06:21 PM' },
 ];
 
+const docTypeOptions = ['All Types', 'pdf', 'word', 'spreadsheet', 'image', 'others'];
+const docCategoryOptions = ['All Categories', 'Projects', 'Work', 'Personal', 'Academic', 'Research', 'Others'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
     <div className="flex items-center gap-3">
@@ -85,8 +93,60 @@ const getDocIcon = (type: any) => {
 };
 
 export default function AdminDashboard() {
+  const [headerQuery, setHeaderQuery] = useState('');
+  const [tableQuery, setTableQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
+  const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
+
+  const visibleDocuments = documentsList.filter((doc) => {
+    const header = headerQuery.trim().toLowerCase();
+    const table = tableQuery.trim().toLowerCase();
+    const matchesSearch =
+      (header === '' ||
+        doc.name.toLowerCase().includes(header) ||
+        doc.uploader.toLowerCase().includes(header) ||
+        doc.category.toLowerCase().includes(header)) &&
+      (table === '' ||
+        doc.name.toLowerCase().includes(table) ||
+        doc.uploader.toLowerCase().includes(table) ||
+        doc.category.toLowerCase().includes(table));
+    return (
+      matchesSearch &&
+      (typeFilter === 'All Types' || doc.type === typeFilter) &&
+      (categoryFilter === 'All Categories' || doc.category === categoryFilter)
+    );
+  });
+
+  const allVisibleSelected =
+    visibleDocuments.length > 0 && visibleDocuments.every((doc) => selectedNames.has(doc.name));
+
+  const toggleAllVisible = () => {
+    setSelectedNames((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleDocuments.forEach((doc) => next.delete(doc.name));
+      } else {
+        visibleDocuments.forEach((doc) => next.add(doc.name));
+      }
+      return next;
+    });
+  };
+
+  const toggleDocument = (name: string) => {
+    setSelectedNames((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
       {/* Left Sidebar */}
       <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -133,12 +193,14 @@ export default function AdminDashboard() {
       <main className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[400px]">
+        <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0 max-lg:h-auto max-lg:flex-wrap max-lg:py-3 max-lg:gap-3">
+          <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search documents, users, files, or anything..." 
+            <input
+              type="text"
+              value={headerQuery}
+              onChange={(event) => setHeaderQuery(event.target.value)}
+              placeholder="Search documents, users, files, or anything..."
               className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-500">
@@ -146,7 +208,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-wrap">
             {/* Header Date Picker */}
             <button className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
               <CalendarCheck size={16} className="text-slate-400" />
@@ -166,13 +228,13 @@ export default function AdminDashboard() {
         </header>
 
         {}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6">
+        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 max-lg:flex-col">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title Block */}
-            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm max-lg:flex-col max-lg:items-start max-lg:gap-4">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                     <FileText size={24} strokeWidth={2.5} />
@@ -188,7 +250,7 @@ export default function AdminDashboard() {
             </div>
 
             {}
-            <div className="grid grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
               <StatCard icon={FileText} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Documents" value="3,198" trend="16%" trendUp={true} />
               <StatCard icon={FileText} iconColor="text-red-500" iconBg="bg-red-100" title="PDF Files" value="1,124" trend="20%" trendUp={true} />
               <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-100" title="Word Documents" value="856" trend="12%" trendUp={true} />
@@ -198,7 +260,7 @@ export default function AdminDashboard() {
             </div>
 
             {}
-            <div className="grid grid-cols-[2.5fr_1fr] gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_1fr] gap-4">
               {/* Document Trends Area Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <div className="flex items-center justify-between mb-4">
@@ -284,18 +346,34 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
               
               {/* Filter Row */}
-              <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-                <div className="relative flex-1">
+              <div className="p-4 border-b border-slate-100 flex items-center gap-3 max-lg:flex-wrap">
+                <div className="relative flex-1 max-lg:min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input 
-                    type="text" 
-                    placeholder="Search documents..." 
+                  <input
+                    type="text"
+                    value={tableQuery}
+                    onChange={(event) => setTableQuery(event.target.value)}
+                    placeholder="Search documents..."
                     className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700"
                   />
                 </div>
-                
-                {['All Types', 'All Categories', 'All Users', 'Last 30 days'].map((filter, i) => (
-                  <button key={i} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
+
+                <button
+                  onClick={() => setTypeFilter(cycleOption(docTypeOptions, typeFilter))}
+                  className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors"
+                >
+                  {typeFilter === 'All Types' ? 'All Types' : typeFilter.toUpperCase()} <ChevronDown size={14} className="text-slate-400" />
+                </button>
+
+                <button
+                  onClick={() => setCategoryFilter(cycleOption(docCategoryOptions, categoryFilter))}
+                  className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors"
+                >
+                  {categoryFilter} <ChevronDown size={14} className="text-slate-400" />
+                </button>
+
+                {['All Users', 'Last 30 days'].map((filter) => (
+                  <button key={filter} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-[13px] font-semibold text-slate-600 flex items-center gap-2 transition-colors">
                     {filter} <ChevronDown size={14} className="text-slate-400" />
                   </button>
                 ))}
@@ -310,7 +388,7 @@ export default function AdminDashboard() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-[12px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                      <th className="py-3 px-4 w-10"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></th>
+                      <th className="py-3 px-4 w-10"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></th>
                       <th className="py-3 px-4 font-semibold">Name</th>
                       <th className="py-3 px-4 font-semibold">Type</th>
                       <th className="py-3 px-4 font-semibold">Uploaded By</th>
@@ -321,9 +399,9 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-[13px]">
-                    {documentsList.map((doc, index) => (
-                      <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
+                    {visibleDocuments.map((doc) => (
+                      <tr key={doc.name} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                        <td className="py-3 px-4"><input type="checkbox" checked={selectedNames.has(doc.name)} onChange={() => toggleDocument(doc.name)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" /></td>
                         <td className="py-3 px-4 flex items-center gap-3 font-bold text-slate-900">
                           {getDocIcon(doc.type)}
                           {doc.name}
@@ -383,7 +461,7 @@ export default function AdminDashboard() {
           </div>
 
           {}
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
             
             {/* Storage Usage */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">

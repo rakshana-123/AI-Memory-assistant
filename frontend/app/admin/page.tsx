@@ -85,8 +85,14 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, trend, trendUp 
 );
 
 export default function AdminDashboard() {
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const visibleUsers = recentUsers.filter((user) => {
+    const query = searchQuery.trim().toLowerCase();
+    return user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query);
+  });
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
       <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
         <div className="flex items-center gap-3 pt-6 pb-8 px-6">
@@ -132,10 +138,12 @@ export default function AdminDashboard() {
         
         {/* Header */}
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[400px]">
+          <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search users, memories, documents, or anything..." 
               className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
@@ -144,7 +152,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
@@ -153,7 +161,7 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6">
+        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 max-lg:flex-col">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -170,7 +178,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard icon={Users} iconColor="text-blue-600" iconBg="bg-blue-100" title="Total Users" value="1,248" trend="12%" trendUp={true} />
               <StatCard icon={Database} iconColor="text-purple-600" iconBg="bg-purple-100" title="Total Memories" value="8,932" trend="28%" trendUp={true} />
               <StatCard icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-50" title="Documents" value="2,461" trend="34%" trendUp={true} />
@@ -179,7 +187,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-[3fr_2fr] gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4">
               {/* User Growth Chart */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <div className="flex items-center justify-between mb-4">
@@ -231,7 +239,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
                 
-                <div className="flex-1 flex items-center justify-between px-2">
+                <div className="flex-1 flex items-center justify-between px-2 max-lg:flex-col max-lg:gap-4">
                   <div className="relative w-[160px] h-[160px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -255,7 +263,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2.5 flex-1 ml-6">
+                  <div className="flex flex-col gap-2.5 flex-1 ml-6 max-lg:ml-0 max-lg:w-full">
                     {memoryActivityData.map((item, i) => (
                       <div key={i} className="flex items-center justify-between text-[12px]">
                         <div className="flex items-center gap-2">
@@ -273,7 +281,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
               {/* Top Features Usage */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                 <h3 className="text-[16px] font-bold text-slate-900 mb-1">Top Features Usage</h3>
@@ -316,7 +324,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-y-4 gap-x-8 mt-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-y-4 gap-x-8 mt-auto">
                   <div className="flex items-center justify-between text-[13px]">
                     <div className="flex items-center gap-2 font-semibold text-slate-700">
                       <div className="w-3 h-3 rounded-full bg-blue-500"></div> Documents
@@ -353,7 +361,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-[2fr_1fr] gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
               {/* Recent Users Table */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                  <div className="flex items-center justify-between mb-4">
@@ -377,8 +385,8 @@ export default function AdminDashboard() {
                        </tr>
                      </thead>
                      <tbody className="text-[13px]">
-                       {recentUsers.map((user, index) => (
-                         <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                       {visibleUsers.map((user) => (
+                         <tr key={user.email} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                            <td className="py-3 flex items-center gap-3 font-bold text-slate-900">
                              {user.avatar ? (
                                <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shadow-sm" />
@@ -445,7 +453,7 @@ export default function AdminDashboard() {
 
           </div>
 
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
             
             {/* Date Picker Button */}
             <button className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">

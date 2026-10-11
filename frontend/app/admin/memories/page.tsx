@@ -47,6 +47,13 @@ const recentActivity = [
   { icon: Database, color: 'text-slate-600', bg: 'bg-slate-100', title: 'Memory updated by admin', sub: 'task-summary', time: '42 min ago' },
 ];
 
+const memoryTypeOptions = ['All Types', 'Voice Note', 'Document', 'Image', 'Link'];
+
+const cycleOption = (options: string[], current: string) => {
+  const index = options.indexOf(current);
+  return options[(index + 1) % options.length];
+};
+
 const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
   <NextLink href={href} className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors mb-1 ${active ? 'bg-[#EBF3FF] text-[#2563EB] font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium'}`}>
     <div className="flex items-center gap-3">
@@ -60,8 +67,55 @@ const SidebarItem = ({ icon: Icon, label, active, badge, href }: any) => (
 );
 
 export default function MemoryManagementDashboard() {
+  const [headerQuery, setHeaderQuery] = React.useState('');
+  const [tableQuery, setTableQuery] = React.useState('');
+  const [typeFilter, setTypeFilter] = React.useState('All Types');
+  const [selectedTitles, setSelectedTitles] = React.useState<Set<string>>(new Set());
+
+  const visibleMemories = recentMemories.filter((memory) => {
+    const header = headerQuery.trim().toLowerCase();
+    const table = tableQuery.trim().toLowerCase();
+    const matchesSearch =
+      (header === '' ||
+        memory.title.toLowerCase().includes(header) ||
+        memory.user.toLowerCase().includes(header) ||
+        memory.type.toLowerCase().includes(header)) &&
+      (table === '' ||
+        memory.title.toLowerCase().includes(table) ||
+        memory.user.toLowerCase().includes(table) ||
+        memory.type.toLowerCase().includes(table));
+    return matchesSearch && (typeFilter === 'All Types' || memory.type === typeFilter);
+  });
+
+  const allVisibleSelected =
+    visibleMemories.length > 0 && visibleMemories.every((memory) => selectedTitles.has(memory.title));
+
+  const toggleAllVisible = () => {
+    setSelectedTitles((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleMemories.forEach((memory) => next.delete(memory.title));
+      } else {
+        visibleMemories.forEach((memory) => next.add(memory.title));
+      }
+      return next;
+    });
+  };
+
+  const toggleMemory = (title: string) => {
+    setSelectedTitles((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) {
+        next.delete(title);
+      } else {
+        next.add(title);
+      }
+      return next;
+    });
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased">
       
       {/* Left Sidebar */}
       <aside className="w-[260px] bg-white flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -109,10 +163,12 @@ export default function MemoryManagementDashboard() {
         
         {/* Header */}
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[400px]">
+          <div className="relative w-full max-w-[400px] lg:w-[400px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
+              value={headerQuery}
+              onChange={(event) => setHeaderQuery(event.target.value)}
               placeholder="Search memories, users, or anything..." 
               className="w-full pl-11 pr-14 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
@@ -121,7 +177,7 @@ export default function MemoryManagementDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors bg-white border border-slate-200 shadow-sm">
               <Bell size={18} />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F43F5E] border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">3</span>
@@ -133,14 +189,14 @@ export default function MemoryManagementDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6">
+        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar flex gap-6 max-lg:flex-col">
           
           {/* Left Main Column */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             
             {/* Title & Date Picker Row */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex-1 mr-4">
+            <div className="flex items-center justify-between max-lg:flex-col max-lg:items-stretch max-lg:gap-4">
+                <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex-1 mr-4 max-lg:mr-0">
                    <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Database size={24} strokeWidth={2.5} />
                    </div>
@@ -149,8 +205,8 @@ export default function MemoryManagementDashboard() {
                      <p className="text-[14px] text-slate-500 font-medium">View, organize and manage all user memories across the system.</p>
                    </div>
                 </div>
-                
-                <button className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors w-[260px] h-[64px]">
+
+                <button className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors w-full max-w-[260px] lg:w-[260px] h-[64px] max-lg:max-w-full">
                   <div className="flex items-center gap-2">
                     <Calendar size={16} className="text-slate-400" />
                     Oct 1, 2024 - Oct 31, 2024
@@ -160,7 +216,7 @@ export default function MemoryManagementDashboard() {
             </div>
 
             {}
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                {[
                  { title: 'Total Memories', value: '12,482', icon: Mic, iconColor: 'text-blue-500', iconBg: 'bg-blue-100', trend: '18%', up: true },
                  { title: 'Voice Notes', value: '5,243', icon: FileText, iconColor: 'text-purple-500', iconBg: 'bg-purple-100', trend: '22%', up: true },
@@ -219,14 +275,14 @@ export default function MemoryManagementDashboard() {
             </div>
 
             {}
-            <div className="grid grid-cols-[2fr_1fr] gap-4">
-              
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+
               {/* Memory Sources */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                 <h3 className="text-[16px] font-bold text-slate-900 mb-1">Memory Sources</h3>
                 <p className="text-[13px] text-slate-500 font-medium mb-5">Where your memories come from.</p>
                 
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {[
                     { label: 'Voice', val: '5,243', pct: '42%', icon: Mic, iconColor: 'text-blue-500', iconBg: 'bg-blue-100', trend: '22%' },
                     { label: 'Documents', val: '3,198', pct: '26%', icon: FileText, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-100', trend: '16%' },
@@ -278,21 +334,30 @@ export default function MemoryManagementDashboard() {
 
             {}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
-                 <div className="flex items-center justify-between mb-5">
+                 <div className="flex items-center justify-between mb-5 max-lg:flex-col max-lg:items-start max-lg:gap-3">
                    <h3 className="text-[16px] font-bold text-slate-900">Recent Memories</h3>
-                   
-                   <div className="flex items-center gap-3">
-                     <div className="relative w-[220px]">
+
+                   <div className="flex items-center gap-3 max-lg:flex-wrap">
+                     <div className="relative w-full max-w-[220px] lg:w-[220px] max-lg:min-w-[180px]">
                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                       <input 
-                         type="text" 
-                         placeholder="Search memories..." 
+                       <input
+                         type="text"
+                         value={tableQuery}
+                         onChange={(event) => setTableQuery(event.target.value)}
+                         placeholder="Search memories..."
                          className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700"
                        />
                      </div>
-                     
-                     {['All Types', 'All Users', 'Last 7 days'].map((filter, i) => (
-                       <button key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+
+                     <button
+                       onClick={() => setTypeFilter(cycleOption(memoryTypeOptions, typeFilter))}
+                       className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                     >
+                       {typeFilter} <ChevronDown size={14} className="text-slate-400" />
+                     </button>
+
+                     {['All Users', 'Last 7 days'].map((filter) => (
+                       <button key={filter} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
                          {filter} <ChevronDown size={14} className="text-slate-400" />
                        </button>
                      ))}
@@ -303,7 +368,7 @@ export default function MemoryManagementDashboard() {
                    <table className="w-full text-left border-collapse">
                      <thead>
                        <tr className="border-b border-slate-100 text-[12px] font-bold text-slate-400 uppercase tracking-wider">
-                         <th className="pb-3 w-8 pl-2"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></th>
+                         <th className="pb-3 w-8 pl-2"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></th>
                          <th className="pb-3 font-semibold">Type</th>
                          <th className="pb-3 font-semibold">Title / Content</th>
                          <th className="pb-3 font-semibold">User</th>
@@ -313,9 +378,9 @@ export default function MemoryManagementDashboard() {
                        </tr>
                      </thead>
                      <tbody className="text-[13px]">
-                       {recentMemories.map((mem, index) => (
-                         <tr key={index} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                           <td className="py-3 pl-2"><input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
+                       {visibleMemories.map((mem) => (
+                         <tr key={mem.title} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                           <td className="py-3 pl-2"><input type="checkbox" checked={selectedTitles.has(mem.title)} onChange={() => toggleMemory(mem.title)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" /></td>
                            <td className="py-3">
                              <div className="flex items-center gap-2">
                                <div className={`w-6 h-6 rounded-md flex items-center justify-center ${mem.typeBg}`}>
@@ -357,7 +422,7 @@ export default function MemoryManagementDashboard() {
           </div>
 
           {}
-          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-[320px] flex-shrink-0 flex flex-col gap-6 max-lg:w-full">
             
             {/* Storage Usage */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
@@ -394,8 +459,8 @@ export default function MemoryManagementDashboard() {
             {/* Memory Types Breakdown */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                <h3 className="text-[16px] font-bold text-slate-900 mb-6">Memory Types Breakdown</h3>
-               
-               <div className="flex items-center justify-between">
+
+               <div className="flex items-center justify-between max-lg:flex-col max-lg:gap-4">
                   <div className="relative w-[140px] h-[140px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -419,7 +484,7 @@ export default function MemoryManagementDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3 flex-1 ml-4">
+                  <div className="flex flex-col gap-3 flex-1 ml-4 max-lg:ml-0 max-lg:w-full">
                     {memoryBreakdownData.map((item, i) => (
                       <div key={i} className="flex flex-col text-[11px]">
                         <div className="flex items-center gap-1.5 mb-0.5">
