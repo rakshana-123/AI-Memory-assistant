@@ -30,8 +30,8 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
-const FilterPill = ({ label, active }: any) => (
-  <button className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors border shadow-sm ${
+const FilterPill = ({ label, active, onClick }: any) => (
+  <button onClick={onClick} className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors border shadow-sm ${
     active ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
   }`}>
     {label}
@@ -151,9 +151,57 @@ const ListItem = ({ name, icon: Icon, iconColorClass, iconBgClass, type, size, m
   </div>
 );
 
+const documentFilters = ['All', 'PDF', 'Docs', 'Images', 'Spreadsheets', 'Presentations', 'Text Files', 'Other'];
+
+const filterBadgeMap: Record<string, string> = {
+  PDF: 'PDF',
+  Docs: 'DOC',
+  Images: 'IMG',
+  Spreadsheets: 'XLS',
+  Presentations: 'PPT',
+  'Text Files': 'TXT',
+  Other: 'OTHER',
+};
+
+const documentsData = [
+  { id: 1, type: 'folder', title: 'Project Reports', meta: '12 files' },
+  { id: 2, type: 'folder', title: 'Research Papers', meta: '8 files' },
+  { id: 3, type: 'folder', title: 'Meeting Notes', meta: '15 files' },
+  { id: 4, type: 'file', title: 'AI Research Paper.pdf', meta: 'Oct 10, 2024', badge: 'PDF', badgeColor: 'bg-red-500', preview: 'pdf' },
+  { id: 5, type: 'file', title: 'Project Plan.docx', meta: 'Oct 8, 2024', badge: 'DOC', badgeColor: 'bg-blue-500', preview: 'doc' },
+  { id: 6, type: 'file', title: 'Budget Sheet.xlsx', meta: 'Oct 7, 2024', badge: 'XLS', badgeColor: 'bg-emerald-500', preview: 'xls' },
+  { id: 7, type: 'file', title: 'Whiteboard Notes.png', meta: 'Oct 6, 2024', badge: 'IMG', badgeColor: 'bg-purple-500', preview: 'img' },
+  { id: 8, type: 'file', title: 'Client Proposal.pdf', meta: 'Oct 5, 2024', badge: 'PDF', badgeColor: 'bg-red-500', preview: 'pdf' },
+  { id: 9, type: 'file', title: 'Pitch Deck.pptx', meta: 'Oct 1, 2024', badge: 'PPT', badgeColor: 'bg-orange-500', preview: 'ppt' },
+  { id: 10, type: 'file', title: 'Ideas.txt', meta: 'Sep 28, 2024', badge: 'TXT', badgeColor: 'bg-slate-500', preview: 'txt' },
+];
+
+const recentDocuments = [
+  { id: 1, name: 'AI Research Paper.pdf', icon: FileText, iconBgClass: 'bg-red-100', iconColorClass: 'text-red-500', type: 'PDF', badge: 'PDF', size: '2.4 MB', modified: 'Today, 10:42 AM' },
+  { id: 2, name: 'Project Plan.docx', icon: File, iconBgClass: 'bg-blue-100', iconColorClass: 'text-blue-500', type: 'Document', badge: 'DOC', size: '1.1 MB', modified: 'Oct 8, 2024' },
+  { id: 3, name: 'Budget Sheet.xlsx', icon: FileSpreadsheet, iconBgClass: 'bg-emerald-100', iconColorClass: 'text-emerald-500', type: 'Spreadsheet', badge: 'XLS', size: '900 KB', modified: 'Oct 7, 2024' },
+  { id: 4, name: 'Whiteboard Notes.png', icon: ImageIcon, iconBgClass: 'bg-purple-100', iconColorClass: 'text-purple-500', type: 'Image', badge: 'IMG', size: '1.8 MB', modified: 'Oct 6, 2024' },
+  { id: 5, name: 'Client Proposal.pdf', icon: FileText, iconBgClass: 'bg-red-100', iconColorClass: 'text-red-500', type: 'PDF', badge: 'PDF', size: '3.2 MB', modified: 'Oct 5, 2024' },
+];
+
 export default function PathiiDocumentsDashboard() {
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [activeFilter, setActiveFilter] = React.useState('All');
+
+  const visibleDocuments = documentsData.filter((doc) => {
+    const matchesFilter = activeFilter === 'All' || doc.badge === filterBadgeMap[activeFilter];
+    const matchesSearch = doc.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
+  const visibleRecentDocuments = recentDocuments.filter((doc) => {
+    const matchesFilter = activeFilter === 'All' || doc.badge === filterBadgeMap[activeFilter];
+    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
       <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -198,11 +246,13 @@ export default function PathiiDocumentsDashboard() {
       <main className="flex-1 flex flex-col min-w-0 bg-[#F4F7F9]">
         
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[520px]">
+          <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search documents, files, or ask anything..." 
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search documents, files, or ask anything..."
               className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-[11px] font-bold text-slate-500">
@@ -210,7 +260,7 @@ export default function PathiiDocumentsDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
@@ -219,13 +269,13 @@ export default function PathiiDocumentsDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6">
-          
+        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
+
           {/* Left Column (Documents Center) */}
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2 pb-4">
-            
+
             {/* Header Area */}
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-6 max-lg:flex-wrap max-lg:gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                    <div className="w-8 h-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shadow-sm">
@@ -243,36 +293,36 @@ export default function PathiiDocumentsDashboard() {
               </button>
             </div>
 
-            <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide py-1">
-              <FilterPill label="All" active />
-              <FilterPill label="PDF" />
-              <FilterPill label="Docs" />
-              <FilterPill label="Images" />
-              <FilterPill label="Spreadsheets" />
-              <FilterPill label="Presentations" />
-              <FilterPill label="Text Files" />
-              <FilterPill label="Other" />
+            <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide py-1 max-lg:flex-wrap">
+              {documentFilters.map((filter) => (
+                <FilterPill
+                  key={filter}
+                  label={filter}
+                  active={activeFilter === filter}
+                  onClick={() => setActiveFilter(filter)}
+                />
+              ))}
             </div>
 
-            <div className="flex gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <StatCard icon={FileText} count="12" label="PDF Files" colorClass="bg-red-50" iconColorClass="text-red-500" />
               <StatCard icon={File} count="18" label="Documents" colorClass="bg-blue-50" iconColorClass="text-blue-500" />
               <StatCard icon={ImageIcon} count="9" label="Images" colorClass="bg-emerald-50" iconColorClass="text-emerald-500" />
               <StatCard icon={LinkIcon} count="6" label="Links & Others" colorClass="bg-purple-50" iconColorClass="text-purple-500" />
             </div>
 
-            <div className="grid grid-cols-5 gap-4 mb-10">
-              <FileCard type="folder" title="Project Reports" meta="12 files" />
-              <FileCard type="folder" title="Research Papers" meta="8 files" />
-              <FileCard type="folder" title="Meeting Notes" meta="15 files" />
-              <FileCard type="file" title="AI Research Paper.pdf" meta="Oct 10, 2024" badge="PDF" badgeColor="bg-red-500" preview="pdf" />
-              <FileCard type="file" title="Project Plan.docx" meta="Oct 8, 2024" badge="DOC" badgeColor="bg-blue-500" preview="doc" />
-              
-              <FileCard type="file" title="Budget Sheet.xlsx" meta="Oct 7, 2024" badge="XLS" badgeColor="bg-emerald-500" preview="xls" />
-              <FileCard type="file" title="Whiteboard Notes.png" meta="Oct 6, 2024" badge="IMG" badgeColor="bg-purple-500" preview="img" />
-              <FileCard type="file" title="Client Proposal.pdf" meta="Oct 5, 2024" badge="PDF" badgeColor="bg-red-500" preview="pdf" />
-              <FileCard type="file" title="Pitch Deck.pptx" meta="Oct 1, 2024" badge="PPT" badgeColor="bg-orange-500" preview="ppt" />
-              <FileCard type="file" title="Ideas.txt" meta="Sep 28, 2024" badge="TXT" badgeColor="bg-slate-500" preview="txt" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+              {visibleDocuments.map((doc) => (
+                <FileCard
+                  key={doc.id}
+                  type={doc.type}
+                  title={doc.title}
+                  meta={doc.meta}
+                  badge={doc.badge}
+                  badgeColor={doc.badgeColor}
+                  preview={doc.preview}
+                />
+              ))}
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -295,17 +345,24 @@ export default function PathiiDocumentsDashboard() {
                   <div className="w-[5%] text-right">Actions</div>
                 </div>
                 
-                <ListItem name="AI Research Paper.pdf" icon={FileText} iconBgClass="bg-red-100" iconColorClass="text-red-500" type="PDF" size="2.4 MB" modified="Today, 10:42 AM" />
-                <ListItem name="Project Plan.docx" icon={File} iconBgClass="bg-blue-100" iconColorClass="text-blue-500" type="Document" size="1.1 MB" modified="Oct 8, 2024" />
-                <ListItem name="Budget Sheet.xlsx" icon={FileSpreadsheet} iconBgClass="bg-emerald-100" iconColorClass="text-emerald-500" type="Spreadsheet" size="900 KB" modified="Oct 7, 2024" />
-                <ListItem name="Whiteboard Notes.png" icon={ImageIcon} iconBgClass="bg-purple-100" iconColorClass="text-purple-500" type="Image" size="1.8 MB" modified="Oct 6, 2024" />
-                <ListItem name="Client Proposal.pdf" icon={FileText} iconBgClass="bg-red-100" iconColorClass="text-red-500" type="PDF" size="3.2 MB" modified="Oct 5, 2024" />
+                {visibleRecentDocuments.map((doc) => (
+                  <ListItem
+                    key={doc.id}
+                    name={doc.name}
+                    icon={doc.icon}
+                    iconBgClass={doc.iconBgClass}
+                    iconColorClass={doc.iconColorClass}
+                    type={doc.type}
+                    size={doc.size}
+                    modified={doc.modified}
+                  />
+                ))}
               </div>
             </div>
 
           </div>
 
-          <div className="w-[380px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 overflow-y-auto custom-scrollbar h-full">
+          <div className="w-[380px] bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col flex-shrink-0 overflow-y-auto custom-scrollbar h-full max-lg:w-full">
             
             {/* File Preview Area */}
             <div className="bg-slate-100 h-[240px] m-2 rounded-2xl relative flex items-center justify-center overflow-hidden border border-slate-200 group">

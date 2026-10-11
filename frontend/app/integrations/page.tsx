@@ -93,8 +93,8 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
-const Toggle = ({ isOn }: any) => (
-  <div className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors ${isOn ? 'bg-[#2563EB]' : 'bg-slate-200'}`}>
+const Toggle = ({ isOn, onClick }: any) => (
+  <div onClick={onClick} className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors ${isOn ? 'bg-[#2563EB]' : 'bg-slate-200'}`}>
     <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${isOn ? 'left-[18px]' : 'left-0.5'}`} />
   </div>
 );
@@ -126,9 +126,29 @@ const recentlySynced = [
 ];
 
 export default function PathiiIntegrationsDashboard() {
-  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [availableSearch, setAvailableSearch] = useState('');
+  const [connectedToggles, setConnectedToggles] = useState<{ [key: number]: boolean }>({ 1: true, 2: true, 3: true, 4: true, 5: true, 6: true });
+  const [calendarSettings, setCalendarSettings] = useState({ syncEvents: true, createTasks: true, reminders: true, eventDetails: true });
+
+  const toggleConnectedApp = (id: number) => {
+    setConnectedToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleCalendarSetting = (key: keyof typeof calendarSettings) => {
+    setCalendarSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const visibleConnectedApps = connectedAppsData.filter((app) =>
+    app.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
+  const visibleAvailableApps = availableAppsData.filter((app) =>
+    app.name.toLowerCase().includes(availableSearch.trim().toLowerCase())
+  );
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
       <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -174,11 +194,13 @@ export default function PathiiIntegrationsDashboard() {
         
         {/* Top Header */}
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[520px]">
+          <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search integrations, apps, or anything..." 
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search integrations, apps, or anything..."
               className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-[11px] font-bold text-slate-500">
@@ -186,7 +208,7 @@ export default function PathiiIntegrationsDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">1</span>
@@ -196,7 +218,7 @@ export default function PathiiIntegrationsDashboard() {
         </header>
 
         {/* Layout Container */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6">
+        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
           
           {/* Left Main Panel */}
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2 pb-2">
@@ -224,14 +246,14 @@ export default function PathiiIntegrationsDashboard() {
                 </button>
               </div>
               
-              <div className="grid grid-cols-3 gap-4">
-                 {connectedAppsData.map((app) => {
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                 {visibleConnectedApps.map((app) => {
                    const AppIconComponent = (AppLogos as any)[app.icon];
                    return (
                      <div key={app.id} className="bg-white rounded-[20px] p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative">
                         <div className="flex items-start justify-between mb-3">
                            <AppIconComponent />
-                           <Toggle isOn={true} />
+                           <Toggle isOn={connectedToggles[app.id]} onClick={() => toggleConnectedApp(app.id)} />
                         </div>
                         <h4 className="text-[15px] font-bold text-slate-900 leading-tight mb-1">{app.name}</h4>
                         <p className="text-[12px] text-slate-500 font-medium leading-relaxed mb-4 h-8">{app.desc}</p>
@@ -256,23 +278,25 @@ export default function PathiiIntegrationsDashboard() {
 
             {/* Available Integrations */}
             <div className="flex-shrink-0">
-               <div className="flex items-center justify-between mb-4 px-1">
+               <div className="flex items-center justify-between mb-4 px-1 max-lg:flex-wrap max-lg:gap-3">
                   <div>
                     <h3 className="text-[18px] font-extrabold text-slate-900 leading-tight mb-0.5">Available Integrations</h3>
                     <p className="text-[13px] text-slate-500 font-medium">Connect more tools to enhance your memory assistant.</p>
                   </div>
-                  <div className="relative w-64">
+                  <div className="relative w-full max-w-[256px] lg:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                    <input 
-                      type="text" 
-                      placeholder="Search integrations..." 
+                    <input
+                      type="text"
+                      value={availableSearch}
+                      onChange={(event) => setAvailableSearch(event.target.value)}
+                      placeholder="Search integrations..."
                       className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-full text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:border-[#2563EB] transition-all placeholder:text-slate-400 font-medium text-slate-700"
                     />
                   </div>
                </div>
 
-               <div className="grid grid-cols-4 gap-4 pb-4">
-                  {availableAppsData.map((app) => (
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+                  {visibleAvailableApps.map((app) => (
                     <div key={app.id} className="bg-white rounded-[20px] p-5 border border-slate-200 shadow-sm flex flex-col">
                        <div className="flex items-center gap-3 mb-3">
                          <AppLogos.Generic {...app.iconProps} />
@@ -290,7 +314,7 @@ export default function PathiiIntegrationsDashboard() {
           </div>
 
           {/* Right Inspector Panel */}
-          <div className="w-[340px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full">
+          <div className="w-[340px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
             
             {/* Google Calendar Detail Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6">
@@ -318,15 +342,15 @@ export default function PathiiIntegrationsDashboard() {
                      <CalendarIcon size={16} className="text-rose-500" />
                      <span className="text-[14px] font-semibold text-slate-700">Sync events</span>
                    </div>
-                   <Toggle isOn={true} />
+                   <Toggle isOn={calendarSettings.syncEvents} onClick={() => toggleCalendarSetting('syncEvents')} />
                  </div>
-                 
+
                  <div className="flex items-center justify-between">
                    <div className="flex items-center gap-3">
                      <CheckSquare size={16} className="text-[#2563EB]" />
                      <span className="text-[14px] font-semibold text-slate-700">Create tasks from events</span>
                    </div>
-                   <Toggle isOn={true} />
+                   <Toggle isOn={calendarSettings.createTasks} onClick={() => toggleCalendarSetting('createTasks')} />
                  </div>
 
                  <div className="flex items-center justify-between">
@@ -334,7 +358,7 @@ export default function PathiiIntegrationsDashboard() {
                      <Bell size={16} className="text-amber-500" />
                      <span className="text-[14px] font-semibold text-slate-700">Send reminders</span>
                    </div>
-                   <Toggle isOn={true} />
+                   <Toggle isOn={calendarSettings.reminders} onClick={() => toggleCalendarSetting('reminders')} />
                  </div>
 
                  <div className="flex items-center justify-between">
@@ -342,7 +366,7 @@ export default function PathiiIntegrationsDashboard() {
                      <FileText size={16} className="text-indigo-500" />
                      <span className="text-[14px] font-semibold text-slate-700">Include event details in memories</span>
                    </div>
-                   <Toggle isOn={true} />
+                   <Toggle isOn={calendarSettings.eventDetails} onClick={() => toggleCalendarSetting('eventDetails')} />
                  </div>
               </div>
             </div>

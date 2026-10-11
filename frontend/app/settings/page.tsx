@@ -29,8 +29,8 @@ const SidebarItem = ({ icon: Icon, label, active, href }: any) => (
   </NextLink>
 );
 
-const Toggle = ({ active }: any) => (
-  <div className={`w-11 h-6 rounded-full flex items-center px-1 transition-colors cursor-pointer flex-shrink-0 ${active ? 'bg-blue-500' : 'bg-slate-200'}`}>
+const Toggle = ({ active, onClick }: any) => (
+  <div onClick={onClick} className={`w-11 h-6 rounded-full flex items-center px-1 transition-colors cursor-pointer flex-shrink-0 ${active ? 'bg-blue-500' : 'bg-slate-200'}`}>
     <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${active ? 'translate-x-5' : 'translate-x-0'}`}></div>
   </div>
 );
@@ -51,15 +51,44 @@ const SettingsRow = ({ icon: Icon, title, subtitle, action, iconColor = "text-sl
 );
 
 const DropdownSelect = ({ value }: any) => (
-  <div className="flex items-center justify-between w-64 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-600 font-medium cursor-pointer hover:bg-slate-100 transition-colors">
+  <div className="flex items-center justify-between w-64 max-lg:w-40 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-600 font-medium cursor-pointer hover:bg-slate-100 transition-colors">
     <span className="truncate">{value}</span>
     <ChevronDown size={14} className="text-slate-400 flex-shrink-0 ml-2" />
   </div>
 );
 
+const settingsTabs = ['General', 'AI & Memory', 'Privacy & Security', 'Integrations', 'Notifications', 'Appearance', 'Plan & Billing'];
+
+const themeOptions = [
+  { label: 'Light', icon: Sun },
+  { label: 'Dark', icon: Moon },
+  { label: 'System', icon: Monitor },
+];
+
 export default function PathiiSettingsDashboard() {
+  const [activeTab, setActiveTab] = useState('General');
+  const [activeTheme, setActiveTheme] = useState('Light');
+  const [toggleStates, setToggleStates] = useState({
+    autoTranscribe: true,
+    aiSummary: true,
+    extractEntities: true,
+    e2eEncryption: true,
+    localProcessing: true,
+    twoFactor: false,
+  });
+
+  const flipToggle = (key: keyof typeof toggleStates) => {
+    setToggleStates((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // 'General' (the default) and non-sectioned tabs show every section so the
+  // default desktop layout is unchanged; the three sectioned tabs focus theirs.
+  const sectionedTabs = ['General', 'AI & Memory', 'Privacy & Security'];
+  const showSection = (section: string) =>
+    activeTab === 'General' || !sectionedTabs.includes(activeTab) || activeTab === section;
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
+    <div className="flex min-h-screen lg:h-screen bg-[#F4F7F9] font-sans lg:overflow-hidden text-slate-900 antialiased selection:bg-blue-100">
       
       {/* Sidebar */}
       <aside className="w-[260px] bg-[#F8FAFC] flex flex-col flex-shrink-0 border-r border-slate-200/60 z-10">
@@ -104,11 +133,11 @@ export default function PathiiSettingsDashboard() {
         
         {/* Top Header */}
         <header className="h-[72px] px-8 flex items-center justify-between flex-shrink-0">
-          <div className="relative w-[520px]">
+          <div className="relative w-full max-w-[520px] lg:w-[520px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search settings, preferences, or help..." 
+            <input
+              type="text"
+              placeholder="Search settings, preferences, or help..."
               className="w-full pl-11 pr-14 py-2.5 bg-white border border-slate-200 rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 font-medium text-slate-700 shadow-sm"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-[11px] font-bold text-slate-500">
@@ -116,7 +145,7 @@ export default function PathiiSettingsDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 max-lg:flex-shrink-0">
             <button className="relative p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-[#F43F5E] border-2 border-[#F4F7F9] rounded-full flex items-center justify-center text-[8px] font-bold text-white">2</span>
@@ -126,7 +155,7 @@ export default function PathiiSettingsDashboard() {
         </header>
 
         {/* Scrollable Layout Container */}
-        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6">
+        <div className="flex-1 overflow-hidden px-8 pb-8 flex gap-6 max-lg:flex-col">
           
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto custom-scrollbar pr-2 pb-2">
             
@@ -144,17 +173,24 @@ export default function PathiiSettingsDashboard() {
 
               {/* Tabs */}
               <div className="flex flex-wrap gap-2">
-                <button className="px-5 py-2 bg-blue-500 text-white text-[13px] font-bold rounded-full shadow-sm">General</button>
-                <button className="px-5 py-2 bg-white border border-slate-200 text-slate-600 text-[13px] font-semibold rounded-full shadow-sm hover:bg-slate-50">AI & Memory</button>
-                <button className="px-5 py-2 bg-white border border-slate-200 text-slate-600 text-[13px] font-semibold rounded-full shadow-sm hover:bg-slate-50">Privacy & Security</button>
-                <button className="px-5 py-2 bg-white border border-slate-200 text-slate-600 text-[13px] font-semibold rounded-full shadow-sm hover:bg-slate-50">Integrations</button>
-                <button className="px-5 py-2 bg-white border border-slate-200 text-slate-600 text-[13px] font-semibold rounded-full shadow-sm hover:bg-slate-50">Notifications</button>
-                <button className="px-5 py-2 bg-white border border-slate-200 text-slate-600 text-[13px] font-semibold rounded-full shadow-sm hover:bg-slate-50">Appearance</button>
-                <button className="px-5 py-2 bg-white border border-slate-200 text-slate-600 text-[13px] font-semibold rounded-full shadow-sm hover:bg-slate-50">Plan & Billing</button>
+                {settingsTabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-5 py-2 text-[13px] rounded-full shadow-sm ${
+                      activeTab === tab
+                        ? 'bg-blue-500 text-white font-bold'
+                        : 'bg-white border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* General Settings Section */}
+            {showSection('General') && (
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 mb-6 flex-shrink-0">
               <div className="flex items-center gap-3 mb-4">
                 <Settings size={20} className="text-blue-600" />
@@ -176,14 +212,16 @@ export default function PathiiSettingsDashboard() {
                   icon={CalendarIcon} title="Date Format" subtitle="" 
                   action={<DropdownSelect value="DD / MM / YYYY" />} 
                 />
-                <SettingsRow 
-                  icon={CalendarDays} title="Start Week On" subtitle="" 
-                  action={<DropdownSelect value="Monday" />} 
+                <SettingsRow
+                  icon={CalendarDays} title="Start Week On" subtitle=""
+                  action={<DropdownSelect value="Monday" />}
                 />
               </div>
             </div>
+            )}
 
             {/* AI & Memory Settings Section */}
+            {showSection('AI & Memory') && (
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 mb-6 flex-shrink-0">
               <div className="flex items-center gap-3 mb-4">
                 <Brain size={20} className="text-purple-600" />
@@ -193,30 +231,32 @@ export default function PathiiSettingsDashboard() {
                 </div>
               </div>
               <div className="pl-[2rem]">
-                <SettingsRow 
-                  icon={AudioWaveform} title="Auto-transcribe voice notes" subtitle="Convert voice to text automatically" 
-                  action={<Toggle active={true} />} 
+                <SettingsRow
+                  icon={AudioWaveform} title="Auto-transcribe voice notes" subtitle="Convert voice to text automatically"
+                  action={<Toggle active={toggleStates.autoTranscribe} onClick={() => flipToggle('autoTranscribe')} />}
                 />
-                <SettingsRow 
-                  icon={FileText} title="Generate AI summary" subtitle="Create short summaries for memories" 
-                  action={<Toggle active={true} />} 
+                <SettingsRow
+                  icon={FileText} title="Generate AI summary" subtitle="Create short summaries for memories"
+                  action={<Toggle active={toggleStates.aiSummary} onClick={() => flipToggle('aiSummary')} />}
                 />
-                <SettingsRow 
-                  icon={CheckSquare} title="Extract tasks, events and people" subtitle="Automatically find tasks, events and people from your content" 
-                  action={<Toggle active={true} />} 
+                <SettingsRow
+                  icon={CheckSquare} title="Extract tasks, events and people" subtitle="Automatically find tasks, events and people from your content"
+                  action={<Toggle active={toggleStates.extractEntities} onClick={() => flipToggle('extractEntities')} />}
                 />
-                <SettingsRow 
-                  icon={Tag} title="Default memory tags" subtitle="" 
+                <SettingsRow
+                  icon={Tag} title="Default memory tags" subtitle=""
                   action={
-                    <div className="w-80 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-500 font-medium truncate">
+                    <div className="w-80 max-lg:w-40 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-500 font-medium truncate">
                       Personal, Work, Ideas, Learning, Projects
                     </div>
-                  } 
+                  }
                 />
               </div>
             </div>
+            )}
 
             {/* Privacy & Security Section */}
+            {showSection('Privacy & Security') && (
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 flex-shrink-0">
               <div className="flex items-center gap-3 mb-4">
                 <ShieldCheck size={20} className="text-blue-600" />
@@ -226,28 +266,29 @@ export default function PathiiSettingsDashboard() {
                 </div>
               </div>
               <div className="pl-[2rem]">
-                <SettingsRow 
-                  icon={Lock} title="End-to-end encryption" subtitle="Encrypt your data for maximum security" 
-                  action={<Toggle active={true} />} 
+                <SettingsRow
+                  icon={Lock} title="End-to-end encryption" subtitle="Encrypt your data for maximum security"
+                  action={<Toggle active={toggleStates.e2eEncryption} onClick={() => flipToggle('e2eEncryption')} />}
                 />
-                <SettingsRow 
-                  icon={Cpu} title="Local data processing (where possible)" subtitle="Process sensitive data on your device" 
-                  action={<Toggle active={true} />} 
+                <SettingsRow
+                  icon={Cpu} title="Local data processing (where possible)" subtitle="Process sensitive data on your device"
+                  action={<Toggle active={toggleStates.localProcessing} onClick={() => flipToggle('localProcessing')} />}
                 />
-                <SettingsRow 
-                  icon={Shield} title="Two-factor authentication" subtitle="Add an extra layer of security to your account" 
-                  action={<Toggle active={false} />} 
+                <SettingsRow
+                  icon={Shield} title="Two-factor authentication" subtitle="Add an extra layer of security to your account"
+                  action={<Toggle active={toggleStates.twoFactor} onClick={() => flipToggle('twoFactor')} />}
                 />
-                <SettingsRow 
-                  icon={Database} title="Manage data" subtitle="Export or delete your data" 
-                  action={<button className="px-4 py-1.5 bg-white border border-blue-200 text-blue-600 text-[13px] font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors">Manage Data</button>} 
+                <SettingsRow
+                  icon={Database} title="Manage data" subtitle="Export or delete your data"
+                  action={<button className="px-4 py-1.5 bg-white border border-blue-200 text-blue-600 text-[13px] font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors">Manage Data</button>}
                 />
               </div>
             </div>
+            )}
 
           </div>
 
-          <div className="w-[360px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full">
+          <div className="w-[360px] flex flex-col gap-6 flex-shrink-0 overflow-y-auto custom-scrollbar pr-2 pb-2 h-full max-lg:w-full">
             
             {/* Your Account Card */}
             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 relative">
@@ -367,18 +408,24 @@ export default function PathiiSettingsDashboard() {
 
               {/* Theme Buttons */}
               <div className="grid grid-cols-3 gap-3 mb-6">
-                <button className="flex flex-col items-center justify-center gap-2 py-4 border-2 border-blue-500 bg-blue-50/30 rounded-xl text-blue-600 shadow-sm">
-                  <Sun size={24} />
-                  <span className="text-[13px] font-bold">Light</span>
-                </button>
-                <button className="flex flex-col items-center justify-center gap-2 py-4 border border-slate-200 bg-white rounded-xl text-slate-600 hover:bg-slate-50 shadow-sm transition-colors">
-                  <Moon size={24} />
-                  <span className="text-[13px] font-semibold text-slate-700">Dark</span>
-                </button>
-                <button className="flex flex-col items-center justify-center gap-2 py-4 border border-slate-200 bg-white rounded-xl text-slate-600 hover:bg-slate-50 shadow-sm transition-colors">
-                  <Monitor size={24} />
-                  <span className="text-[13px] font-semibold text-slate-700">System</span>
-                </button>
+                {themeOptions.map((themeOption) => {
+                  const ThemeOptionIcon = themeOption.icon;
+                  const isActive = activeTheme === themeOption.label;
+                  return (
+                    <button
+                      key={themeOption.label}
+                      onClick={() => setActiveTheme(themeOption.label)}
+                      className={`flex flex-col items-center justify-center gap-2 py-4 rounded-xl shadow-sm ${
+                        isActive
+                          ? 'border-2 border-blue-500 bg-blue-50/30 text-blue-600'
+                          : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors'
+                      }`}
+                    >
+                      <ThemeOptionIcon size={24} />
+                      <span className={`text-[13px] ${isActive ? 'font-bold' : 'font-semibold text-slate-700'}`}>{themeOption.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Accent Color */}
