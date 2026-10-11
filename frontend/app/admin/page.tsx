@@ -122,7 +122,7 @@ export default function AdminDashboard() {
   const totalMemories = memoryActivityData.reduce((sum, slice) => sum + slice.value, 0);
   const totalDocuments = 0;
   const tasksAndEvents = 0;
-  const systemUptime = '0%';
+  const systemUptime = '—';
   const aiRequestsThisMonth = aiProcessingData.reduce((sum, point) => sum + point.req, 0);
   const storageUsedGb = storageByType.reduce((sum, type) => sum + type.gb, 0);
 
